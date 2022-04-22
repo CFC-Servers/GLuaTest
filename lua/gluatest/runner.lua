@@ -54,7 +54,7 @@ return function( testFiles )
     local defaultEnv = getfenv( 1 )
     local testEnv = setmetatable(
         {
-            expect = include( "expectations.lua" ),
+            expect = include( "gluatest/expectations.lua" ),
             _R = _R
         },
         { __index = _G }
@@ -67,6 +67,7 @@ return function( testFiles )
         }
     end
 
+    -- TODO: Make sure a test file can't return garbage data that makes this error
     for f = 1, fileCount do
         local test = testFiles[f]
         local fileName = test.fileName
