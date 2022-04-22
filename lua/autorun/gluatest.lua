@@ -1,0 +1,1 @@
+include( "gluatest/init.lua" )
