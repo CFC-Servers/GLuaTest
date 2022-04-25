@@ -1,0 +1,21 @@
+name: GLuaTest Tester
+
+on:
+  workflow_call:
+
+jobs:
+  obfuscate:
+    name: "Run tests"
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: "Check out the repo"
+        uses: actions/checkout@3
+        with:
+          path: project
+
+      - name: "Check out GLuaTest"
+        uses: actions/checkout@v3
+        with:
+          repository: CFC-Servers/GLuaTest
+          path: gluatest

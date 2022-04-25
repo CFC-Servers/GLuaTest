@@ -1,0 +1,12 @@
+version: "3.8"
+services:
+  runner:
+    container_name: gluatest_runner
+    build: .
+    volumes:
+      - $FAILURE_OUTPUT:/home/steam/gmodserver/data/gluatest_failures.json
+      - $REQUIREMENTS:/home/steam/gmodserver/custom_requirements.txt:ro
+      - $CUSTOM_SERVER_CONFIG:/home/steam/gmodserver/custom_server.cfg:ro
+
+    env:
+      .env
