@@ -354,6 +354,8 @@ return function( testFiles )
             local success, errInfo = xpcall( func, failCallback )
             setfenv( func, defaultEnv )
 
+            hook.Run( "GLuaTest_RanTestFunction", case, success, errInfo )
+
             table.insert( results, {
                 success = success,
                 case = case,
@@ -363,4 +365,6 @@ return function( testFiles )
     end
 
     logTestResults( results )
+
+    hook.Run( "GLuaTest_RanTestFiles", testFiles, results )
 end
