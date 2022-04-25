@@ -337,6 +337,8 @@ return function( testFiles )
         }
     end
 
+    hook.Run( "GLuaTest_StartedTestRun", testFiles )
+
     -- TODO: Make sure a test file can't return garbage data that makes this error
     for f = 1, fileCount do
         local test = testFiles[f]
@@ -344,6 +346,7 @@ return function( testFiles )
         local cases = test.cases
         local caseCount = #cases
 
+        hook.Run( "GLuaTest_RunningTestFile", test )
         logFileStart( fileName )
 
         for c = 1, caseCount do
@@ -354,7 +357,7 @@ return function( testFiles )
             local success, errInfo = xpcall( func, failCallback )
             setfenv( func, defaultEnv )
 
-            hook.Run( "GLuaTest_RanTestFunction", case, success, errInfo )
+            hook.Run( "GLuaTest_RanTestCase", test, case, success, errInfo )
 
             table.insert( results, {
                 success = success,
