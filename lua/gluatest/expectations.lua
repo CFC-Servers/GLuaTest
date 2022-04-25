@@ -2,7 +2,7 @@ local IsValid = IsValid
 local string_format = string.format
 
 local function reportFailure( suffix, subject, ... )
-    local fmt = "Expected %s " .. suffix
+    local fmt = "Expectation Failed: Expected %s " .. suffix
     local message = string_format( fmt, subject, ... )
 
     error( message )
