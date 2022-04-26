@@ -14,8 +14,26 @@ jobs:
         with:
           path: project
 
-      - name: "Check out GLuaTest"
-        uses: actions/checkout@v3
-        with:
-          repository: CFC-Servers/GLuaTest
-          path: gluatest
+      - name: "Set up output file"
+        run:
+          touch ./failures.json
+          touch "$GITHUB_WORKSPACE"/${{ inputs.server_cfg }}
+          touch "$GITHUB_WORKSPACE"/${{ inputs.server_requirements }}
+
+      - name: "Run GLuaTest"
+        run:
+          docker run  \
+            --tty \
+            --rm \
+            --stop-timeout 1 \
+            --name gluatest_runner \
+            --mount type=bind,source="$(pwd)"/failures.json,target=/home/steam/gmodserver/data/gluatest_failures.json \
+            --mount type=bind,source="$GITHUB_WORKSPACE"/${{ inputs.server_cfg }},target=/home/steam/gmodserver/custom_server.cfg:ro \
+            --mount type=bind,source="$GITHUB_WORKSPACE"/${{ inputs.requirements }},target=/home/steam/gmodserver/custom_requirements.cfg:ro \
+            ghcr.io/cfc-servers/gluatest
+
+      - name: "Check for errors"
+        run:
+          jq -c '.[]' ./failures.json | while read i; do
+          done
+

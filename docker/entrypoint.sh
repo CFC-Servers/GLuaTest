@@ -1,10 +1,12 @@
 #!/bin/bash
 
-gmodserver=/home/steam/gmodserver
-cat "$gmodserver/custom_requirements.txt" >> "$gmodserver/requirements.txt"
-cat "$gmodserver/custom_server.cfg" >> "$gmodserver/cfg/test.cfg"
+gmodroot=/home/steam/gmodserver
+server=/home/steam/gmodserver/garrysmod
+cat "$server"/cfg/test.cfg
+cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
+cat "$gmodroot/custom_server.cfg" >> "$server/cfg/test.cfg"
 
-cd "$gmodserver"/garrysmod/addons
+cd "$server"/addons
 function getCloneLine {
     python3 - <<-EOF
 line = "$1"
@@ -21,6 +23,8 @@ EOF
 
 while read p; do
     eval $(getCloneLine "$p")
-done <"$gmodserver"/requirements.txt
+done <"$gmodroot"/requirements.txt
+ls -alh
+pwd
 
-stdbuf -oL -eL timeout 2m "$gmodserver"/srcds_run_x64 -nodns -nohltv -systemtest -game garrysmod -ip 127.0.0.1 -port 27015 +clientport 27005 +gamemode sandbox +map gm_construct +servercfgfile test.cfg -maxplayers 12 -disableluarefresh
+stdbuf -oL -eL timeout 2m "$gmodroot"/srcds_run_x64 -nodns -nohltv -systemtest -condebug -fs_nopreloaddata -gl_enablesamplerobjects -high -hushasserts -insecure -leakcheck -nodttest -nomaster -nominidumps -nomouse -norebuildaudio -nouserclip -reuse -snoforceformat -threads 6 -game garrysmod -ip 127.0.0.1 -port 27015 +clientport 27005 +gamemode sandbox +map gm_construct +servercfgfile test.cfg -maxplayers 12 -disableluarefresh

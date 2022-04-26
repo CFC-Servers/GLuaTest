@@ -5,7 +5,7 @@ services:
     container_name: gluatest_runner
     build: .
     volumes:
-      - $FAILURE_OUTPUT:/home/steam/gmodserver/data/gluatest_failures.json
+      - $FAILURE_OUTPUT:/home/steam/gmodserver/data/gluatest_failures.json:rw
       - $REQUIREMENTS:/home/steam/gmodserver/custom_requirements.txt:ro
       - $CUSTOM_SERVER_CONFIG:/home/steam/gmodserver/custom_server.cfg:ro
 

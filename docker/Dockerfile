@@ -5,33 +5,34 @@ RUN apt update
 RUN apt install -y git python3-minimal
 RUN apt upgrade -y
 
-ARG gmodserver=/home/steam/gmodserver
+ARG gmodroot=/home/steam/gmodserver
+ARG server=/home/steam/gmodserver/garrysmod
 
 USER steam
-RUN ./steamcmd.sh +force_install_dir $gmodserver +login anonymous +app_update 4020 -beta x86-64 +quit
+RUN ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta x86-64 +quit
 
 # Initial server config
-RUN touch $gmodserver/custom_server.cfg
-RUN mkdir -pv $gmodserver/data/
-RUN touch $gmodserver/data/gluatest_failures.json
+RUN touch $gmodroot/custom_server.cfg
+RUN mkdir -pv $server/data/
+RUN touch $server/data/gluatest_failures.json
 
 USER root
 
 # Base Config
-COPY base_server.cfg $gmodserver/cfg/test.cfg
-RUN chown steam:steam $gmodserver/cfg/test.cfg
+COPY base_server.cfg $server/cfg/test.cfg
+RUN chown steam:steam $server/cfg/test.cfg
 
 # Base fixture addon
-COPY testfixture $gmodserver/addons/testfixture
-RUN chown -R steam:steam $gmodserver/addons/testfixture
+COPY testfixture $server/addons/testfixture
+RUN chown -R steam:steam $server/addons/testfixture
 
 # Base requirements
-COPY base_requirements.txt $gmodserver/requirements.txt
-RUN chown steam:steam $gmodserver/requirements.txt
+COPY base_requirements.txt $gmodroot/requirements.txt
+RUN chown steam:steam $gmodroot/requirements.txt
 
 # Entrypoint
-COPY entrypoint.sh $gmodserver/entrypoint.sh
-RUN chown steam:steam $gmodserver/entrypoint.sh
+COPY entrypoint.sh $gmodroot/entrypoint.sh
+RUN chown steam:steam $gmodroot/entrypoint.sh
 
 USER steam
 ENTRYPOINT ["/home/steam/gmodserver/entrypoint.sh"]
