@@ -1,7 +1,6 @@
 local failures = {}
 
 hook.Add( "GLuaTest_RanTestCase", "TestLog", function( _, _, success, errInfo )
-    PrintTable( errInfo )
     if not success then table.insert( failures, errInfo ) end
 end )
 
