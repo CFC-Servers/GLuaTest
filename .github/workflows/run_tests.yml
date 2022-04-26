@@ -17,7 +17,7 @@ on:
         default: "gluatest_requirements.txt"
 
 jobs:
-  obfuscate:
+  test:
     name: "Run tests"
     runs-on: ubuntu-18.04
 
@@ -46,7 +46,7 @@ jobs:
 
           exitstatus=$?
           if [ $exitstatus -ne 0 ]; then
-            echo "::error:: GLuaTest runner didn't exit successfully! Test results are not available."
+            echo "::error ::GLuaTest runner didn't exit successfully! Test results are not available."
             exit $exitstatus
           fi
 
