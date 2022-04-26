@@ -35,7 +35,7 @@ jobs:
 
       - name: "Run GLuaTest"
         run:
-          docker run  \
+          docker run \
             --tty \
             --rm \
             --stop-timeout 3 \
