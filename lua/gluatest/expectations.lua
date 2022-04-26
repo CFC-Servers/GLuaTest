@@ -15,6 +15,8 @@ local function expect( subject )
 
     return {
         to = {
+            -- TODO: Make a comparison table generator that returns this structure
+            --  Will allow us to alias beAn to beA, and will allow us to easily add the .not chain modifier
             eq = function( comparison )
                 if subject ~= comparison then
                     expected( "to equal '%s'", comparison )
@@ -27,21 +29,33 @@ local function expect( subject )
                 end
             end,
 
-            beValid = function ()
-                if not IsValid( subject ) then
-                    expected( "to be valid" )
-                end
-            end,
-
             beFalse = function()
                 if subject ~= false then
                     expected( "to be false" )
                 end
             end,
 
+            beValid = function()
+                if not IsValid( subject ) then
+                    expected( "to be valid" )
+                end
+            end,
+
             beNil = function()
                 if subject ~= nil then
                     expected( "to be nil" )
+                end
+            end,
+
+            beA = function( comparison )
+                if subject.__class ~= comparison then
+                    expected( "to be of type '%s'", comparison )
+                end
+            end,
+
+            beAn = function( comparison )
+                if subject.__class ~= comparison then
+                    expected( "to be of type '%s'", comparison )
                 end
             end
         }
