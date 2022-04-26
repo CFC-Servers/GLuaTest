@@ -2,10 +2,11 @@ version: "3.8"
 services:
   runner:
     image: ghcr.io/cfc-servers/gluatest
-    container_name: gluatest_runner
     build: .
+    container_name: gluatest_runner
+    stop_grace_period: 2s
     volumes:
-      - $FAILURE_OUTPUT:/home/steam/gmodserver/data/gluatest_failures.json:rw
+      - $FAILURE_OUTPUT:/home/steam/gmodserver/garrysmod/data/gluatest_failures.json:rw
       - $REQUIREMENTS:/home/steam/gmodserver/custom_requirements.txt:ro
       - $CUSTOM_SERVER_CONFIG:/home/steam/gmodserver/custom_server.cfg:ro
 

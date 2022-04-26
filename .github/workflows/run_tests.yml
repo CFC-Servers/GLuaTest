@@ -1,7 +1,20 @@
 name: GLuaTest Tester
 
+
 on:
   workflow_call:
+    inputs:
+      server-cfg:
+        type: string
+        required: false
+        description: "A path (relative to project directory) with extra server config options"
+        default: "gluatest_custom.cfg"
+
+      requirements:
+        type: string
+        required: false
+        description: "A path (relative to project directory) with a list of all requirements to test this project"
+        default: "gluatest_requirements.txt"
 
 jobs:
   obfuscate:
@@ -16,24 +29,31 @@ jobs:
 
       - name: "Set up output file"
         run:
-          touch ./failures.json
-          touch "$GITHUB_WORKSPACE"/${{ inputs.server_cfg }}
-          touch "$GITHUB_WORKSPACE"/${{ inputs.server_requirements }}
+          touch "$GITHUB_WORKSPACE"/failures.json
+          touch "$GITHUB_WORKSPACE"/project/${{ inputs.server_cfg }}
+          touch "$GITHUB_WORKSPACE"/project/${{ inputs.server_requirements }}
 
       - name: "Run GLuaTest"
         run:
           docker run  \
             --tty \
             --rm \
-            --stop-timeout 1 \
-            --name gluatest_runner \
-            --mount type=bind,source="$(pwd)"/failures.json,target=/home/steam/gmodserver/data/gluatest_failures.json \
+            --stop-timeout 3 \
+            --mount type=bind,source="$(pwd)"/failures.json,target=/home/steam/gmodserver/garrysmod/data/gluatest_failures.json:rw \
             --mount type=bind,source="$GITHUB_WORKSPACE"/${{ inputs.server_cfg }},target=/home/steam/gmodserver/custom_server.cfg:ro \
             --mount type=bind,source="$GITHUB_WORKSPACE"/${{ inputs.requirements }},target=/home/steam/gmodserver/custom_requirements.cfg:ro \
-            ghcr.io/cfc-servers/gluatest
+            ghcr.io/cfc-servers/gluatest:latest
 
-      - name: "Check for errors"
+          exitstatus=$?
+          if [ $exitstatus -ne 0 ]; then
+            echo "::error:: GLuaTest runner didn't exit successfully! Test results are not available."
+            exit $exitstatus
+          fi
+
+      - name: "Check and report errors"
         run:
-          jq -c '.[]' ./failures.json | while read i; do
+          jq -c '.[] | "file=\(.sourceFile),line=\(.lineNumber)::\(.reason)"' "$GITHUB_WORKSPACE/failures.json" | while read i; do
+              temp="${i%\"}"
+              message="${temp#\"}"
+              echo "::error $message"
           done
-

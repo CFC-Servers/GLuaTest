@@ -9,6 +9,7 @@ hook.Add( "GLuaTest_RanTestFiles", "TestComplete", function()
         file.Write( "gluatest_failures.json", util.TableToJSON( failures ) )
     end
 
-    print("Got GLuaTest finsihed callback, exiting")
-    engine.CloseServer()
+    print("Got GLuaTest TestComplete callback, exiting")
+    file.Write( "gluatest_clean_exit.txt", "true" )
+    timer.Simple( 1, engine.CloseServer )
 end )
