@@ -8,5 +8,5 @@ services:
       - $REQUIREMENTS:/home/steam/gmodserver/custom_requirements.txt:ro
       - $CUSTOM_SERVER_CONFIG:/home/steam/gmodserver/custom_server.cfg:ro
 
-    env:
-      .env
+    environment:
+      - .env

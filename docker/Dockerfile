@@ -12,6 +12,7 @@ RUN ./steamcmd.sh +force_install_dir $gmodserver +login anonymous +app_update 40
 
 # Initial server config
 RUN touch $gmodserver/custom_server.cfg
+RUN mkdir -pv $gmodserver/data/
 RUN touch $gmodserver/data/gluatest_failures.json
 
 USER root
@@ -21,7 +22,7 @@ COPY base_server.cfg $gmodserver/cfg/test.cfg
 RUN chown steam:steam $gmodserver/cfg/test.cfg
 
 # Base fixture addon
-COPY testfixure $gmodserver/addons/testfixture
+COPY testfixture $gmodserver/addons/testfixture
 RUN chown -R steam:steam $gmodserver/addons/testfixture
 
 # Base requirements
