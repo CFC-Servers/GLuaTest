@@ -30,8 +30,8 @@ jobs:
       - name: "Set up output file"
         run:
           touch "$GITHUB_WORKSPACE"/failures.json
-          touch "$GITHUB_WORKSPACE"/project/${{ inputs.server_cfg }}
-          touch "$GITHUB_WORKSPACE"/project/${{ inputs.server_requirements }}
+          touch "$GITHUB_WORKSPACE"/project/${{ inputs.server-cfg }}
+          touch "$GITHUB_WORKSPACE"/project/${{ inputs.requirements }}
 
       - name: "Run GLuaTest"
         run:
@@ -40,7 +40,7 @@ jobs:
             --rm \
             --stop-timeout 3 \
             --mount type=bind,source="$(pwd)"/failures.json,target=/home/steam/gmodserver/garrysmod/data/gluatest_failures.json:rw \
-            --mount type=bind,source="$GITHUB_WORKSPACE"/${{ inputs.server_cfg }},target=/home/steam/gmodserver/custom_server.cfg:ro \
+            --mount type=bind,source="$GITHUB_WORKSPACE"/${{ inputs.server-cfg }},target=/home/steam/gmodserver/custom_server.cfg:ro \
             --mount type=bind,source="$GITHUB_WORKSPACE"/${{ inputs.requirements }},target=/home/steam/gmodserver/custom_requirements.cfg:ro \
             ghcr.io/cfc-servers/gluatest:latest
 
