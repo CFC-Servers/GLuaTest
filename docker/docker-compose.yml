@@ -1,6 +1,7 @@
 version: "3.8"
 services:
   runner:
+    image: ghcr.io/cfc-servers/gluatest
     container_name: gluatest_runner
     build: .
     volumes:
