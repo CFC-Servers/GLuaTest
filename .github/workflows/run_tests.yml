@@ -42,7 +42,7 @@ jobs:
             --mount type=bind,source="$GITHUB_WORKSPACE"/failures.json,target=/home/steam/gmodserver/garrysmod/data/gluatest_failures.json \
             --mount type=bind,source="$GITHUB_WORKSPACE"/${{ inputs.server-cfg }},target=/home/steam/gmodserver/custom_server.cfg,readonly \
             --mount type=bind,source="$GITHUB_WORKSPACE"/${{ inputs.requirements }},target=/home/steam/gmodserver/custom_requirements.cfg,readonly \
-            ghcr.io/cfc-servers/gluatest:latest
+            ghcr.io/cfc-servers/gluatest
 
           exitstatus=$?
           if [ $exitstatus -ne 0 ]; then
