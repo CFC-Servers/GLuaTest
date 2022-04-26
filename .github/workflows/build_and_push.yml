@@ -9,6 +9,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+        with:
+          path: project
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
@@ -24,7 +28,9 @@ jobs:
 
       - name: Get the version
         id: get_version
-        run: echo ::set-output name=VERSION::$(git describe --abbrev=0 --tags `git rev-list --tags --max-count=1`)
+        run: |
+          cd $GITHUB_WORKSPACE/project
+          echo ::set-output name=VERSION::$(git describe --abbrev=0 --tags `git rev-list --tags --max-count=1`)
 
       - name: Lowercase repository name
         id: repository_name
