@@ -34,7 +34,7 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/GLuaTest:latest
-            ghcr.io/GLuaTest:${{ steps.get_version.outputs.VERSION }}
+            ghcr.io/gluatest:latest
+            ghcr.io/gluatest:${{ steps.get_version.outputs.VERSION }}
           secrets: |
             GIT_AUTH_TOKEN=${{ secrets.GH_TOKEN }}
