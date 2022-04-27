@@ -10,14 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          path: project
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
@@ -29,24 +21,37 @@ jobs:
       - name: Get the version
         id: get_version
         run: |
-          cd $GITHUB_WORKSPACE/project
+          cd $GITHUB_WORKSPACE
           echo ::set-output name=VERSION::$(git describe --abbrev=0 --tags `git rev-list --tags --max-count=1`)
 
-      - name: Lowercase repository name
-        id: repository_name
-        uses: ASzc/change-string-case-action@v1
-        with:
-          string: ${{ github.repository }}
+      - name: Get docker-slim
+        run: |
+          curl -L -o ds.tar.gz https://downloads.dockerslim.com/releases/1.37.6/dist_linux.tar.gz
+          tar -xvzf ds.tar.gz
+          mv dist_linux/* "$GITHUB_WORKSPACE"
+          rm -rfv ds.tar.gz dist_linux/
 
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          context: "{{defaultContext}}:docker"
-          file: ./Dockerfile
-          platforms: linux/amd64
-          push: true
-          tags: |
-            ghcr.io/${{ steps.repository_name.outputs.lowercase }}:latest
-            ghcr.io/${{ steps.repository_name.outputs.lowercase }}:${{ steps.get_version.outputs.VERSION }}
-          secrets: |
-            GIT_AUTH_TOKEN=${{ secrets.GH_TOKEN }}
+      - name: Build starter image
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          docker build -t gluatest_fat:latest .
+
+      - name: Make slim image
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          touch failures.json
+          touch custom_server.cfg
+          echo "CFC-Servers/gm_logger@lua" > /requirements.txt
+          echo "CFC-Servers/gm_time" >> /requirements.txt
+          docker-slim build \
+            --target gluatest_fat:latest \
+            --http-probe-off \
+            --dockerfile Dockerfile \
+            --dockerfile-context . \
+            --continue-after 15 \
+            --tag ghcr.io/cfc-servers/gluatest:latest \
+            --tag ghcr.io/cfc-servers/gluatest:${{ steps.get_version.outputs.VERSION }}
+
+      - name: Tag and push slim images
+        run: |
+          docker push ghcr.io/cfc-servers/gluatest --all-tags
