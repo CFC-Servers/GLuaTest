@@ -55,7 +55,7 @@ jobs:
 
       - name: Cache Docker images.
         id: latest-image
-        uses: CFC-Servers/docker-cache@0.1.3
+        uses: CFC-Servers/docker-cache@0.1.4
         with:
           key: gluatest-${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
 
