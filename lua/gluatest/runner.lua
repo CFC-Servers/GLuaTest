@@ -191,7 +191,7 @@ local function logCodeContext( errInfo )
     local divider = generateDivider( lines, reason )
 
     MsgC( colors.white, "    Context:", "\n" )
-    MsgC( colors.grey,  "      ", divider, "\n" )
+    MsgC( colors.grey,  "      ", divider )
     MsgC( colors.grey,  "     | ", "\n" )
 
     for i = 1, lineCount do
@@ -203,7 +203,7 @@ local function logCodeContext( errInfo )
         if onFailingLine then
             drawFailingLine( lineContent, lineNumStr, divider, reason )
         else
-            drawLine( lineContent, lineNumStr, divider)
+            drawLine( lineContent, lineNumStr )
             MsgC( "\n" )
         end
 
