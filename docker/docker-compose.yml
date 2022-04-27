@@ -6,9 +6,19 @@ services:
     container_name: gluatest_runner
     stop_grace_period: 2s
     volumes:
-      - $FAILURE_OUTPUT:/home/steam/gmodserver/garrysmod/data/gluatest_failures.json:rw
-      - $REQUIREMENTS:/home/steam/gmodserver/custom_requirements.txt:ro
-      - $CUSTOM_SERVER_CONFIG:/home/steam/gmodserver/custom_server.cfg:ro
+      - type: bind
+        source: $FAILURE_OUTPUT
+        target: /home/steam/gmodserver/garrysmod/data/gluatest_failures.json
+
+      - type: bind
+        source: $REQUIREMENTS
+        target: /home/steam/gmodserver/custom_requirements.txt
+        read_only: true
+
+      - type: bind
+        source: $CUSTOM_SERVER_CONFIG
+        target: /home/steam/gmodserver/custom_server.cfg
+        read_only: true
 
     environment:
       - .env
