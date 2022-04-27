@@ -42,10 +42,12 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
 
-          git clone --bare --depth 1 https://github.com/CFC-Servers/GLuaTest.git
-          cd ./GLuaTest.git
+          git clone --depth 1 https://github.com/CFC-Servers/GLuaTest.git gluatest
+          cd ./gluatest
+          cp docker/docker-compose.yml $GITHUB_WORKSPACE/docker-compose.yml
 
-          latest="$(git describe --tags --abbrev=0)"
+          git fetch --all
+          latest="$(git tag | tail -1)"
           echo "Latest Tag: $latest"
           echo "::set-output name=LATEST_TAG::$latest"
 
@@ -56,17 +58,6 @@ jobs:
         uses: ScribeMD/docker-cache@0.1.2
         with:
           key: gluatest-${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
-
-      - name: Cache latest compose file
-        id: latest-compose
-        uses: actions/cache@v3
-        with:
-          path: docker-compose.yml
-          key: latest-compose-${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
-
-      - name: Get latest Compose file
-        if: steps.latest-compose.outputs.cache-hit != 'true'
-        run: curl -LO https://raw.githubusercontent.com/CFC-Servers/GLuaTest/main/docker/docker-compose.yml
 
       - name: "Run GLuaTest"
         env:
