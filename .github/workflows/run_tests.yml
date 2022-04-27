@@ -46,6 +46,10 @@ jobs:
           PROJECT_DIR: "${{ github.workspace }}/project"
 
         run: |
+          echo "$FAILURE_OUTPUT"
+          echo "$REQUIREMENTS"
+          echo "$CUSTOM_SERVER_CONFIG"
+          echo "$PROJECT_DIR"
           curl -LO https://raw.githubusercontent.com/CFC-Servers/GLuaTest/main/docker/docker-compose.yml
           docker-compose pull
           docker-compose up --no-log-prefix
@@ -55,11 +59,3 @@ jobs:
             echo "::error ::GLuaTest runner didn't exit successfully! Test results are not available."
             exit $exitstatus
           fi
-
-      - name: "Check and report errors"
-        run: |
-          jq -c '.[] | "file=\(.sourceFile),line=\(.lineNumber)::\(.reason)"' $GITHUB_WORKSPACE/failures.json | while read i; do
-              temp="${i%\"}"
-              message="${temp#\"}"
-              echo "::error $message"
-          done
