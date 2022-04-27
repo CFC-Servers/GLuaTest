@@ -39,7 +39,8 @@ jobs:
       - name: "Run GLuaTest"
         run: |
           docker run \
-            --tty \
+            --attach STDOUT \
+            --attach STDERR \
             --rm \
             --stop-timeout 3 \
             --name gluatest_runner \
@@ -61,5 +62,4 @@ jobs:
               temp="${i%\"}"
               message="${temp#\"}"
               echo "::error $message"
-              hadfailures=1
           done
