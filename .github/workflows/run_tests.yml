@@ -29,14 +29,13 @@ jobs:
 
       - name: "Set up output files"
         run: |
-          echo "" > $GITHUB_WORKSPACE/failures.json
+          touch $GITHUB_WORKSPACE/failures.json
           chmod g+w $GITHUB_WORKSPACE/failures.json
+          chmod o+w $GITHUB_WORKSPACE/failures.json
+          ls -alh $GITHUB_WORKSPACE
 
           echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
           echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
-          ls -alh $GITHUB_WORKSPACE
-          echo ""
-          ls -alh $GITHUB_WORKSPACE/project
 
       - name: "Run GLuaTest"
         run: |
