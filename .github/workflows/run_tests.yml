@@ -40,8 +40,8 @@ jobs:
             --rm \
             --stop-timeout 3 \
             --mount type=bind,source="$GITHUB_WORKSPACE/failures.json",target="/home/steam/gmodserver/garrysmod/data/gluatest_failures.json" \
-            --mount type=bind,source="$GITHUB_WORKSPACE/${{ inputs.server-cfg }}",target="/home/steam/gmodserver/custom_server.cfg",readonly \
-            --mount type=bind,source="$GITHUB_WORKSPACE/${{ inputs.requirements }}",target="/home/steam/gmodserver/custom_requirements.cfg",readonly \
+            --mount type=bind,source="$GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}",target="/home/steam/gmodserver/custom_server.cfg",readonly \
+            --mount type=bind,source="$GITHUB_WORKSPACE/project/${{ inputs.requirements }}",target="/home/steam/gmodserver/custom_requirements.cfg",readonly \
             ghcr.io/cfc-servers/gluatest
 
           exitstatus=$?
