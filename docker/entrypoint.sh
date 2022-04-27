@@ -11,7 +11,6 @@ cd "$server"/addons
 function getCloneLine {
     python3 - <<-EOF
 line = "$1"
-print("Getting: " + line)
 spl = line.split("@")
 
 name = spl[0].split("/")[1].lower()
@@ -24,6 +23,7 @@ EOF
 }
 
 while read p; do
+    echo "$p"
     eval $(getCloneLine "$p")
 done <"$gmodroot"/requirements.txt
 

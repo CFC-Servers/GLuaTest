@@ -41,8 +41,7 @@ jobs:
           cd $GITHUB_WORKSPACE/docker
           touch fail.json
           touch custom.cfg
-          echo "CFC-Servers/gm_logger@lua" > ./reqs.txt
-          echo "CFC-Servers/gm_time" >> ./reqs.txt
+
           $GITHUB_WORKSPACE/docker-slim build \
             --target gluatest_fat:latest \
             --http-probe-off \
