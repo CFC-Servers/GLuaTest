@@ -27,7 +27,7 @@ jobs:
         with:
           path: project
 
-      - name: "Set up output file"
+      - name: "Set up output files"
         run: |
           touch "$GITHUB_WORKSPACE"/failures.json
           touch "$GITHUB_WORKSPACE"/project/${{ inputs.server-cfg }}
@@ -53,7 +53,9 @@ jobs:
 
       - name: "Check and report errors"
         run: |
+          cat "$GITHUB_WORKSPACE/failures.json"
           jq -c '.[] | "file=\(.sourceFile),line=\(.lineNumber)::\(.reason)"' "$GITHUB_WORKSPACE/failures.json" | while read i; do
+              echo "$i"
               temp="${i%\"}"
               message="${temp#\"}"
               echo "::error $message"
