@@ -67,7 +67,7 @@ jobs:
         uses: CFC-Servers/cache@v3.1.0
         with:
           key: gluatest-${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
-          path: ~/gluatest-image.tar.pz
+          path: ~/gluatest-image.tar.gz
 
       - name: Pull docker image
         if: steps.latest-image.outputs.cache-hit != 'true'
