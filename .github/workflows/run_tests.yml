@@ -29,9 +29,12 @@ jobs:
 
       - name: "Set up output files"
         run: |
-          touch "$GITHUB_WORKSPACE"/failures.json
-          touch "$GITHUB_WORKSPACE"/project/${{ inputs.server-cfg }}
-          touch "$GITHUB_WORKSPACE"/project/${{ inputs.requirements }}
+          echo "" > $GITHUB_WORKSPACE/failures.json
+          echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
+          echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
+          ls -alh $GITHUB_WORKSPACE
+          echo ""
+          ls -alh $GITHUB_WORKSPACE/project
 
       - name: "Run GLuaTest"
         run: |
@@ -53,8 +56,9 @@ jobs:
 
       - name: "Check and report errors"
         run: |
-          cat "$GITHUB_WORKSPACE/failures.json"
-          jq -c '.[] | "file=\(.sourceFile),line=\(.lineNumber)::\(.reason)"' "$GITHUB_WORKSPACE/failures.json" | while read i; do
+          ls -alh $GITHUB_WORKSPACE
+          cat $GITHUB_WORKSPACE/failures.json
+          jq -c '.[] | "file=\(.sourceFile),line=\(.lineNumber)::\(.reason)"' $GITHUB_WORKSPACE/failures.json | while read i; do
               echo "$i"
               temp="${i%\"}"
               message="${temp#\"}"
