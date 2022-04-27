@@ -49,8 +49,6 @@ jobs:
             --mount type=bind,source="$GITHUB_WORKSPACE/project",target="/home/steam/gmodserver/garrysmod/addons/project",readonly \
             ghcr.io/cfc-servers/gluatest
 
-          docker inspect gluatest_runner
-
           exitstatus=$?
           if [ $exitstatus -ne 0 ]; then
             echo "::error ::GLuaTest runner didn't exit successfully! Test results are not available."
