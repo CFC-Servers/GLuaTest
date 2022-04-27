@@ -62,11 +62,13 @@ jobs:
 
       - name: Pull docker image
         if: steps.latest-image.outputs.cache-hit != "true"
-        run: docker-compose pull
+        run: |
+          docker-compose pull
 
       - name: Restore docker image
         if: steps.latest-image.outputs.cache-hit == "true"
-        run: docker load --input $GITHUB_WORKSPACE/.docker-images.tar
+        run: |
+          docker load --input $GITHUB_WORKSPACE/.docker-images.tar
 
       - name: "Run GLuaTest"
         env:
@@ -92,4 +94,5 @@ jobs:
 
       - name: Save built image
         if: steps.latest-image.outputs.cache-hit != "true"
-        run: docker save --output $GITHUB_WORKSPACE/.docker-images.tar ghcr.io/cfc-servers/gluatest:${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
+        run: |
+          docker save --output $GITHUB_WORKSPACE/.docker-images.tar ghcr.io/cfc-servers/gluatest:${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
