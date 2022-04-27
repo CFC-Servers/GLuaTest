@@ -46,8 +46,7 @@ jobs:
           cd ./gluatest
           cp docker/docker-compose.yml $GITHUB_WORKSPACE/docker-compose.yml
 
-          git fetch --tags
-          git --no-pager tag
+          git fetch --quiet --tags
           latest="$(git tag | tail -1)"
           echo "Latest Tag: $latest"
           echo "::set-output name=LATEST_TAG::$latest"
@@ -56,7 +55,7 @@ jobs:
 
       - name: Cache Docker images.
         id: latest-image
-        uses: ScribeMD/docker-cache@0.1.2
+        uses: CFC-Servers/docker-cache@0.1.2
         with:
           key: gluatest-${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
 
