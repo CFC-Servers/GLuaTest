@@ -55,9 +55,18 @@ jobs:
 
       - name: Cache Docker images.
         id: latest-image
-        uses: CFC-Servers/docker-cache@0.2
+        uses: actions/cache@v3
         with:
           key: gluatest-${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
+          path: $GITHUB_WORKSPACE/.docker-images.tar
+
+      - name: Pull docker image
+        if: steps.latest-image.outputs.cache-hit != "true"
+        run: docker-compose pull
+
+      - name: Restore docker image
+        if: steps.latest-image.outputs.cache-hit == "true"
+        run: docker load --input $GITHUB_WORKSPACE/.docker-images.tar
 
       - name: "Run GLuaTest"
         env:
@@ -80,3 +89,7 @@ jobs:
           if [ -s "$FAILURE_OUTPUT" ]; then
             exit 1
           fi
+
+      - name: Save built image
+        if: steps.latest-image.outputs.cache-hit != "true"
+        run: docker save --output $GITHUB_WORKSPACE/.docker-images.tar ghcr.io/cfc-servers/gluatest:${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
