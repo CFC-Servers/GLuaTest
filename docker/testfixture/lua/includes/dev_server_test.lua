@@ -4,7 +4,7 @@ local string_Split = string.Split
 local string_format = string.format
 
 local failures = {}
-local ghOutput = CreateConVar( "gluatest_github_output", true, FCVAR_ARCHIVE, "", 0, 1 )
+local ghOutput = CreateConVar( "gluatest_github_output", "1", FCVAR_ARCHIVE, "", 0, 1 )
 
 local function cleanSource( fileName )
     local spl = string_Split( fileName, "/" )
