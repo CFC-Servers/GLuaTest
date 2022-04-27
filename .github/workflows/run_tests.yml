@@ -46,7 +46,8 @@ jobs:
           cd ./gluatest
           cp docker/docker-compose.yml $GITHUB_WORKSPACE/docker-compose.yml
 
-          git fetch --all
+          git fetch --tags
+          git --no-pager tag
           latest="$(git tag | tail -1)"
           echo "Latest Tag: $latest"
           echo "::set-output name=LATEST_TAG::$latest"
