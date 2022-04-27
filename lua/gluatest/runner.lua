@@ -33,7 +33,7 @@ local MsgC = function( ... )
 
     if string.EndsWith( line, "\n" ) then
         -- Strip newline
-        line = string.Left( line, #line - 3 )
+        line = string.Left( line, #line - 2 )
 
         -- Put an endcolor before the newline
         line = line .. endColor .. "\n"
