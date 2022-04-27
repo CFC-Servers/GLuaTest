@@ -39,10 +39,10 @@ jobs:
       - name: Make slim image
         run: |
           cd "$GITHUB_WORKSPACE/docker"
-          touch failures.json
-          touch custom_server.cfg
-          echo "CFC-Servers/gm_logger@lua" > /requirements.txt
-          echo "CFC-Servers/gm_time" >> /requirements.txt
+          touch fail.json
+          touch custom.cfg
+          echo "CFC-Servers/gm_logger@lua" > ./reqs.txt
+          echo "CFC-Servers/gm_time" >> ./reqs.txt
           docker-slim build \
             --target gluatest_fat:latest \
             --http-probe-off \
