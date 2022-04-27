@@ -37,8 +37,34 @@ jobs:
           echo "gluatest_github_output 1" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
           echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
 
-      - name: "Run GLuaTest"
+      - name: Get latest GLuaTest version
+        id: latest-tag-getter
+        run: |
+          cd $GITHUB_WORKSPACE
+          git clone --bare --depth 1 https://github.com/CFC-Servers/GLuaTest.git
+          cd ./GLuaTest.git
+          latest="$(git --no-pager tag)"
+          echo '::set-output name=LATEST_TAG::$latest'
+          cd $GITHUB_WORKSPACE
 
+      - name: Cache Docker images.
+        id: latest-image
+        uses: ScribeMD/docker-cache@0.1.2
+        with:
+          key: gluatest-${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
+
+      - name: Cache latest compose file
+        id: latest-compose
+        uses: actions/cache@v3
+        with:
+          path: docker-compose.yml
+          key: latest-compose-${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
+
+      - name: Get latest Compose file
+        if: steps.latest-compose.outputs.cache-hit != 'true'
+        run: curl -LO https://raw.githubusercontent.com/CFC-Servers/GLuaTest/main/docker/docker-compose.yml
+
+      - name: "Run GLuaTest"
         env:
           FAILURE_OUTPUT: "${{ github.workspace }}/failures.json"
           REQUIREMENTS: "${{ github.workspace }}/project/${{ inputs.requirements }}"
@@ -46,7 +72,7 @@ jobs:
           PROJECT_DIR: "${{ github.workspace }}/project"
 
         run: |
-          curl -LO https://raw.githubusercontent.com/CFC-Servers/GLuaTest/main/docker/docker-compose.yml
+          echo "Using cached GLuaTest image: ${{ steps.latest-image.outputs.cache-hit }}"
           docker-compose pull
           docker-compose up --no-log-prefix
 
