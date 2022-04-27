@@ -33,7 +33,7 @@ jobs:
           chmod g+w $GITHUB_WORKSPACE/failures.json
           chmod o+w $GITHUB_WORKSPACE/failures.json
 
-          echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
+          echo "gluatest_github_output 1" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
           echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
 
       - name: "Run GLuaTest"
@@ -55,16 +55,16 @@ jobs:
             exit $exitstatus
           fi
 
-      - name: "Check and report errors"
-        run: |
-          jq -c '.[] | "file=\(.sourceFile),line=\(.lineNumber)::\(.reason)"' $GITHUB_WORKSPACE/failures.json | while read i; do
-              temp="${i%\"}"
-              message="${temp#\"}"
-              echo "::error $message"
-              hadfailures=1
-          done
+          #- name: "Check and report errors"
+          #  run: |
+          #    jq -c '.[] | "file=\(.sourceFile),line=\(.lineNumber)::\(.reason)"' $GITHUB_WORKSPACE/failures.json | while read i; do
+          #        temp="${i%\"}"
+          #        message="${temp#\"}"
+          #        echo "::error $message"
+          #        hadfailures=1
+          #    done
 
-          if [ -s $GITHUB_WORKSPACE/failures.json ]; then
-            echo "::error ::Test failures detected!"
-            exit 1
-          fi
+          #    if [ -s $GITHUB_WORKSPACE/failures.json ]; then
+          #      echo "::error ::Test failures detected!"
+          #      exit 1
+          #    fi
