@@ -30,6 +30,8 @@ jobs:
       - name: "Set up output files"
         run: |
           echo "" > $GITHUB_WORKSPACE/failures.json
+          chmod g+w $GITHUB_WORKSPACE/failures.json
+
           echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
           echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
           ls -alh $GITHUB_WORKSPACE
