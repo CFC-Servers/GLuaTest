@@ -234,8 +234,7 @@ local function logLocals( errInfo )
     MsgC( "\n" )
 end
 
-local function logFailedTest( result )
-    local errInfo = result.errInfo
+local function logFailedTest( errInfo )
     local sourceFile = errInfo.sourceFile
 
     MsgC( colors.white, "    File:", "\n" )
@@ -254,6 +253,7 @@ local function logTestResults( results )
         local result = results[i]
         local case = result.case
         local success = result.success
+        local errInfo = result.errInfo
 
         if success then
             prefixLog( colors.green, "PASS " )
@@ -264,8 +264,10 @@ local function logTestResults( results )
         MsgC( colors.grey, "[", case.name, "]", "\n" )
 
         if not success then
-            logFailedTest( result )
+            logFailedTest( errInfo )
         end
+
+        hook.Run( "GLuaTest_LoggedTestResult", success, result, case, errInfo )
     end
 end
 
