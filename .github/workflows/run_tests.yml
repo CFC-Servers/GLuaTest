@@ -41,11 +41,14 @@ jobs:
         id: latest-tag-getter
         run: |
           cd $GITHUB_WORKSPACE
+
           git clone --bare --depth 1 https://github.com/CFC-Servers/GLuaTest.git
           cd ./GLuaTest.git
-          latest="$(git --no-pager tag)"
+
+          latest="$(git describe --tags --abbrev=0)"
           echo "Latest Tag: $latest"
           echo "::set-output name=LATEST_TAG::$latest"
+
           cd $GITHUB_WORKSPACE
 
       - name: Cache Docker images.
