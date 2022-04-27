@@ -44,7 +44,8 @@ jobs:
           git clone --bare --depth 1 https://github.com/CFC-Servers/GLuaTest.git
           cd ./GLuaTest.git
           latest="$(git --no-pager tag)"
-          echo '::set-output name=LATEST_TAG::$latest'
+          echo "Latest Tag: $latest"
+          echo "::set-output name=LATEST_TAG::$latest"
           cd $GITHUB_WORKSPACE
 
       - name: Cache Docker images.
