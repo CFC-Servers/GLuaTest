@@ -34,7 +34,7 @@ jobs:
           tar -xvzf pigz.tar.gz
           cd pigz
           make
-          mv pigz $GITHUB_WORKSPACE
+          mv pigz ~/pigz
 
       - name: Set up output files
         run: |
@@ -77,7 +77,7 @@ jobs:
       - name: Restore docker image
         if: steps.latest-image.outputs.cache-hit == 'true'
         run: |
-          $GITHUB_WORKSPACE/pigz -dc ~/gluatest-image.tar.gz | tar xf - | docker load
+          ~/pigz -dc ~/gluatest-image.tar.gz | tar xf - | docker load
 
       - name: "Run GLuaTest"
         env:
@@ -103,4 +103,4 @@ jobs:
       - name: Save built image
         if: always() && steps.latest-image.outputs.cache-hit != 'true'
         run: |
-          docker save ghcr.io/cfc-servers/gluatest:latest | $GITHUB_WORKSPACE/pigz > ~/gluatest-image.tar.gz
+          docker save ghcr.io/cfc-servers/gluatest:latest | ~/pigz > ~/gluatest-image.tar.gz
