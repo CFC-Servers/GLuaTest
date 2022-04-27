@@ -21,7 +21,7 @@ local function colorToAnsi( col )
 end
 
 local MsgC = function( ... )
-    local line = endColor
+    local line = ""
 
     for _, t in ipairs( {...} ) do
         if IsColor( t ) then
