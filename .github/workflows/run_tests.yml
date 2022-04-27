@@ -28,14 +28,6 @@ jobs:
         with:
           path: project
 
-      - name: Get Pigz
-        run: |
-          curl -LO https://zlib.net/pigz/pigz.tar.gz
-          tar -xvzf pigz.tar.gz
-          cd pigz
-          make
-          mv pigz ~/pigz
-
       - name: Set up output files
         run: |
           cd $GITHUB_WORKSPACE
@@ -46,39 +38,6 @@ jobs:
           echo "gluatest_github_output 1" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
           echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
 
-      - name: Get latest GLuaTest version
-        id: latest-tag-getter
-        run: |
-          cd $GITHUB_WORKSPACE
-
-          git clone --depth 1 https://github.com/CFC-Servers/GLuaTest.git gluatest
-          cd ./gluatest
-          cp docker/docker-compose.yml $GITHUB_WORKSPACE/docker-compose.yml
-
-          git fetch --quiet --tags
-          latest="$(git tag | tail -1)"
-          echo "Latest Tag: $latest"
-          echo "::set-output name=LATEST_TAG::$latest"
-
-          cd $GITHUB_WORKSPACE
-
-      - name: Cache Docker images.
-        id: latest-image
-        uses: CFC-Servers/cache@v3.1.0
-        with:
-          key: gluatest-${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
-          path: ~/gluatest-image.tar.gz
-
-      - name: Pull docker image
-        if: steps.latest-image.outputs.cache-hit != 'true'
-        run: |
-          docker-compose pull
-
-      - name: Restore docker image
-        if: steps.latest-image.outputs.cache-hit == 'true'
-        run: |
-          ~/pigz -dc ~/gluatest-image.tar.gz | tar xf - | docker load
-
       - name: "Run GLuaTest"
         env:
           FAILURE_OUTPUT: "${{ github.workspace }}/failures.json"
@@ -87,7 +46,8 @@ jobs:
           PROJECT_DIR: "${{ github.workspace }}/project"
 
         run: |
-          echo "Using cached GLuaTest image: ${{ steps.latest-image.outputs.cache-hit }}"
+          curl -LO https://raw.githubusercontent.com/CFC-Servers/GLuaTest/main/docker/docker-compose.yml
+          docker-compose pull
           docker-compose up --no-log-prefix
 
           exitstatus=$?
@@ -99,8 +59,3 @@ jobs:
           if [ -s "$FAILURE_OUTPUT" ]; then
             exit 1
           fi
-
-      - name: Save built image
-        if: always() && steps.latest-image.outputs.cache-hit != 'true'
-        run: |
-          docker save ghcr.io/cfc-servers/gluatest:latest | ~/pigz > ~/gluatest-image.tar.gz
