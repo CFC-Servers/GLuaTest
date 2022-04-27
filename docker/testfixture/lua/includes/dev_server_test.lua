@@ -28,6 +28,7 @@ end )
 hook.Add( "GLuaTest_RanTestFiles", "TestComplete", function()
     if #failures > 0 then
         print( "Test failures detected, writing to log.." )
+        PrintTable( failures )
         file.Write( "gluatest_failures.json", util.TableToJSON( failures ) )
     end
 
