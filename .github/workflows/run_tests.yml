@@ -35,7 +35,7 @@ jobs:
           chmod o+w $GITHUB_WORKSPACE/failures.json
 
           echo "gluatest_github_output 1" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
-          echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
+          echo "CFC-Servers/gm_time" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
 
       - name: "Run GLuaTest"
 
