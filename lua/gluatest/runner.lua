@@ -261,13 +261,15 @@ local function logTestResults( results )
             prefixLog( colors.red, "FAIL " )
         end
 
-        MsgC( colors.grey, "[", case.name, "]", "\n" )
+        MsgC( colors.grey, "[", case.name, "]" )
 
         if not success then
+            MsgC( "\n" )
             logFailedTest( errInfo )
         end
 
         hook.Run( "GLuaTest_LoggedTestResult", success, result, case, errInfo )
+        MsgC( "\n" )
     end
 end
 
