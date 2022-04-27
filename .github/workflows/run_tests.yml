@@ -35,7 +35,7 @@ jobs:
           chmod o+w $GITHUB_WORKSPACE/failures.json
 
           echo "gluatest_github_output 1" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
-          echo "CFC-Servers/gm_time" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
+          echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
 
       - name: "Run GLuaTest"
 
@@ -58,4 +58,8 @@ jobs:
           if [ $exitstatus -ne 0 ]; then
             echo "::error ::GLuaTest runner didn't exit successfully! Test results are not available."
             exit $exitstatus
+          fi
+
+          if [ -s "$FAILURE_OUTPUT" ]; then
+            exit 1
           fi
