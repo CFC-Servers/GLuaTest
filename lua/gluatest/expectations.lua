@@ -8,58 +8,53 @@ local function reportFailure( suffix, subject, ... )
     error( message )
 end
 
-local function expect( subject )
+local function makeExpectations( subject )
+    local expectations = {}
+
     local function expected( suffix, ... )
         reportFailure( suffix, subject, ... )
     end
 
-    return {
-        to = {
-            -- TODO: Make a comparison table generator that returns this structure
-            --  Will allow us to alias beAn to beA, and will allow us to easily add the .not chain modifier
-            eq = function( comparison )
-                if subject ~= comparison then
-                    expected( "to equal '%s'", comparison )
-                end
-            end,
+    function expectations.eq( comparison )
+        if subject ~= comparison then
+            expected( "to equal '%s'", comparison )
+        end
+    end
 
-            beTrue = function()
-                if subject ~= true then
-                    expected( "to be true" )
-                end
-            end,
+    function expectations.beTrue()
+        if subject ~= true then
+            expected( "to be true" )
+        end
+    end
 
-            beFalse = function()
-                if subject ~= false then
-                    expected( "to be false" )
-                end
-            end,
+    function expectations.beFalse()
+        if subject ~= false then
+            expected( "to be false" )
+        end
+    end
 
-            beValid = function()
-                if not IsValid( subject ) then
-                    expected( "to be valid" )
-                end
-            end,
+    function expectations.beValid()
+        if not IsValid( subject ) then
+            expected( "to be valid" )
+        end
+    end
 
-            beNil = function()
-                if subject ~= nil then
-                    expected( "to be nil" )
-                end
-            end,
+    function expectations.beNil()
+        if subject ~= nil then
+            expected( "to be nil" )
+        end
+    end
 
-            beA = function( comparison )
-                if subject.__class ~= comparison then
-                    expected( "to be of type '%s'", comparison )
-                end
-            end,
+    function expectations.beA( comparison )
+        if subject.__class ~= comparison then
+            expected( "to be of type '%s'", comparison )
+        end
+    end
+    expectations.beAn = expectations.beA
+end
 
-            beAn = function( comparison )
-                if subject.__class ~= comparison then
-                    expected( "to be of type '%s'", comparison )
-                end
-            end
-        }
-    }
+local function expect( subject )
+    return { to = makeExpectations( subject ) }
 end
 
 return expect
