@@ -37,18 +37,14 @@ jobs:
           echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
 
       - name: "Run GLuaTest"
+        env:
+          FAILURE_OUTPUT="$GITHUB_WORKSPACE"/failures.json
+          REQUIREMENTS="$GITHUB_WORKSPACE"/project/${{ inputs.requirements }}
+          CUSTOM_SERVER_CONFIG="$GITHUB_WORKSPACE"/project/${{ inputs.server-cfg }}
         run: |
-          docker run \
-            --attach STDOUT \
-            --attach STDERR \
-            --rm \
-            --stop-timeout 3 \
-            --name gluatest_runner \
-            --mount type=bind,source="$GITHUB_WORKSPACE/failures.json",target="/home/steam/gmodserver/garrysmod/data/gluatest_failures.json" \
-            --mount type=bind,source="$GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}",target="/home/steam/gmodserver/custom_server.cfg",readonly \
-            --mount type=bind,source="$GITHUB_WORKSPACE/project/${{ inputs.requirements }}",target="/home/steam/gmodserver/custom_requirements.txt",readonly \
-            --mount type=bind,source="$GITHUB_WORKSPACE/project",target="/home/steam/gmodserver/garrysmod/addons/project",readonly \
-            ghcr.io/cfc-servers/gluatest
+          curl -LO https://raw.githubusercontent.com/CFC-Servers/GLuaTest/main/docker/docker-compose.yml
+          docker-compose pull
+          docker-compose up --no-log-prefix
 
           exitstatus=$?
           if [ $exitstatus -ne 0 ]; then
