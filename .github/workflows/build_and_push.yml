@@ -28,22 +28,22 @@ jobs:
         run: |
           curl -L -o ds.tar.gz https://downloads.dockerslim.com/releases/1.37.6/dist_linux.tar.gz
           tar -xvzf ds.tar.gz
-          mv dist_linux/* "$GITHUB_WORKSPACE"
+          mv dist_linux/* $GITHUB_WORKSPACE
           rm -rfv ds.tar.gz dist_linux/
 
       - name: Build starter image
         run: |
-          cd "$GITHUB_WORKSPACE/docker"
+          cd $GITHUB_WORKSPACE/docker
           docker build -t gluatest_fat:latest .
 
       - name: Make slim image
         run: |
-          cd "$GITHUB_WORKSPACE/docker"
+          cd $GITHUB_WORKSPACE/docker
           touch fail.json
           touch custom.cfg
           echo "CFC-Servers/gm_logger@lua" > ./reqs.txt
           echo "CFC-Servers/gm_time" >> ./reqs.txt
-          docker-slim build \
+          $GITHUB_WORKSPACE/docker-slim build \
             --target gluatest_fat:latest \
             --http-probe-off \
             --dockerfile Dockerfile \
