@@ -17,7 +17,7 @@ local function cleanSource( fileName )
     return spl
 end
 
-hook.Add( "GLuaTest_RanTestCase", "TestLog", function( _, _, success, errInfo )
+hook.Add( "GLuaTest_LoggedTestResult", "TestLog", function( success, _, _, errInfo )
     if success then return end
     local failInfo = {
         reason = errInfo.reason,
@@ -26,9 +26,7 @@ hook.Add( "GLuaTest_RanTestCase", "TestLog", function( _, _, success, errInfo )
     }
     table_insert( failures, failInfo )
 
-    -- TODO: Clean this up
-    print( ghOutput:GetBool() )
-    if ghOutput:GetBool() or true then
+    if ghOutput:GetBool() then
         local fi = failInfo
         local str = "::error file=%s,line=%s::%s"
         print( string_format( str, fi.sourceFile, fi.lineNumber, fi.reason ) )
