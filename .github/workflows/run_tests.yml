@@ -60,13 +60,17 @@ jobs:
         with:
           key: gluatest-${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
           path: |
-            /var/lib/docker/image
-            /var/lib/docker/overlay2
+            ~/dockersave
 
       - name: Pull docker image
         if: steps.latest-image.outputs.cache-hit != 'true'
         run: |
           time docker-compose pull
+
+      - name: Restore docker image
+        if: steps.latest-image.outputs.cache-hit == 'true'
+        run: |
+          sudo cp -R ~/dockersave/* /var/lib/docker/
 
       - name: "Run GLuaTest"
         env:
@@ -88,3 +92,9 @@ jobs:
           if [ -s "$FAILURE_OUTPUT" ]; then
             exit 1
           fi
+
+      - name: Save built image
+        if: always() && steps.latest-image.outputs.cache-hit != 'true'
+        run: |
+          sudo cp -R /var/lib/docker/image ~/dockersave/
+          sudo cp -R /var/lib/docker/overlay2 ~/dockersave/
