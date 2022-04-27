@@ -33,12 +33,12 @@ jobs:
 
       - name: Build starter image
         run: |
-          cd "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE/docker"
           docker build -t gluatest_fat:latest .
 
       - name: Make slim image
         run: |
-          cd "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE/docker"
           touch failures.json
           touch custom_server.cfg
           echo "CFC-Servers/gm_logger@lua" > /requirements.txt
