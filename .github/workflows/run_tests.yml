@@ -59,17 +59,14 @@ jobs:
         uses: CFC-Servers/cache@v3.1.0
         with:
           key: gluatest-${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
-          path: ~/gluatest-image.store
+          path: |
+            /var/lib/docker/image
+            /var/lib/docker/overlay2
 
       - name: Pull docker image
         if: steps.latest-image.outputs.cache-hit != 'true'
         run: |
           time docker-compose pull
-
-      - name: Restore docker image
-        if: steps.latest-image.outputs.cache-hit == 'true'
-        run: |
-          time cat ~/gluatest-image.store | docker load
 
       - name: "Run GLuaTest"
         env:
@@ -91,9 +88,3 @@ jobs:
           if [ -s "$FAILURE_OUTPUT" ]; then
             exit 1
           fi
-
-      - name: Save built image
-        if: always() && steps.latest-image.outputs.cache-hit != 'true'
-        run: |
-          time docker save ghcr.io/cfc-servers/gluatest:latest > ~/gluatest-image.store
-
