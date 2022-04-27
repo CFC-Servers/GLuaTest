@@ -31,46 +31,9 @@ jobs:
       - name: Set up output files
         run: |
           cd $GITHUB_WORKSPACE
-          touch $GITHUB_WORKSPACE/failures.json
-          chmod g+w $GITHUB_WORKSPACE/failures.json
-          chmod o+w $GITHUB_WORKSPACE/failures.json
-
-          echo "gluatest_github_output 1" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
           echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
-
-      - name: Get latest GLuaTest version
-        id: latest-tag-getter
-        run: |
-          cd $GITHUB_WORKSPACE
-
-          git clone --depth 1 https://github.com/CFC-Servers/GLuaTest.git gluatest
-          cd ./gluatest
-          cp docker/docker-compose.yml $GITHUB_WORKSPACE/docker-compose.yml
-
-          git fetch --quiet --tags
-          latest="$(git tag | tail -1)"
-          echo "Latest Tag: $latest"
-          echo "::set-output name=LATEST_TAG::$latest"
-
-          cd $GITHUB_WORKSPACE
-
-      - name: Cache Docker images.
-        id: latest-image
-        uses: CFC-Servers/cache@v3.1.0
-        with:
-          key: gluatest-${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
-          path: |
-            ~/dockersave
-
-      - name: Pull docker image
-        if: steps.latest-image.outputs.cache-hit != 'true'
-        run: |
-          time docker-compose pull
-
-      - name: Restore docker image
-        if: steps.latest-image.outputs.cache-hit == 'true'
-        run: |
-          sudo cp -R ~/dockersave/* /var/lib/docker/
+          echo "gluatest_github_output 1" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
+          echo "gluatest_json_output 0" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
 
       - name: "Run GLuaTest"
         env:
@@ -80,7 +43,7 @@ jobs:
           PROJECT_DIR: "${{ github.workspace }}/project"
 
         run: |
-          echo "Using cached GLuaTest image: ${{ steps.latest-image.outputs.cache-hit }}"
+          docker-compose pull
           docker-compose up --no-log-prefix
 
           exitstatus=$?
@@ -92,9 +55,3 @@ jobs:
           if [ -s "$FAILURE_OUTPUT" ]; then
             exit 1
           fi
-
-      - name: Save built image
-        if: always() && steps.latest-image.outputs.cache-hit != 'true'
-        run: |
-          sudo cp -R /var/lib/docker/image ~/dockersave/
-          sudo cp -R /var/lib/docker/overlay2 ~/dockersave/
