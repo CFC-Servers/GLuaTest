@@ -28,13 +28,13 @@ jobs:
           path: project
 
       - name: "Set up output file"
-        run:
+        run: |
           touch "$GITHUB_WORKSPACE"/failures.json
           touch "$GITHUB_WORKSPACE"/project/${{ inputs.server-cfg }}
           touch "$GITHUB_WORKSPACE"/project/${{ inputs.requirements }}
 
       - name: "Run GLuaTest"
-        run:
+        run: |
           docker run \
             --tty \
             --rm \
@@ -51,7 +51,7 @@ jobs:
           fi
 
       - name: "Check and report errors"
-        run:
+        run: |
           jq -c '.[] | "file=\(.sourceFile),line=\(.lineNumber)::\(.reason)"' "$GITHUB_WORKSPACE/failures.json" | while read i; do
               temp="${i%\"}"
               message="${temp#\"}"
