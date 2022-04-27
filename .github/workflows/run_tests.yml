@@ -60,8 +60,13 @@ jobs:
           key: gluatest-${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
           path: $GITHUB_WORKSPACE/.docker-images.tar
 
+      - name: Pull docker image
+        if: steps.latest-image.outputs.cache-hit != 'true'
+        run: |
+          docker-compose pull
+
       - name: Restore docker image
-        if: ${{ steps.latest-image.outputs.cache-hit == "true" }}
+        if: steps.latest-image.outputs.cache-hit == 'true'
         run: |
           docker load --input $GITHUB_WORKSPACE/.docker-images.tar
 
@@ -74,7 +79,6 @@ jobs:
 
         run: |
           echo "Using cached GLuaTest image: ${{ steps.latest-image.outputs.cache-hit }}"
-          docker-compose pull
           docker-compose up --no-log-prefix
 
           exitstatus=$?
@@ -88,6 +92,6 @@ jobs:
           fi
 
       - name: Save built image
-        if: ${{ steps.latest-image.outputs.cache-hit != "true" }}
+        if: steps.latest-image.outputs.cache-hit != 'true'
         run: |
           docker save --output $GITHUB_WORKSPACE/.docker-images.tar ghcr.io/cfc-servers/gluatest:${{ steps.latest-tag-getter.outputs.LATEST_TAG }}
