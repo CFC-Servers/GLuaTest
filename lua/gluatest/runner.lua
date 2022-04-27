@@ -242,8 +242,6 @@ local function logFailedTest( errInfo )
 
     logLocals( errInfo )
     logCodeContext( errInfo )
-
-    MsgC( "\n" )
 end
 
 local function logTestResults( results )
