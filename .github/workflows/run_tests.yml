@@ -32,7 +32,6 @@ jobs:
           touch $GITHUB_WORKSPACE/failures.json
           chmod g+w $GITHUB_WORKSPACE/failures.json
           chmod o+w $GITHUB_WORKSPACE/failures.json
-          ls -alh $GITHUB_WORKSPACE
 
           echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
           echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
@@ -58,11 +57,14 @@ jobs:
 
       - name: "Check and report errors"
         run: |
-          ls -alh $GITHUB_WORKSPACE
-          cat $GITHUB_WORKSPACE/failures.json
           jq -c '.[] | "file=\(.sourceFile),line=\(.lineNumber)::\(.reason)"' $GITHUB_WORKSPACE/failures.json | while read i; do
-              echo "$i"
               temp="${i%\"}"
               message="${temp#\"}"
               echo "::error $message"
+              hadfailures=1
           done
+
+          if [ -s $GITHUB_WORKSPACE/failures.json ]; then
+            echo "::error ::Test failures detected!"
+            exit 1
+          fi
