@@ -31,13 +31,7 @@ local MsgC = function( ... )
         end
     end
 
-    if string.EndsWith( line, "\n" ) then
-        -- Strip newline
-        line = string.Left( line, #line - 2 )
-
-        -- Put an endcolor before the newline
-        line = line .. endColor .. "\n"
-    end
+    line = string.Replace( line, "\n", endColor .. "\n" )
 
     return _MsgC( line )
 end
