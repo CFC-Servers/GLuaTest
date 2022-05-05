@@ -268,14 +268,15 @@ local function logTestResults( results )
     end
 end
 
+local expect = include( "gluatest/expectations.lua" )
+
 return function( testFiles )
     local results = {}
-    local fileCount = #testFiles
 
     local defaultEnv = getfenv( 1 )
     local testEnv = setmetatable(
         {
-            expect = include( "gluatest/expectations.lua" ),
+            expect = expect,
             _R = _R
         },
         { __index = _G }
@@ -338,9 +339,10 @@ return function( testFiles )
 
     hook.Run( "GLuaTest_StartedTestRun", testFiles )
 
-    -- TODO: Make sure a test file can't return garbage data that makes this error
-    for f = 1, fileCount do
-        local test = testFiles[f]
+    local function runNextTest( tests )
+        local test = table.remove( tests )
+        if not test then return end
+
         local fileName = test.fileName
         local cases = test.cases
         local caseCount = #cases
@@ -348,24 +350,82 @@ return function( testFiles )
         hook.Run( "GLuaTest_RunningTestFile", test )
         logFileStart( fileName )
 
+        local asyncCases = {}
+
         for c = 1, caseCount do
             local case = cases[c]
-            local func = case.func
+            if case.async then
+                asyncCases[case.name] = case
+            else
+                local func = case.func
 
-            setfenv( func, testEnv )
-            local success, errInfo = xpcall( func, failCallback )
-            setfenv( func, defaultEnv )
+                setfenv( func, testEnv )
+                local success, errInfo = xpcall( func, failCallback )
+                setfenv( func, defaultEnv )
 
-            hook.Run( "GLuaTest_RanTestCase", test, case, success, errInfo )
+                hook.Run( "GLuaTest_RanTestCase", test, case, success, errInfo )
 
-            table.insert( results, {
-                success = success,
-                case = case,
-                errInfo = success and nil or errInfo
-            } )
+                table.insert( results, {
+                    success = success,
+                    case = case,
+                    errInfo = success and nil or errInfo
+                } )
+            end
         end
+
+        local callbacks = {}
+        local checkComplete = function()
+            local cbCount = table.Count( callbacks )
+            local total = table.Count( asyncCases )
+            if cbCount ~= total then return end
+
+            timer.Remove( "GLuaTest_AsyncWaiter" )
+            runNextTest( tests )
+        end
+
+        for name, case in pairs( asyncCases ) do
+            local caseFunc = case.func
+
+            local fakeTimer = table.Copy( timer )
+            fakeTimer.Create = function( ident, delay, reps, func, ... )
+                local wrapped = function()
+                    local res = { xpcall( func, failCallback ) }
+                end
+
+                return timer.Create( ident, delay, reps, wrapped, ... )
+            end
+
+            local asyncEnv = setmetatable(
+                {
+                    expect = expect,
+                    done = function()
+                        callbacks[name] = true
+                        setfenv( caseFunc, defaultEnv )
+                        checkComplete()
+                    end,
+                    timer = fakeTimer,
+                    _R = _R
+                },
+                { __index = _G }
+            )
+
+            setfenv( caseFunc, asyncEnv )
+            local success, errInfo = xpcall( caseFunc, failCallback )
+
+            if not success then
+                hook.Run( "GLuaTest_RanTestCase", test, case, success, errInfo )
+                table.insert( results, {
+                    success = success,
+                    case = case,
+                    errInfo = errInfo
+                })
+            end
+        end
+
+        timer.Create( "GLuaTest_AsyncWaiter")
     end
 
+    -- TODO: Log failure details here, log the one-line results during the loop
     logTestResults( results )
 
     hook.Run( "GLuaTest_RanTestFiles", testFiles, results )
