@@ -1,3 +1,5 @@
+local type = type
+local isbool = isbool
 local IsValid = IsValid
 local string_format = string.format
 
@@ -18,6 +20,18 @@ local function makeExpectations( subject )
     function expectations.eq( comparison )
         if subject ~= comparison then
             expected( "to equal '%s'", comparison )
+        end
+    end
+
+    function expectations.beLessThan( comparison )
+        if subject >= comparison then
+            expected( "to be less than '%s'", comparison )
+        end
+    end
+
+    function expectations.beGreaterThan( comparison )
+        if subject <= comparison then
+            expected( "to be greater than '%s'", comparison )
         end
     end
 
@@ -46,15 +60,23 @@ local function makeExpectations( subject )
     end
 
     function expectations.beA( comparison )
-        if subject.__class ~= comparison then
-            expected( "to be of type '%s'", comparison )
+        local class = type( subject )
+
+        if class ~= comparison then
+            expected( "to be a '%s'", comparison )
         end
     end
     expectations.beAn = expectations.beA
 end
 
 local function expect( subject )
-    return { to = makeExpectations( subject ) }
+    local expectations = makeExpectations( subject )
+
+    if isbool( subject ) then
+        return expectations.beTrue()
+    end
+
+    return { to = expectations }
 end
 
 return expect
