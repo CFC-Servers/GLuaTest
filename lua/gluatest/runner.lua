@@ -384,17 +384,10 @@ return function( testFiles )
             runNextTest( tests )
         end
 
+        local asyncNames = {}
         for name, case in pairs( asyncCases ) do
+            table.insert( asyncNames, name )
             local caseFunc = case.func
-
-            local fakeTimer = table.Copy( timer )
-            fakeTimer.Create = function( ident, delay, reps, func, ... )
-                local wrapped = function()
-                    local res = { xpcall( func, failCallback ) }
-                end
-
-                return timer.Create( ident, delay, reps, wrapped, ... )
-            end
 
             local asyncEnv = setmetatable(
                 {
@@ -423,7 +416,15 @@ return function( testFiles )
             end
         end
 
-        timer.Create( "GLuaTest_AsyncWaiter")
+        timer.Create( "GLuaTest_AsyncWaiter", 60, 1, function()
+            local failed = {}
+            for name, case in pairs( asyncCases ) do
+                if not callbacks[name] then
+                    hook.Run( "GLuaTest_TestCaseTimeout", test, case )
+                    table.insert( failed, case )
+                end
+            end
+        end )
     end
 
     -- TODO: Log failure details here, log the one-line results during the loop
