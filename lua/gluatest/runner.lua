@@ -46,7 +46,6 @@ local function logFileStart( name )
     prefixLog( colors.blue, "Starting tests cases from: [", name , "]...", "\n" )
 end
 
--- local fileReadCache = {}
 local function cleanPathForRead( path )
     -- { "addons", "addon_name", "lua", "tests", "addon_name", "test.lua" }
     local expl = string.Explode( "/", path )
