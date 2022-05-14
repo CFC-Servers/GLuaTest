@@ -11,11 +11,13 @@ local function reportFailure( suffix, subject, ... )
 end
 
 local function makeExpectations( subject )
-    local expectations = {}
+    local expectations = {
+        expected = function( suffix, ... )
+            reportFailure( suffix, subject, ... )
+        end
+    }
 
-    local function expected( suffix, ... )
-        reportFailure( suffix, subject, ... )
-    end
+    local expected = expectations.expected
 
     function expectations.eq( comparison )
         if subject ~= comparison then
@@ -67,6 +69,8 @@ local function makeExpectations( subject )
         end
     end
     expectations.beAn = expectations.beA
+
+    return expectations
 end
 
 local function expect( subject )

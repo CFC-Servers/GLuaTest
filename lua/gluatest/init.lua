@@ -1,5 +1,3 @@
-AddCSLuaFile()
-
 GLuaTest = {
     loader = include( "gluatest/loader.lua" ),
     runner = include( "gluatest/runner.lua" )
@@ -15,9 +13,11 @@ end
 
 GLuaTest.testFiles = testFiles
 
+local shouldRun = CreateConVar( "gluatest_enable", 0, FCVAR_ARCHIVE + FCVAR_PROTECTED )
+
 hook.Add( "Tick", "GLuaTest_Runner", function()
     hook.Remove( "Tick", "GLuaTest_Runner" )
+    if not shouldRun:GetBool() then return end
+
     GLuaTest.runner( GLuaTest.testFiles )
 end )
-
-if SERVER then AddCSLuaFile( "gluatest/expectations.lua" ) end

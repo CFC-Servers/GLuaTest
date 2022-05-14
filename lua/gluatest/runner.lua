@@ -314,6 +314,11 @@ return function( testFiles )
     end
 
     local function failCallback( reason )
+        if reason == "" then
+            print( "Received empty error reason in failCallback- ignoring " )
+            return
+        end
+
         -- root/file/name.lua:420: Expectation Failed: Failure reason
         -- root/file/name.lua:420: attempt to index nil value 'blah'
         local reasonSpl = string.Split( reason, ": " )
@@ -341,7 +346,11 @@ return function( testFiles )
 
     local function runNextTest( tests )
         local test = table.remove( tests )
-        if not test then return end
+        if not test then
+            -- TODO: Log failure details here, log the one-line results during the loop
+            logTestResults( results )
+            return
+        end
 
         local fileName = test.fileName
         local cases = test.cases
@@ -373,30 +382,72 @@ return function( testFiles )
             end
         end
 
+        local asyncCount = table.Count( asyncCases )
+        if asyncCount == 0 then
+            runNextTest( tests )
+            return
+        end
+
         local callbacks = {}
         local checkComplete = function()
             local cbCount = table.Count( callbacks )
-            local total = table.Count( asyncCases )
-            if cbCount ~= total then return end
+            if cbCount ~= asyncCount then return end
 
             timer.Remove( "GLuaTest_AsyncWaiter" )
             runNextTest( tests )
         end
 
-        local asyncNames = {}
         for name, case in pairs( asyncCases ) do
-            table.insert( asyncNames, name )
             local caseFunc = case.func
+            local caseTimeout = case.timeout
 
             local asyncEnv = setmetatable(
                 {
-                    expect = expect,
+                    -- We manually catch expectation errors here in case
+                    -- they're called in an async function
+                    expect = function( subject )
+                        local built = expect( subject )
+
+                        -- Wrap the error-throwing function
+                        -- and handle the error with the correct context
+                        built.to.expected = function( ... )
+                            local success, errInfo = xpcall( expect, failCallback, subject )
+                            setfenv( caseFunc, defaultEnv )
+
+                            -- Record the failure
+                            hook.Run( "GLuaTest_RanTestCase", test, case, success, errInfo )
+
+                            table.insert( results, {
+                                success = false,
+                                case = case,
+                                errInfo = errInfo
+                            })
+
+                            timer.Remove( "GLuaTest_AsyncTimeout_" .. name )
+
+                            callbacks[name] = false
+                            checkComplete()
+
+                            -- Halt the test?
+                            -- (Should be caught by the outer xpcall)
+                            error( "" )
+                        end
+
+                        return built
+                    end,
+
                     done = function()
+                        if callbacks[name] ~= nil then
+                            print( "Tried to call done() after we already recorded a result?" )
+                            print( name )
+                            return
+                        end
+
                         callbacks[name] = true
                         setfenv( caseFunc, defaultEnv )
                         checkComplete()
                     end,
-                    timer = fakeTimer,
+
                     _R = _R
                 },
                 { __index = _G }
@@ -405,7 +456,25 @@ return function( testFiles )
             setfenv( caseFunc, asyncEnv )
             local success, errInfo = xpcall( caseFunc, failCallback )
 
+            if caseTimeout then
+                timer.Create( "GluaTest_AsyncTimeout_" .. name, caseTimeout, 1, function()
+                    local timeoutInfo = { reason = "Timeout" }
+
+                    hook.Run( "GLuaTest_RanTestCase", test, case, success, timeoutInfo )
+                    table.insert( results, {
+                        success = success,
+                        case = case,
+                        errInfo = timeoutInfo
+                    })
+                end )
+            end
+
+            -- If the test failed while calling it
+            -- (Async expectation failures handled in asyncEnv.expect)
+            -- (Async unhandled failures handled with timeouts)
             if not success then
+                callbacks[name] = false
+                timer.Remove( "GLuaTest_AsyncTimeout_" .. name )
                 hook.Run( "GLuaTest_RanTestCase", test, case, success, errInfo )
                 table.insert( results, {
                     success = success,
@@ -416,18 +485,21 @@ return function( testFiles )
         end
 
         timer.Create( "GLuaTest_AsyncWaiter", 60, 1, function()
-            local failed = {}
             for name, case in pairs( asyncCases ) do
-                if not callbacks[name] then
+                if callbacks[name] == nil then
                     hook.Run( "GLuaTest_TestCaseTimeout", test, case )
-                    table.insert( failed, case )
+                    table.insert( results, {
+                        success = success,
+                        case = case,
+                        errInfo = errInfo
+                    })
                 end
             end
+
+            runNextTest( tests )
         end )
     end
 
-    -- TODO: Log failure details here, log the one-line results during the loop
-    logTestResults( results )
 
     hook.Run( "GLuaTest_RanTestFiles", testFiles, results )
 end
