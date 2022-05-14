@@ -213,7 +213,7 @@ local function logCodeContext( errInfo )
 end
 
 local function logLocals( errInfo )
-    local locals = errInfo.locals
+    local locals = errInfo.locals or {}
 
     local localCount = #locals
     if localCount == 0 then return end
@@ -257,10 +257,20 @@ local function logTestResults( results )
             prefixLog( colors.red, "FAIL " )
         end
 
-        MsgC( colors.grey, "[", case.name, "]" )
+        MsgC( colors.grey, "[" )
+        MsgC( colors.white, case.name )
+        MsgC( colors.grey, "]" )
 
         if not success then
             MsgC( "\n" )
+
+            -- If the error came through without a source line,
+            -- we'll use the function definition
+            if not errInfo.sourceFile then
+                local debugInfo = debug.getinfo( case.func )
+                errInfo.sourceFile = debugInfo.short_src
+                errInfo.lineNumber = debugInfo.linedefined
+            end
             logFailedTest( errInfo )
         end
 
@@ -272,6 +282,7 @@ end
 local expect = include( "gluatest/expectations.lua" )
 
 return function( testFiles )
+    -- TODO: Scope these by file or print/clear results after each file
     local results = {}
 
     local defaultEnv = getfenv( 1 )
@@ -339,7 +350,7 @@ return function( testFiles )
             reason = cleanReason,
             sourceFile = info.short_src,
             lineNumber = info.currentline,
-            locals = locals or {}
+            locals = locals
         }
     end
 
@@ -401,6 +412,7 @@ return function( testFiles )
         for name, case in pairs( asyncCases ) do
             local caseFunc = case.func
             local caseTimeout = case.timeout
+            print("case timeout", name, caseTimeout)
 
             local asyncEnv = setmetatable(
                 {
@@ -444,6 +456,12 @@ return function( testFiles )
                             return
                         end
 
+                        hook.Run( "GLuaTest_RanTestCase", test, case, true )
+                        table.insert( results, {
+                            success = true,
+                            case = case
+                        } )
+
                         callbacks[name] = true
                         setfenv( caseFunc, defaultEnv )
                         checkComplete()
@@ -462,11 +480,14 @@ return function( testFiles )
                     local timeoutInfo = { reason = "Timeout" }
 
                     hook.Run( "GLuaTest_RanTestCase", test, case, success, timeoutInfo )
+                    callbacks[name] = false
                     table.insert( results, {
-                        success = success,
+                        success = false,
                         case = case,
                         errInfo = timeoutInfo
                     })
+
+                    setfenv( caseFunc, defaultEnv )
                 end )
             end
 
@@ -490,9 +511,9 @@ return function( testFiles )
                 if callbacks[name] == nil then
                     hook.Run( "GLuaTest_TestCaseTimeout", test, case )
                     table.insert( results, {
-                        success = success,
+                        success = false,
                         case = case,
-                        errInfo = errInfo
+                        errInfo = { reason = "Timeout" }
                     })
                 end
             end
@@ -501,6 +522,7 @@ return function( testFiles )
         end )
     end
 
+    runNextTest( testFiles )
 
     hook.Run( "GLuaTest_RanTestFiles", testFiles, results )
 end
