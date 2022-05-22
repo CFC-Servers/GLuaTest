@@ -31,6 +31,7 @@ jobs:
       - name: Set up output files
         run: |
           cd $GITHUB_WORKSPACE
+          echo "" >> $GITHUB_WORKSPACE/failures.json
           echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
           echo "gluatest_github_output 1" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
           echo "gluatest_json_output 0" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
