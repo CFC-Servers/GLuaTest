@@ -1,5 +1,4 @@
 local type = type
-local isbool = isbool
 local IsValid = IsValid
 local string_format = string.format
 
@@ -75,10 +74,6 @@ end
 
 local function expect( subject )
     local expectations = makeExpectations( subject )
-
-    if isbool( subject ) then
-        return expectations.beTrue()
-    end
 
     return { to = expectations }
 end
