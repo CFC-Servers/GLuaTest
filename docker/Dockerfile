@@ -26,7 +26,7 @@ COPY base_requirements.txt $gmodroot/requirements.txt
 
 # Entrypoint
 COPY entrypoint.sh $gmodroot/entrypoint.sh
-RUN chown -R steam:steam "$server/cfg/test.cfg" "$server/addons/testfixture" "$gmodroot/requirements.txt" "$gmodroot/entrypoint.sh"
+RUN chown -R steam:steam "$server/cfg/test.cfg" "$server/addons/testfixture" "$gmodroot/requirements.txt" "$gmodroot/entrypoint.sh" "$server/data/gluatest_failures.json"
 
 USER steam
 ENTRYPOINT ["/home/steam/gmodserver/entrypoint.sh"]
