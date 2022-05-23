@@ -5,7 +5,6 @@ local string_format = string.format
 
 local failures = {}
 local ghOutput = CreateConVar( "gluatest_github_output", "1", FCVAR_UNREGISTERED, "", 0, 1 )
-local jsonOutput = CreateConVar( "gluatest_json_output", "1", FCVAR_UNREGISTERED, "", 0, 1 )
 
 local function cleanSource( fileName )
     local spl = string_Split( fileName, "/" )
@@ -35,7 +34,7 @@ hook.Add( "GLuaTest_LoggedTestResult", "TestLog", function( success, _, _, errIn
 end )
 
 hook.Add( "GLuaTest_RanTestFiles", "TestComplete", function()
-    if #failures > 0 and jsonOutput:GetBool() then
+    if #failures > 0 then
         print( tostring( #failures ) .. " test failures detected, writing to log.." )
         file.Write( "gluatest_failures.json", util.TableToJSON( failures ) )
     end

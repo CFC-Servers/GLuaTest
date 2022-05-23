@@ -34,7 +34,6 @@ jobs:
           echo "" >> $GITHUB_WORKSPACE/failures.json
           echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
           echo "gluatest_github_output 1" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
-          echo "gluatest_json_output 0" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
 
       - name: Get latest GLuaTest version
         id: latest-tag-getter
