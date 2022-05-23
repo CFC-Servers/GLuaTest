@@ -27,6 +27,9 @@ while read p; do
     eval $(getCloneLine "$p")
 done <"$gmodroot"/requirements.txt
 
+echo "Pre-server run. LS'ing data folder"
+ls -alh "$server/data"
+
 srcds_args=(
     # Test requirements
     -systemtest       # Allows us to exit the game from inside Lua
