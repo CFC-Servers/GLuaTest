@@ -1,5 +1,5 @@
+---
 name: GLuaTest Tester
-
 
 
 on:
@@ -69,9 +69,16 @@ jobs:
           fi
 
           echo "Failure output file:"
+          echo "$FAILURE_OUTPUT"
           cat "$FAILURE_OUTPUT"
-          if [ -s "$FAILURE_OUTPUT" ]; then
+          echo ""
+          echo "Github workspace:"
+          ls -alh $GITHUB_WORKSPACE
 
-            echo "::info ::Test failures detected - Failing"
+          if [ -s "$FAILURE_OUTPUT" ]; then
+            echo "::warn ::Test failures detected - Failing"
             exit 1
+          else
+            echo "::info ::Test failure output was empty - Exit 0"
+            exit 0
           fi
