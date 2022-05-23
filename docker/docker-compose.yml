@@ -9,6 +9,7 @@ services:
       - type: bind
         source: $FAILURE_OUTPUT
         target: /home/steam/gmodserver/garrysmod/data/gluatest_failures.json
+        read_only: false
 
       - type: bind
         source: $REQUIREMENTS

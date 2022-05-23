@@ -27,6 +27,9 @@ while read p; do
     eval $(getCloneLine "$p")
 done <"$gmodroot"/requirements.txt
 
+echo "Pre-server run. LS'ing data folder"
+ls -alh "$server/data"
+
 srcds_args=(
     # Test requirements
     -systemtest       # Allows us to exit the game from inside Lua
@@ -68,6 +71,9 @@ srcds_args=(
 
 stdbuf -oL -eL timeout 2m "$gmodroot"/srcds_run_x64 "${srcds_args[@]}"
 status=$?
+
+echo "Pre-entrypoint exit - printing gluatest_failures.json"
+cat "$server/data/gluatest_failures.json"
 
 if [ "$(cat $server/data/gluatest_clean_exit.txt)" = "true" ]; then
     exit 0
