@@ -21,6 +21,9 @@ local function colorToAnsi( col )
 end
 
 local MsgC = function( ... )
+    --
+    -- Wraps MsgC to convert colors to ANSI
+    --
     local line = ""
 
     for _, t in ipairs( {...} ) do
@@ -47,6 +50,11 @@ local function logFileStart( name )
 end
 
 local function cleanPathForRead( path )
+    --
+    -- Given an absolute path, returns the path required to read
+    -- the file in Lua
+    --
+
     -- { "addons", "addon_name", "lua", "tests", "addon_name", "test.lua" }
     local expl = string.Explode( "/", path )
 
@@ -63,12 +71,12 @@ local function cleanPathForRead( path )
     return table.concat( expl, "/", startCopy, #expl )
 end
 
-local function getLeadingWhitespace( line )
-    return string.match( line, "^%s+" ) or ""
-end
-
 local fileCache = {}
 local function getFileLines( filePath )
+    --
+    -- Reads a given file path and returns the contents split by newline.
+    -- Caches the output for future calls.
+    --
     local cached = fileCache[filePath]
     if cached then return cached end
 
@@ -83,24 +91,31 @@ local function getFileLines( filePath )
     return fileLines
 end
 
+local function getLeadingWhitespace( line )
+    return string.match( line, "^%s+" ) or ""
+end
+
 local function getLeastSharedIndent( lines )
-    local leastSharedLeft = ""
+    --
+    -- Given a table of code lines, return a string
+    -- containing the leading spacing can be removed
+    -- without losing any context
+    --
 
-    for i = 1, #lines do
+    -- Use the first entry as the baseline
+    local leastShared = getLeadingWhitespace( lines[1] )
+
+    -- Go through the rest to see if any have less whitespace
+    for i = 2, #lines do
         local lineContent = lines[i]
-
         local leading = getLeadingWhitespace( lineContent )
-        if #leastSharedLeft == 0 then
-            leastSharedLeft = leading
-        else
-            local leadingLen = #leading
-            if leadingLen > 0 and leadingLen < #leastSharedLeft then
-                leastSharedLeft = leading
-            end
+
+        if #leading < #leastShared then
+            leastShared = leading
         end
     end
 
-    return leastSharedLeft
+    return leastShared or ""
 end
 
 local function getLineWithContext( path, line, context )
@@ -118,6 +133,7 @@ end
 
 local function normalizeLinesIndent( lines )
     local leastSharedIndent = getLeastSharedIndent( lines )
+    if leastSharedIndent == "" then return lines end
 
     for i = 1, #lines do
         local lineContent = lines[i]
@@ -128,6 +144,10 @@ local function normalizeLinesIndent( lines )
 end
 
 local function generateDivider( lines, reason )
+    --
+    -- Generates an appropriately-sized divider line
+    -- based on the longest line and the length of the failure reason
+    --
     local longestLine = 0
 
     for i = 1, #lines do
@@ -143,12 +163,18 @@ local function generateDivider( lines, reason )
 end
 
 local function drawLine( content, lineNumber )
+    --
+    -- Draws a line of code in the Context Block
+    --
     MsgC( colors.grey, string.rep( " ", 4 - #lineNumber ) )
     MsgC( colors.white, lineNumber, " " )
     MsgC( colors.grey, "| ", content )
 end
 
 local function drawFailingLine( content, lineNumber, divider, reason )
+    --
+    -- Draw a given line of code, a pointer-arrow, and the failure reason
+    --
     local contentLength = 7 + #content
     local newLineLength = contentLength + 2 + #reason
 
@@ -179,6 +205,10 @@ local function drawFailingLine( content, lineNumber, divider, reason )
 end
 
 local function logCodeContext( errInfo )
+    --
+    -- Given a test failure, gather info about the failing code
+    -- and draw a block of code context with a pointer-arrow to the failure
+    --
     local reason = errInfo.reason
     local sourceFile = errInfo.sourceFile
     local lineNumber = errInfo.lineNumber
@@ -212,15 +242,20 @@ local function logCodeContext( errInfo )
 end
 
 local function logLocals( errInfo )
+    --
+    -- Given a test failure with local variables,
+    -- draw a section to display the name and values
+    -- of up to 5 local variables in the failing test
+    --
     local locals = errInfo.locals or {}
 
-    local localCount = #locals
+    local localCount = math.min( 5, #locals )
     if localCount == 0 then return end
 
     MsgC( colors.grey, "    " )
     MsgC( colors.white, "Locals: ", "\n" )
 
-    for i = 1, #locals do
+    for i = 1, localCount do
         local name, value = unpack( locals[i] )
         MsgC( colors.grey, "       " )
         MsgC( colors.blue, name )
@@ -232,6 +267,9 @@ local function logLocals( errInfo )
 end
 
 local function logFailedTest( errInfo )
+    --
+    -- Draw information about a given test failure
+    --
     local sourceFile = errInfo.sourceFile
 
     MsgC( colors.white, "    File:", "\n" )
@@ -270,6 +308,7 @@ local function logTestResults( results )
                 errInfo.sourceFile = debugInfo.short_src
                 errInfo.lineNumber = debugInfo.linedefined
             end
+
             logFailedTest( errInfo )
         end
 
@@ -326,7 +365,7 @@ return function( testFiles )
 
     local function failCallback( reason )
         if reason == "" then
-            print( "Received empty error reason in failCallback- ignoring " )
+            ErrorNoHaltWithStack( "Received empty error reason in failCallback- ignoring " )
             return
         end
 
