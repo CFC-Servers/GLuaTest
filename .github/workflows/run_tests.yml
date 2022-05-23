@@ -58,7 +58,7 @@ jobs:
 
         run: |
           docker-compose pull
-          docker-compose up --no-log-prefix --exit-code-from gluatest_runner
+          docker-compose up --no-log-prefix --exit-code-from runner
 
           exitstatus=$?
 
