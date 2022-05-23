@@ -69,5 +69,7 @@ jobs:
           fi
 
           if [ -s "$FAILURE_OUTPUT" ]; then
+            echo "::Info ::Test failures detected - Failing"
+            cat "$FAILURE_OUTPUT"
             exit 1
           fi
