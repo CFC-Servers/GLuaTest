@@ -59,13 +59,8 @@ jobs:
         run: |
           docker-compose pull
           docker-compose up --no-log-prefix --exit-code-from runner
-
           exitstatus=$?
 
           if [ $exitstatus -ne 0 ]; then
-            if [ $exitstatus -ne 1 ]; then
-              echo "::error:: GLuaTest runner didn't exit successfully! Test results are not available."
-            fi
-
             exit $exitstatus
           fi
