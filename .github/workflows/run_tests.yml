@@ -31,8 +31,8 @@ jobs:
       - name: Set up output files
         run: |
           cd $GITHUB_WORKSPACE
-          echo "" >> $GITHUB_WORKSPACE/failures.json
-          echo "" >> $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
+          touch $GITHUB_WORKSPACE/failures.json
+          touch $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
           echo "gluatest_github_output 1" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
 
       - name: Get latest GLuaTest version
@@ -69,7 +69,7 @@ jobs:
           fi
 
           if [ -s "$FAILURE_OUTPUT" ]; then
-            echo "::Info ::Test failures detected - Failing"
+            echo "::info ::Test failures detected - Failing"
             cat "$FAILURE_OUTPUT"
             exit 1
           fi
