@@ -360,6 +360,7 @@ return function( testFiles )
         if not test then
             -- TODO: Log failure details here, log the one-line results during the loop
             logTestResults( results )
+            hook.Run( "GLuaTest_RanTestFiles", testFiles, results )
             return
         end
 
@@ -411,7 +412,6 @@ return function( testFiles )
         for name, case in pairs( asyncCases ) do
             local caseFunc = case.func
             local caseTimeout = case.timeout
-            print("case timeout", name, caseTimeout)
 
             local asyncEnv = setmetatable(
                 {
@@ -522,6 +522,4 @@ return function( testFiles )
     end
 
     runNextTest( testFiles )
-
-    hook.Run( "GLuaTest_RanTestFiles", testFiles, results )
 end
