@@ -102,16 +102,15 @@ local function getLeastSharedIndent( lines )
     -- without losing any context
     --
 
-    -- Use the first entry as the baseline
-    local leastShared = getLeadingWhitespace( lines[1] )
+    local leastShared = nil
 
-    -- Go through the rest to see if any have less whitespace
-    for i = 2, #lines do
-        local lineContent = lines[i]
-        local leading = getLeadingWhitespace( lineContent )
+    for _, lineContent in ipairs( lines ) do
+        if #lineContent > 0 then
+            local leading = getLeadingWhitespace( lineContent )
 
-        if #leading < #leastShared then
-            leastShared = leading
+            if not leastShared or ( #leading < #leastShared ) then
+                leastShared = leading
+            end
         end
     end
 
