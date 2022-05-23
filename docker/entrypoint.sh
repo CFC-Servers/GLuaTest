@@ -30,6 +30,12 @@ done <"$gmodroot"/requirements.txt
 echo "Pre-server run. LS'ing data folder"
 ls -alh "$server/data"
 
+chgrp steam "$server/data/gluatest_failures.json"
+chmod g+w "$server/data/gluatest_failures.json"
+
+echo "Post-chgrp"
+ls -alh "$server/data"
+
 srcds_args=(
     # Test requirements
     -systemtest       # Allows us to exit the game from inside Lua
