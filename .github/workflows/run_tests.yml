@@ -58,10 +58,9 @@ jobs:
 
         run: |
           docker-compose pull
-          docker-compose up --no-log-prefix
+          docker-compose up --no-log-prefix --exit-code-from gluatest_runner
 
           exitstatus=$?
-          echo "Exit status: $exitstatus"
 
           if [ $exitstatus -ne 0 ]; then
             if [ $exitstatus -ne 1 ]; then
