@@ -36,13 +36,16 @@ end )
 hook.Add( "GLuaTest_RanTestFiles", "TestComplete", function()
     if #failures > 0 then
         print( tostring( #failures ) .. " test failures detected, writing to log.." )
-        PrintTable( failures )
         local failureJSON = util.TableToJSON( failures )
         print( failureJSON )
         file.Write( "gluatest_failures.json", failureJSON )
+
+        print( "Done writing. Reading file:" )
+        print( file.Read( "gluatest_failures.json", "DATA" ) )
     end
 
     print( "Got GLuaTest TestComplete callback, exiting" )
     file.Write( "gluatest_clean_exit.txt", "true" )
-    engine.CloseServer()
+
+    timer.Simple( 1, engine.CloseServer )
 end )
