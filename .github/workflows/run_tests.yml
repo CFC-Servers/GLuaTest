@@ -71,6 +71,7 @@ jobs:
           echo "Failure output file:"
           cat "$FAILURE_OUTPUT"
           if [ -s "$FAILURE_OUTPUT" ]; then
+
             echo "::info ::Test failures detected - Failing"
             exit 1
           fi
