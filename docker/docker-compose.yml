@@ -7,11 +7,6 @@ services:
     stop_grace_period: 2s
     volumes:
       - type: bind
-        source: $FAILURE_OUTPUT
-        target: /home/steam/gmodserver/garrysmod/data/gluatest_failures.json
-        read_only: false
-
-      - type: bind
         source: $REQUIREMENTS
         target: /home/steam/gmodserver/custom_requirements.txt
         read_only: true

@@ -11,7 +11,7 @@ USER steam
 RUN ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta x86-64 validate +quit
 
 # Initial server config
-RUN touch $gmodroot/custom_server.cfg && mkdir -pv $server/data/ && touch $server/data/gluatest_failures.json
+RUN touch $gmodroot/custom_server.cfg && mkdir -pv $server/data/
 
 USER root
 
@@ -26,7 +26,7 @@ COPY base_requirements.txt $gmodroot/requirements.txt
 
 # Entrypoint
 COPY entrypoint.sh $gmodroot/entrypoint.sh
-RUN chown -R steam:steam "$server/cfg/test.cfg" "$server/addons/testfixture" "$gmodroot/requirements.txt" "$gmodroot/entrypoint.sh" "$server/data/gluatest_failures.json"
+RUN chown -R steam:steam "$server/cfg/test.cfg" "$server/addons/testfixture" "$gmodroot/requirements.txt" "$gmodroot/entrypoint.sh"
 
 USER steam
 ENTRYPOINT ["/home/steam/gmodserver/entrypoint.sh"]

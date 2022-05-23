@@ -6,6 +6,7 @@ server=/home/steam/gmodserver/garrysmod
 cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
 cat "$gmodroot/custom_server.cfg" >> "$server/cfg/test.cfg"
 echo "false" > "$server/data/gluatest_clean_exit.txt"
+touch "$server/data/gluatest_failures.json"
 
 cd "$server"/addons
 function getCloneLine {
@@ -28,12 +29,6 @@ while read p; do
 done <"$gmodroot"/requirements.txt
 
 echo "Pre-server run. LS'ing data folder"
-ls -alh "$server/data"
-
-chgrp steam "$server/data/gluatest_failures.json"
-chmod g+w "$server/data/gluatest_failures.json"
-
-echo "Post-chgrp"
 ls -alh "$server/data"
 
 srcds_args=(
@@ -78,8 +73,14 @@ srcds_args=(
 stdbuf -oL -eL timeout 2m "$gmodroot"/srcds_run_x64 "${srcds_args[@]}"
 status=$?
 
-if [ "$(cat $server/data/gluatest_clean_exit.txt)" = "true" ]; then
-    exit 0
-else
+if [ "$(cat $server/data/gluatest_clean_exit.txt)" = "false" ]; then
     exit "$status"
+fi
+
+if [ -s "$server/data/gluatest_failures.json" ]; then
+    echo "::warn ::Test failures detected - Failing"
+    exit 1
+else
+    echo "::info ::No test failures detected"
+    exit 0
 fi
