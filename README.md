@@ -45,6 +45,7 @@ _Just looking for a taste of what GLuaTest has to offer? Check out the [Writing 
 
 _Interested in giving it a shot on your own project? Take a look at the [Usage](#usage) section to find out how to get started._
 
+<br>
 
 # Usage
 
@@ -54,6 +55,7 @@ GLuaTest can be used in a number of ways. Whether you want to run your tests whe
  - [I want to run my tests locally or on a dev server](#running-locally)
  - [I want to run my tests without setting up a local or dev server](#running-locally-without-a-server)
 
+<br>
 
 ## Automated testing on Pull Requests
 
@@ -154,6 +156,7 @@ And that's it!
 
 ---
 
+ 
 ### Speed 🏃
 Running tests in a GitHub Runner is surprisingly fast.
 
@@ -162,6 +165,7 @@ Even with hundreds of tests, you can expect the entire check to take **under 30 
 _(Failing async tests will slow down the time significantly because it has to wait for the timeouts)_
 
 
+ 
 ### Cost 💸
 You should incur no costs by using GitHub Actions.
 
@@ -198,8 +202,7 @@ In fact, many of the steps are the same.
 ### Requirements / Server Configs
 If your project depends on other projects, you can have GLuaTest automatically acquire them for you.
 
- - [Check out the instructions from the GitHub Actions setup.](#requirements)
- - [Same thing for any special server config changes you need.](#server-configs)
+Take a quick skim through the [GitHub Action setup instructions](#automated-testing-on-pull-requests) for the relevant sections on how to set this up.
 
 
 ### Environment setup
@@ -233,6 +236,7 @@ You can even follow the test output live.
 </details>
 
 
+<br>
 
 # Writing Tests ✍️
 
