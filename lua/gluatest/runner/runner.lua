@@ -7,6 +7,8 @@ local ResultLogger = include( "gluatest/runner/logger.lua" )
 local LogTestResults = ResultLogger.LogTestResults
 local LogFileStart = ResultLogger.LogFileStart
 
+local noop = function() end
+
 return function( testFiles )
     if CLIENT and not GLuaTest.RUN_CLIENTSIDE then return end
 
@@ -31,9 +33,15 @@ return function( testFiles )
         local fileName = test.fileName
         local cases = test.cases
         local caseCount = #cases
+        local beforeAll = test.beforeAl
+        local beforeEach = test.beforeEach
+        local afterAll = test.afterAll
+        local afterEach = test.afterEach
 
         hook.Run( "GLuaTest_RunningTestFile", test )
         LogFileStart( fileName )
+
+        beforeAll()
 
         local asyncCases = {}
 
@@ -50,10 +58,19 @@ return function( testFiles )
                     asyncCases[case.name] = case
                 else
                     local func = case.func
+                    local state = case.state or {}
+                    local setup = case.setup or noop
+                    local cleanup = case.cleanup or noop
+
+                    beforeEach()
+                    setup( state )
 
                     setfenv( func, testEnv )
-                    local success, errInfo = xpcall( func, FailCallback )
+                    local success, errInfo = xpcall( func, FailCallback, state )
                     setfenv( func, defaultEnv )
+
+                    cleanup( state )
+                    afterEach()
 
                     CleanupPostTest()
 
@@ -70,6 +87,7 @@ return function( testFiles )
 
         local asyncCount = table.Count( asyncCases )
         if asyncCount == 0 then
+            afterAll()
             runNextTest( tests )
             return
         end
@@ -80,6 +98,7 @@ return function( testFiles )
             if cbCount ~= asyncCount then return end
 
             timer.Remove( "GLuaTest_AsyncWaiter" )
+            afterAll()
             runNextTest( tests )
         end
 
@@ -191,6 +210,7 @@ return function( testFiles )
                 end
             end
 
+            afterAll()
             runNextTest( tests )
         end )
     end

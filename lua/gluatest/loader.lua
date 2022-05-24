@@ -1,5 +1,6 @@
 local istable = istable
 local runClientside = GLuaTest.RUN_CLIENTSIDE
+local noop = function() end
 
 local checkSendToClients = function( filePath, cases )
     if not runClientside then return end
@@ -25,12 +26,16 @@ local function getTestsInDir( dir, tests )
         local fileOutput = include( filePath )
 
         if istable( fileOutput ) then
-            if SERVER then checkSendToClients( filePath, fileOutput ) end
+            if SERVER then checkSendToClients( filePath, fileOutput.cases ) end
 
             table.insert( tests, {
                 fileName = fileName,
                 project = getProjectName( filePath ),
-                cases = fileOutput
+                cases = fileOutput.cases,
+                beforeAll = fileOutput.beforeAll or noop,
+                beforeEach = fileOutput.beforeEach or noop,
+                afterAll = fileOutput.afterAll or noop,
+                afterEach = fileOutput.afterEach or noop
             } )
         end
     end
