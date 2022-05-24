@@ -55,6 +55,10 @@ GLuaTest can be used in a number of ways. Whether you want to run your tests whe
 
 ## Automated testing on Pull Requests
 
+<details>
+<summary><strong>GitHub Actions Automation</strong></summary>
+<br>
+
 To set up automated test runs, we'll use Github Workflows.
 
 It's actually really simple to set up the workflow. Simply add the following file to your project:
@@ -161,6 +165,8 @@ You should incur no costs by using GitHub Actions.
 
 Nothing better than free 😎
 
+</details>
+
 
 
 ---
@@ -168,6 +174,9 @@ Nothing better than free 😎
 
 
 ## Running locally
+<details>
+<summary><strong>Running Locally</strong></summary>
+<br>
 
 It's actually extremely simple to run GLuaTest locally.
 
@@ -175,12 +184,16 @@ Just put GLuaTest into your `addons/` directory, set `gluatest_enable 1` on the 
 
 
 All of your tests will run when the server starts up and you can view the output in the server console/logs.
+</details>
 
 
 ---
 
 
 ## Running locally without a server
+<details>
+<summary><strong>Running Locally without a server</strong></summary>
+<br>
 
 Sounds weird, right? Well it's really not all that different from running GLuaTest on GitHub.
 
@@ -221,6 +234,11 @@ docker-compose up
 
 And.. that's it! It'll pull the latest Runner, start the server, and run your tests.
 You can even follow the test output live.
+
+</details>
+
+
+---
 
 
 # Writing Tests ✍️
@@ -284,7 +302,9 @@ expect( "a" ).to.equal( "b" )
 
 Kinda cool, right?
 
-There are a number of different expectations you can use:
+There are a number of different expectations you can use.
+
+#### Expectations
 | Expectation          | Description                                           | Example                                                         |
 |----------------------|-------------------------------------------------------|-----------------------------------------------------------------|
 | **`equal`**/**`eq`**     | Basic `==` equality check                             | `expect( a ).to.eq( b )`                                        |
@@ -294,6 +314,7 @@ There are a number of different expectations you can use:
 | **`beFalse`**        | Expects the subject to literally be `false`           | `expect( istable( "test" ) ).to.beFalse()`                      |
 | **`beValid`**        | Expects `IsValid( value )` to return `true`           | `expect( ply ).to.beValid()`                                    |
 | **`beNil`**          | Expects the subject to literally be `nil`             | `expect( player.GetAll()[2] ).to.beNil()`                       |
+| **`exist`**          | Expects the subject to not be `nil`                   | `expect( MyProject ).to.exist()`                                |
 | **`beA`**/**`beAn`**     | Expects the subject to have the given `type`          | `expect( "test" ).to.beA( "string" )`                           |
 | **`succeed`**        | Expects the subject function to run without error     | `expect( CurTime ).to.succeed()`                                |
 | **`err`**            | Expects the subject function to throw an error        | `expect( error ).to.err()`                                      |
