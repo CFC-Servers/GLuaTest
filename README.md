@@ -1,7 +1,7 @@
 # 🎉 GLuaTest 🎉
 GLuaTest - an endearing testing framework for GMod
 
-# Intro
+## Intro
 Automated testing is a crucial part of any software workflow.
 
 Your automated tests define a contract that give you and your would-be users confidence that the project will behave properly.
@@ -33,7 +33,7 @@ Just looking for a taste of what GLuaTest has to offer? Check out the [[Writing 
 Interested in giving it a shot on your own project? Take a look at the [[Usage]] section to find out how to get started.
 
 
-# Technical info 🤖
+## Technical info 🤖
 GLuaTest was made to run on GitHub Actions, but it's flexible enough to fit anywhere you'd like.
 
 You can use the GLuaTest Docker image to spin up a test server, run your tests, and see the output - all without having to install a server of your own.
@@ -41,7 +41,7 @@ You can use the GLuaTest Docker image to spin up a test server, run your tests, 
 This makes it easy to test your code in a real Garry's Mod environment without worrying about other addons or config values.
 
 
-# Usage
+## Usage
 
 GLuaTest can be used in a number of ways. Whether you want to run your tests when you open a PR, or if you just want to have it run on your development server - we've got you covered.
 
@@ -50,7 +50,7 @@ GLuaTest can be used in a number of ways. Whether you want to run your tests whe
  - I want to run my tests without setting up a local or dev server
 
 
-## Automated testing on Pull Requests
+### Automated testing on Pull Requests
 
 To set up automated test runs, we'll use Github Workflows.
 
@@ -70,7 +70,7 @@ And that's it! The next time you make a PR, it'll spin up a new test server, run
 
 There are a couple of config options you can use though.
 
-### Requirements
+#### Requirements
 If your project depends on an external project, GLuaTest can automatically grab them for you.
 
 Let's say you needed:
@@ -109,7 +109,7 @@ jobs:
 
 All done! Commit those changes and GLuaTest will automatically clone those requirements.
 
-### Server Configs
+#### Server Configs
 Sometimes your project requires specific convars to be set.
 
 Similar to how you define requirements, we'll make a new `.cfg` file.
@@ -139,7 +139,7 @@ jobs:
 
 And that's it!
 
-### Speed 🏃
+#### Speed 🏃
 Running tests in a GitHub Runner is surprisingly fast.
 
 Even with hundreds of tests, you can expect the entire check to take under 30 seconds!
@@ -147,12 +147,12 @@ Even with hundreds of tests, you can expect the entire check to take under 30 se
 (Failing async tests will slow down the time significantly because it has to wait for the timeouts)
 
 
-### Cost 💸
+#### Cost 💸
 You should incur no costs by using GitHub Actions.
 
 Nothing better than free 😎
 
-## Running locally
+### Running locally
 
 It's actually extremely simple to run GLuaTest locally.
 
@@ -162,21 +162,21 @@ Just put GLuaTest into your `addons/` directory, set `gluatest_enable 1` on the 
 All of your tests will run when the server starts up and you can view the output in the server console/logs.
 
 
-## Running locally without a server
+### Running locally without a server
 
 Sounds weird, right? Well it's really not all that different from running GLuaTest on GitHub.
 
 In fact, many of the steps are the same.
 
 
-### Requirements / Server Configs
+#### Requirements / Server Configs
 If your project depends on other projects, you can have GLuaTest automatically acquire them for you.
 
 [Check out the instructions from the GitHub Actions setup.]()
 [Same thing for any special server config changes you need.]()
 
 
-### Environment setup
+#### Environment setup
 When running GLuaTest without a server, you need to tell it where to find your project and custom files.
 
 You can do that with simple environment variables, i.e.:
@@ -189,7 +189,7 @@ export PROJECT_DIR=/home/me/Code/my_project
 You can skip the `REQUIREMENTS` and `CUSTOM_SERVER_CONFIG` if you don't need them, but you must set the `PROJECT_DIR` variable.
 
 
-### Running in Docker
+#### Running in Docker
 Now you'll need docker-compose. I'll leave it to you to figure out how to install it: https://docs.docker.com/compose/install/
 
 Once that's done, you just need to run the `docker-compose` file in the `docker/` directory.
@@ -205,9 +205,9 @@ And.. that's it! It'll pull the latest Runner, start the server, and run your te
 You can even follow the test output live.
 
 
-# Writing Tests ✍️
+## Writing Tests ✍️
 
-## Your first test file 🎒
+### Your first test file 🎒
 In your GLua project, create a new directory: `lua/tests/<your project name>/`.
 
 This is where you'll keep the tests for your project.
