@@ -9,7 +9,7 @@ It offers an approachable (albeit strange) syntax that lets you get started quic
 GLuaTest also supports multiple methods to integrate with your workflow.
 
 <details>
-<summary>Foreward about automated testing in GMod</summary>
+ <summary><strong>Foreward about automated testing in GMod</strong></summary>
 <br>
 Automated testing is a crucial part of any software workflow.
 Your automated tests define a contract that give you and your would-be users confidence that the project will behave properly.
@@ -27,9 +27,8 @@ Modern testing infrastructure allow you to run your tests on a Pull Request, bef
 Such a tool has never existed for Garry's Mod. Until now!
 </details>
 
-## Technical info 🤖
 <details>
-<summary>Technical info</summary>
+ <summary><strong>Technical info</strong></summary>
 <br>
 GLuaTest was made to run on GitHub Actions, but it's flexible enough to fit anywhere you'd like.
 
@@ -38,8 +37,10 @@ You can use the GLuaTest Docker image to spin up a test server, run your tests, 
 This makes it easy to test your code in a real Garry's Mod environment without worrying about other addons or config values.
 </details>
 
- - Just looking for a taste of what GLuaTest has to offer? Check out the [Writing tests](#writing-tests-%EF%B8%8F) section.
- - Interested in giving it a shot on your own project? Take a look at the [Usage](#usage) section to find out how to get started.
+---
+_Just looking for a taste of what GLuaTest has to offer? Check out the [Writing tests](#writing-tests-%EF%B8%8F) section._
+
+_Interested in giving it a shot on your own project? Take a look at the [Usage](#usage) section to find out how to get started._
 
 
 # Usage
@@ -90,7 +91,7 @@ TeamUlysses/ulib
 CFC-Servers/gm_logger@lua
 ```
 
-Each line should be in the format of: **`<Github owner/org name>/<Project name>`**.
+Each line should be in the format of: **`<Github owner name>/<Project name>`**.
 
 You can use a specific branch of the project by adding **`@<branch-name>`** to the end of the line.
 
@@ -160,7 +161,11 @@ You should incur no costs by using GitHub Actions.
 
 Nothing better than free 😎
 
+
+
 ---
+
+
 
 ## Running locally
 
@@ -172,21 +177,24 @@ Just put GLuaTest into your `addons/` directory, set `gluatest_enable 1` on the 
 All of your tests will run when the server starts up and you can view the output in the server console/logs.
 
 
-### Running locally without a server
+---
+
+
+## Running locally without a server
 
 Sounds weird, right? Well it's really not all that different from running GLuaTest on GitHub.
 
 In fact, many of the steps are the same.
 
 
-#### Requirements / Server Configs
+### Requirements / Server Configs
 If your project depends on other projects, you can have GLuaTest automatically acquire them for you.
 
 [Check out the instructions from the GitHub Actions setup.]()
 [Same thing for any special server config changes you need.]()
 
 
-#### Environment setup
+### Environment setup
 When running GLuaTest without a server, you need to tell it where to find your project and custom files.
 
 You can do that with simple environment variables, i.e.:
@@ -199,7 +207,7 @@ export PROJECT_DIR=/home/me/Code/my_project
 You can skip the `REQUIREMENTS` and `CUSTOM_SERVER_CONFIG` if you don't need them, but you must set the `PROJECT_DIR` variable.
 
 
-#### Running in Docker
+### Running in Docker
 Now you'll need docker-compose. I'll leave it to you to figure out how to install it: https://docs.docker.com/compose/install/
 
 Once that's done, you just need to run the `docker-compose` file in the `docker/` directory.
@@ -215,22 +223,20 @@ And.. that's it! It'll pull the latest Runner, start the server, and run your te
 You can even follow the test output live.
 
 
-## Writing Tests ✍️
+# Writing Tests ✍️
 
-### Your first test file 🎒
+## Your first test file
 In your GLua project, create a new directory: `lua/tests/<your project name>/`.
 
 This is where you'll keep the tests for your project.
-
 You can put all of your tests in one file, or split the files up based on module/responsibility.
 
 
 For example, if your addon had two entities you'd like to test, you could make `lua/tests/your_project/entity_1.lua` and `lua/tests/your_project/entity_2.lua`.
-
 We suggest you group your tests, but it'll work either way.
 
-
 The test file itself is quite simple. It needs to return a table of test cases.
+
 
 For example:
 ```lua
