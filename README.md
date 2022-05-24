@@ -1,23 +1,5 @@
-# 🎉 GLuaTest 🎉
-GLuaTest - an endearing testing framework for GMod
-
-## Intro
-Automated testing is a crucial part of any software workflow.
-
-Your automated tests define a contract that give you and your would-be users confidence that the project will behave properly.
-
-Without tests, you may find yourself spending large amounts of time debugging obscure issues.
-
-Automated tests require more work up front, but will save you time and frustration in the future when more people start using your project.
-
----
-
-Traditionally, Garry's Mod developers have included, at most, a few crucial tests with their codebase - usually only ran manually when the maintainer remembers.
-
-Modern testing infrastructure allow you to run your tests on a Pull Request, before the code has made it into the main branch.
-
-Such a tool has never existed for Garry's Mod. Until now!
-
+# GLuaTest 
+🎉 **GLuaTest 🎉 - an endearing testing framework for GMod**
 ---
 
 GLuaTest is a testing framework built for Garry's Mod. Its job is to make writing tests for Garry's Mod projects easy.
@@ -26,31 +8,51 @@ It offers an approachable (albeit strange) syntax that lets you get started quic
 
 GLuaTest also supports multiple methods to integrate with your workflow.
 
+<details>
+<summary>Foreward about automated testing in GMod</summary>
+<br>
+Automated testing is a crucial part of any software workflow.
+Your automated tests define a contract that give you and your would-be users confidence that the project will behave properly.
+
+
+Without tests, you may find yourself spending large amounts of time debugging obscure issues.
+Automated tests require more work up front, but will save you time and frustration in the future when more people start using your project.
+
 ---
 
-Just looking for a taste of what GLuaTest has to offer? Check out the [[Writing tests]] section.
+Traditionally, Garry's Mod developers have included, at most, a few crucial tests with their codebase - usually only ran manually when the maintainer remembers.
+Modern testing infrastructure allow you to run your tests on a Pull Request, before the code has made it into the main branch.
 
-Interested in giving it a shot on your own project? Take a look at the [[Usage]] section to find out how to get started.
 
+Such a tool has never existed for Garry's Mod. Until now!
+</details>
 
 ## Technical info 🤖
+<details>
+<summary>Technical info</summary>
+<br>
 GLuaTest was made to run on GitHub Actions, but it's flexible enough to fit anywhere you'd like.
 
 You can use the GLuaTest Docker image to spin up a test server, run your tests, and see the output - all without having to install a server of your own.
 
 This makes it easy to test your code in a real Garry's Mod environment without worrying about other addons or config values.
+</details>
+
+ - Just looking for a taste of what GLuaTest has to offer? Check out the [Writing tests](#writing-tests-%EF%B8%8F) section.
+ - Interested in giving it a shot on your own project? Take a look at the [Usage](#usage) section to find out how to get started.
 
 
-## Usage
+# Usage
 
 GLuaTest can be used in a number of ways. Whether you want to run your tests when you open a PR, or if you just want to have it run on your development server - we've got you covered.
 
- - I want to run my tests on my Pull Requests
- - I want to run my tests locally or on a dev server
- - I want to run my tests without setting up a local or dev server
+ - [I want to run my tests on my Pull Requests](#automated-testing-on-pull-requests)
+ - [I want to run my tests locally or on a dev server](#running-locally)
+ - [I want to run my tests without setting up a local or dev server](#running-locally-without-a-server)
 
+---
 
-### Automated testing on Pull Requests
+## Automated testing on Pull Requests
 
 To set up automated test runs, we'll use Github Workflows.
 
@@ -70,7 +72,9 @@ And that's it! The next time you make a PR, it'll spin up a new test server, run
 
 There are a couple of config options you can use though.
 
-#### Requirements
+---
+
+### Requirements
 If your project depends on an external project, GLuaTest can automatically grab them for you.
 
 Let's say you needed:
@@ -79,18 +83,16 @@ Let's say you needed:
  - The Lua branch CFC's Logging Library ( github.com/CFC-Servers/gm_logger )
 
 
-Make a new file somewhere in your project with the following:
+Make a new file somewhere in your project (`lua/tests/my_project/requirements.txt` maybe?) with the following:
 ```
-# Example file name/location: lua/tests/my_project/requirements.txt
-
 TeamUlysses/ulx
 TeamUlysses/ulib
 CFC-Servers/gm_logger@lua
 ```
 
-Each line should be in the format of: `<Github owner/org name>/<Project name>`.
+Each line should be in the format of: **`<Github owner/org name>/<Project name>`**.
 
-You can use a specific branch of the project by adding `@<branch-name>` to the end of the line.
+You can use a specific branch of the project by adding **`@<branch-name>`** to the end of the line.
 
 
 Great, now we update our workflow to use our requirements file
@@ -107,14 +109,18 @@ jobs:
       requirements: lua/tests/my_project/requirements.txt
 ```
 
-All done! Commit those changes and GLuaTest will automatically clone those requirements.
+All done! Commit those changes and GLuaTest will automatically clone your requirements.
 
-#### Server Configs
-Sometimes your project requires specific convars to be set.
+---
+
+### Server Configs
+**Sometimes your project requires specific convars to be set.**
 
 Similar to how you define requirements, we'll make a new `.cfg` file.
 
+
 This file will be dumped straight into the end of server's `server.cfg` file. You can override existing configs, too.
+
 
 So, create the file:
 ```
@@ -139,20 +145,24 @@ jobs:
 
 And that's it!
 
-#### Speed 🏃
+---
+
+### Speed 🏃
 Running tests in a GitHub Runner is surprisingly fast.
 
-Even with hundreds of tests, you can expect the entire check to take under 30 seconds!
+Even with hundreds of tests, you can expect the entire check to take **under 30 seconds!**
 
-(Failing async tests will slow down the time significantly because it has to wait for the timeouts)
+_(Failing async tests will slow down the time significantly because it has to wait for the timeouts)_
 
 
-#### Cost 💸
+### Cost 💸
 You should incur no costs by using GitHub Actions.
 
 Nothing better than free 😎
 
-### Running locally
+---
+
+## Running locally
 
 It's actually extremely simple to run GLuaTest locally.
 
