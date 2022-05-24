@@ -303,12 +303,12 @@ Each Test Case is a table with the following keys:
 
 | Key              | Type       | Description                                                                    | Required | Default |
 |------------------|------------|--------------------------------------------------------------------------------|----------|---------|
-| **`name`**       | `string`   | Name of the test case (for reference later)                                    | `true`   |         |
-| **`func`**       | `function` | The test function                                                              | `true`   |         |
-| **`async`**      | `bool`     | If your test relies on timers, hooks, or callbacks, it must run asynchronously | `false`  | `false` |
-| **`timeout`**    | `int`      | How long to wait for your async test before marking it as having timed out     | `false`  | 60      |
-| **`clientside`** | `bool`     | Should run clientside-only                                                     | `false`  | `false` |
-| **`shared`**     | `bool`     | Should run clientside and serverside                                           | `false`  | `false` |
+| **`name`**       | `string`   | Name of the test case (for reference later)                                    | ✔️      |         |
+| **`func`**       | `function` | The test function                                                              | ✔️      |         |
+| **`async`**      | `bool`     | If your test relies on timers, hooks, or callbacks, it must run asynchronously | ❌      | `false` |
+| **`timeout`**    | `int`      | How long to wait for your async test before marking it as having timed out     | ❌      | 60      |
+| **`clientside`** | `bool`     | Should run clientside-only                                                     | ❌      | `false` |
+| **`shared`**     | `bool`     | Should run clientside and serverside                                           | ❌      | `false` |
 
 <br>
 
