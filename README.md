@@ -115,7 +115,7 @@ If your project depends on an external project, GLuaTest can automatically grab 
 Let's say you needed:
  - ULX
  - ULib
- - The Lua branch CFC's Logging Library ( github.com/CFC-Servers/gm_logger )
+ - The Lua branch CFC's Logging Library ( https://github.com/CFC-Servers/gm_logger )
 
 
 Make a new file somewhere in your project (`lua/tests/my_project/requirements.txt` maybe?) with the following:
