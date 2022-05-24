@@ -168,33 +168,28 @@ function ResultLogger.LogTestResult( result )
     MsgC( "\n" )
 end
 
-function ResultLogger.LogTestFailureDetails( failures )
-    -- TODO: Allow this to combine case errors into one visual report
-    -- instead of printing multiple reports for the same test case
+function ResultLogger.LogTestFailureDetails( failure )
+    local case = failure.case
+    local errInfo = failure.errInfo
 
-    MsgC( "\n", "\n" )
-    MsgC( colors.white, "GLuaTest failures:", "\n", "\n" )
-
-    for _, fails in pairs( failures ) do
-        for _, failure in ipairs( fails ) do
-            local case = failure.case
-            local errInfo = failure.errInfo
-
-            -- If the error came through without a source line,
-            -- we'll use the function definition
-            if not errInfo.sourceFile then
-                local debugInfo = debug.getinfo( case.func )
-                errInfo.sourceFile = debugInfo.short_src
-                errInfo.lineNumber = debugInfo.linedefined
-            end
-
-            ResultLogger.LogTestResult( failure )
-            logTestCaseFailure( errInfo )
-            hook.Run( "GLuaTest_LoggedTestFailure", errInfo )
-
-            MsgC( "\n" )
-        end
+    -- If the error came through without a source line,
+    -- we'll use the function definition
+    if not errInfo.sourceFile then
+        local debugInfo = debug.getinfo( case.func )
+        errInfo.sourceFile = debugInfo.short_src
+        errInfo.lineNumber = debugInfo.linedefined
     end
+
+    logTestCaseFailure( errInfo )
+    hook.Run( "GLuaTest_LoggedTestFailure", errInfo )
+
+    MsgC( "\n" )
+end
+
+function ResultLogger.LogTestsComplete()
+    MsgC( "\n", "\n" )
+    prefixLog( colors.white, "Test run complete! 🎉")
+    MsgC( "\n" )
 end
 
 return ResultLogger

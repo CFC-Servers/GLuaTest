@@ -88,7 +88,7 @@ end
 local function findStackInfo()
     -- Step up through the stacks to find the error we care about
 
-    for stack = 3, 12 do
+    for stack = 6, 12 do
         local info = debug.getinfo( stack, "lnS" )
         if not info then break end
 
@@ -96,7 +96,7 @@ local function findStackInfo()
     end
 
     -- This should never happen!!
-    print("The bad thing happened!!!!!")
+    ErrorNoHaltWithStack("The bad thing happened!!!!!")
     return 2, debug.getinfo( 2, "lnS" )
 end
 
@@ -144,7 +144,7 @@ function Helpers.MakeAsyncEnv( onDone, onFailedExpectation )
                 built.to.expected = function( ... )
                     if recordedFailure then return end
 
-                    local _, errInfo = xpcall( expected, FailCallback, ... )
+                    local _, errInfo = xpcall( expected, Helpers.FailCallback, ... )
                     onFailedExpectation( errInfo )
 
                     recordedFailure = true

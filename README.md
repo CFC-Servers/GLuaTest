@@ -1,4 +1,5 @@
-# GLuaTest 
+# GLuaTest
+
 🎉 **An endearing testing framework for GMod** 🎉
 ---
 
@@ -91,7 +92,7 @@ GLuaTest can be used in a number of ways. Whether you want to run your tests whe
 
 To set up automated test runs, we'll use Github Workflows.
 
-It's actually really simple to set up the workflow. Simply add the following file to your project:
+It's actually really simple to set up the workflow. Add the following file to your project:
 ```yml
 name: GLuaTest Runner
 
@@ -182,7 +183,7 @@ And that's it!
 
 ---
 
- 
+
 ### Speed 🏃
 Running tests in a GitHub Runner is surprisingly fast.
 
@@ -191,7 +192,7 @@ Even with hundreds of tests, you can expect the entire check to take **under 30 
 _(Failing async tests will slow down the time significantly because it has to wait for the timeouts)_
 
 
- 
+
 ### Cost 💸
 You should incur no costs by using GitHub Actions.
 
@@ -276,7 +277,7 @@ You can put all of your tests in one file, or split the files up based on module
 For example, if your addon had two entities you'd like to test, you could make `lua/tests/your_project/entity_1.lua` and `lua/tests/your_project/entity_2.lua`.
 We suggest you group your tests, but it'll work either way.
 
-The test file itself is quite simple. It needs to return a table of test cases.
+The test file itself is fairly simple. It has a few keys you can use, but the only requirement is the `cases` key; a table of Test Cases.
 
 
 For example:
@@ -284,31 +285,50 @@ For example:
 -- lua/tests/my_clock/get_time.lua
 
 return {
-    {
-        name = "It should return the correct time",
-        func = function()
-            local myClock = Clock.New()
-            local realTime = os.time()
+    cases = {
+        {
+            name = "It should return the correct time",
+            func = function()
+                local myClock = Clock.New()
+                local realTime = os.time()
 
-            expect( myClock:GetTime() ).to.equal( realTime )
-        end
+                expect( myClock:GetTime() ).to.equal( realTime )
+            end
+        }
     }
 }
 ```
- 
+
+
 <br>
+
+
+### The Test Group
+The Test Group (that is, the table you return from your Test File) can have the following keys:
+| Key              |    Type    | Description                                                                         | Required |
+|------------------|:----------:|-------------------------------------------------------------------------------------|:--------:|
+| **`cases`**      |   `table`  | A table of Test Cases                                                               |     ✔️     |
+| **`groupName`**  |  `string`  | The name of the module/function this Test Group is testing                          |     ❌    |
+| **`beforeAll`**  | `function` | A function to run once before running your Test Group                               |     ❌    |
+| **`beforeEach`** | `function` | A function to run before each Test Case in your Test Group. Takes a `state` table   |     ❌    |
+| **`afterAll`**   | `function` | A function to run after all Test Cases in your Test Group                           |     ❌    |
+| **`afterEach`**  | `function` | A function to run after each Test Case in your Test Group. Takes a `state` table    |     ❌    |
+
+
+<br>
+
 
 ### The Test Case
 Each Test Case is a table with the following keys:
 
 | Key              | Type       | Description                                                                    | Required | Default |
 |------------------|:----------:|--------------------------------------------------------------------------------|:--------:|:-------:|
-| **`name`**       | `string`   | Name of the test case (for reference later)                                    |  ✔️     |         |
-| **`func`**       | `function` | The test function                                                              |  ✔️     |         |
+| **`name`**       | `string`   | Name of the Test Case (for reference later)                                    |  ✔️     |         |
+| **`func`**       | `function` | The actual test function. Takes a `state` table                                |  ✔️     |         |
 | **`async`**      | `bool`     | If your test relies on timers, hooks, or callbacks, it must run asynchronously |  ❌     | `false` |
 | **`timeout`**    | `int`      | How long to wait for your async test before marking it as having timed out     |  ❌     | 60      |
-| **`clientside`** | `bool`     | Should run clientside-only                                                     |  ❌     | `false` |
-| **`shared`**     | `bool`     | Should run clientside and serverside                                           |  ❌     | `false` |
+| **`setup`**      | `function` | The function to run before running your test. Takes a `state` table            |  ❌     |         |
+| **`cleanup`**    | `function` | The function to run after running your test. Takes a `state` table             |  ❌     |         |
 
 <br>
 
@@ -336,7 +356,7 @@ There are a number of different expectations you can use.
 #### Expectations
 | Expectation          | Description                                           | Example                                                         |
 |----------------------|-------------------------------------------------------|-----------------------------------------------------------------|
-| **`equal`**/**`eq`**     | Basic `==` equality check                             | `expect( a ).to.eq( b )`                                        |
+| **`equal`**/**`eq`**     | Basic `==` equality check                             | `expect( a ).to.equal( b )`                                        |
 | **`beLessThan`**     | Basic `<` comparison                                  | `expect( 5 ).to.beLessThan( 6 )`                                |
 | **`beGreaterThan`**  | Basic `>` comparison                                  | `expect( 10 ).to.beGreaterThan( 1 )`                            |
 | **`beTrue`**         | Expects the subject to literally be `true`            | `expect( Entity( 1 ):IsPlayer() ).to.beTrue()`                  |
@@ -351,19 +371,17 @@ There are a number of different expectations you can use.
 
 <br>
 
-### The `done` function
-Some tests can't run synchronously. Sometimes you need to wait for something else to happen.
+### Async tests and the `done` function
+If your test relies on timers, hooks, callbacks, etc., then you need to run your test Asynchronously.
 
-In those cases, you need to mark your test as `async` and tell GLuaTest when you're done.
-
-You can do this with the `done()` function. As soon as an async test calls `done()`, it's marked as complete.
+The test is otherwise completely normal, but it's your job to tell GLuaTest when the test is done by calling `done()` anywhere in your test.
 
 
-If your test fails for some reason before it can call `done()`, GLuaTest has no way of knowing what happened.
-
-GLuaTest has a 60 second timer for each file's async functions to complete. If it hasn't heard back from any of them by then, it will mark them as Timed Out.
+If your test fails for some reason before it can call `done()`, it'll be marked as having failed after timing out.
 
 If you know the maximum amount of time your test will take, you can include the `timeout` key on the test with the number of seconds to wait until failing the test.
+
+If you don't include a `timeout` on your Test Case, you'll have to wait for the defaut 60-second timer before the test can complete. So if speed is important to you, consider setting a conservative `timeout` value for your async tests.
 
 
 For example, say we were trying to test this code:
@@ -386,18 +404,166 @@ Our test might look like:
 -- lua/tests/my_project/start_run.lua
 
 return {
-    {
-        name = "It should run within 2 seconds of calling StartRun",
-        async = true,
-        timeout = 3, -- If it hasn't finished in 3 seconds, something went wrong and it can be marked as failed
-        func = function()
-            MyProject:StartRun()
+    groupName = "StartRun",
+    cases = {
+        {
+            name = "It should run within 2 seconds of calling StartRun",
+            async = true,
+            timeout = 3, -- If it hasn't finished in 3 seconds, something went wrong and it can be marked as failed
+            func = function()
+                MyProject:StartRun()
 
-            timer.Simple( 2, function()
-                expect( MyProject.didRun ).to.beTrue()
-                done()
-            end )
-        end
+                timer.Simple( 2, function()
+                    expect( MyProject.didRun ).to.beTrue()
+                    done()
+                end )
+            end
+        }
     }
 }
 ```
+
+<br>
+
+### Before / After functions
+You may find yourself writing a lot of repetitive setup/teardown code in each of your Test Cases.
+
+For example, if you had five Test Cases that all needed to spawn an Entity and manipulate it, you'd have to write `ents.Create` a lot of times.
+
+GLuaTest has a few convenience functions for you to use.
+
+<br>
+
+**`beforeEach/afterEach`**
+
+Sticking with our example of needing to create an Entity, here's an example of how `beforeEach` and `afterEach` can make your life easier:
+
+```lua
+-- lua/tests/my_project/tickle_monster.lua
+
+return {
+    groupName = "Tickle Monster",
+
+    beforeEach = function( state )
+        state.ent = ents.Create( "sent_ticklemonster" )
+        state.ent:Spawn()
+    end,
+
+    afterEach = function( state )
+        if IsValid( state.ent ) then
+            state.ent:Remove()
+        end
+    end,
+
+    cases = {
+        {
+            name = "Should accept the Tickle function",
+            func = function( state )
+                expect( state.ent.Tickle ).to.exist()
+                expect( function() state.ent:Tickle() end ).to.succeed()
+                expect( state.ent.wasTickled ).to.beTrue()
+            end
+        },
+        {
+            name = "Should not be tickled by default",
+            func = function( state )
+                expect( state.ent.wasTickled ).to.beFalse()
+            end
+        },
+        {
+            name = "Should have the correct model",
+            func = function( state )
+                expect( state.ent:GetModel() ).to.equal( "materials/ticklemonster/default.vmt" )
+            end
+        }
+    }
+}
+```
+
+The `beforeEach` function created a brand-new Tickle Monster before every test, and the `afterEach` function deleted it, ensuring a clean test environment for each Test Case.
+
+You'll notice the `state` variable in that example. The `state` parameter is just a table that's shared between the before/after funcs and the Test Case function.
+
+As you see in the example, we can create our Tickle Monster, assign it a spot on the `state`, and reference it inside of our Test Case and `afterEach` function.
+
+
+<br>
+
+You also have access to `beforeAll` and `afterAll`, which are self-explanatory. Please note that these two functions **do not** take a `state` table.
+
+<br>
+
+**`setup`/`cleanup`**
+
+The `setup` and `cleanup` functions are a lot like `beforeEach` and `afterEach`, except they're used only for a specific Test Case.
+
+One important way to use these is to make sure that your test cleans up after itself even if it errors.
+
+<br>
+
+For example let's say I have a `WrapperFunc` that eventually calls the global `GlobalFunc`. I want my test to make sure that when I call `WrapperFunc`, it also calls `GlobalFunc`.,
+
+To do this, I'm going to re-define `GlobalFunc` in my test and have it set a variable that I can check afterwards.
+
+Once I'm done, I'll re-set `GlobalFunc` so that future tests can still use it:
+
+```lua
+-- lua/tests/my_project/wrapper.lua
+
+return {
+    groupName = "Wrapper Functions",
+    cases = {
+        {
+            name = "Wrapper should call the original function",
+            setup = function( state )
+                state.GlobalFunc = GlobalFunc
+            end,
+
+            func = function()
+                local wasCalled = false
+
+                GlobalFunc = function()
+                    wasCalled = true
+                end
+
+                WrapperFunc()
+
+                expect( wasCalled ).to.beTrue()
+            end,
+
+            cleanup = function( state )
+                GlobalFunc = state.GlobalFunc
+            end
+        }
+    }
+
+}
+```
+
+If we didn't use the `setup`/`cleanup` functions and just tried to do:
+```lua
+{
+    name = "Wrapper should call the original function",
+    func = function()
+        local ogGlobalFunc = GlobalFunc
+        local wasCalled = false
+
+        GlobalFunc = function()
+            wasCalled = true
+        end
+
+        WrapperFunc()
+
+        expect( wasCalled ).to.beTrue()
+
+        GlobalFunc = ogGlobalFunc
+    end,
+}
+```
+
+What would happen if `WrapperFunc` errored, or the expectation failed (the test exits on the first expectation failure)?
+
+`GlobalFunc` would still be defined as our local function for all future tests, causing all of them to fail.
+
+
+By using the `setup`/`cleanup` functions, we can be 100% sure that `GlobalFunc` gets re-defined properly, regardless of what happens in our test.

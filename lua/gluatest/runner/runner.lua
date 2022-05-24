@@ -5,9 +5,10 @@ local SafeRunWithEnv = Helpers.SafeRunWithEnv
 local CleanupPostTest = Helpers.CleanupPostTest
 
 local ResultLogger = include( "gluatest/runner/logger.lua" )
-local LogTestFailureDetails = ResultLogger.LogTestFailureDetails
-local LogTestResult = ResultLogger.LogTestResult
 local LogFileStart = ResultLogger.LogFileStart
+local LogTestResult = ResultLogger.LogTestResult
+local LogTestsComplete = ResultLogger.LogTestsComplete
+local LogTestFailureDetails = ResultLogger.LogTestFailureDetails
 
 local noop = function() end
 
@@ -23,9 +24,6 @@ return function( allTestGroups )
     -- Sequential table of Result structures
     local allResults = {}
 
-    -- { caseID = { result, result }, caseID = { result } }
-    local failures = {}
-
     local function _addResult( testGroup, success, case, errInfo )
         local result = {
             success = success,
@@ -36,13 +34,8 @@ return function( allTestGroups )
 
         table.insert( allResults, result )
 
-        if not success then
-            local id = case.id
-            failures[id] = failures[id] or {}
-            table.insert( failures[id], result )
-        end
-
         LogTestResult( result )
+        if not success then LogTestFailureDetails( result ) end
     end
 
     hook.Run( "GLuaTest_StartedTestRun", allTestGroups )
@@ -55,7 +48,7 @@ return function( allTestGroups )
         testGroup = table.remove( testGroups )
 
         if not testGroup then
-            LogTestFailureDetails( failures )
+            LogTestsComplete()
             hook.Run( "GLuaTest_Finished", testGroups, allResults )
             return
         end
@@ -117,21 +110,17 @@ return function( allTestGroups )
             runNextTestGroup( testGroups )
         end
 
-        for id, case in pairs( asyncCases ) do
-            local caseFunc = case.func
-            local caseTimeout = case.timeout
-            local setup = case.setup or noop
-
+        for _, case in pairs( asyncCases ) do
             testGroup.beforeEach( case.state )
-            setup( case.state )
+            case.setup( case.state )
 
             local expectationFailure = false
 
             -- TODO: Find a better way to handle this function
             -- It shouldn't take a param like this to modify its behavior
             case.testComplete = function( shouldCheckComplete )
-                timer.Remove( "GLuaTest_AsyncTimeout_" .. id )
-                setfenv( caseFunc, defaultEnv )
+                timer.Remove( "GLuaTest_AsyncTimeout_" .. case.id )
+                setfenv( case.func, defaultEnv )
 
                 case.cleanup( case.state )
                 testGroup.afterEach( case.state )
@@ -142,23 +131,19 @@ return function( allTestGroups )
             end
 
             local onDone = function()
-                if callbacks[id] ~= nil then
-                    ErrorNoHaltWithStack( "Tried to call done() after we already recorded a result?" )
-                    print( case.name )
-                    return
-                end
+                if callbacks[case.id] ~= nil then return end
 
                 if not expectationFailure then
                     addResult( true, case )
                 end
 
-                callbacks[id] = not expectationFailure
+                callbacks[case.id] = not expectationFailure
                 case.testComplete()
             end
 
             -- Received an expectation failure
-            -- We will record it here, but still expect them to
-            -- call done()
+            -- We will record it here, but still expect them
+            -- to call done().
             --
             -- This will only be called once, even though many
             -- expectations may fail.
@@ -169,8 +154,8 @@ return function( allTestGroups )
 
             local asyncEnv = MakeAsyncEnv( onDone, onFailedExpectation )
 
-            setfenv( caseFunc, asyncEnv )
-            local success, errInfo = xpcall( caseFunc, FailCallback, case.state )
+            setfenv( case.func, asyncEnv )
+            local success, errInfo = xpcall( case.func, FailCallback, case.state )
 
             -- If the test failed while calling it
             -- (Async expectation failures handled in asyncEnv.expect)
@@ -182,8 +167,8 @@ return function( allTestGroups )
             else
                 -- If the test ran successfully, start the case-specific timeout timer
                 -- (If it's configured)
-                if caseTimeout then
-                    timer.Create( "GluaTest_AsyncTimeout_" .. case.id, caseTimeout, 1, function()
+                if case.timeout then
+                    timer.Create( "GLuaTest_AsyncTimeout_" .. case.id, case.timeout, 1, function()
                         local timeoutInfo = { reason = "Timeout" }
 
                         addResult( false, case, timeoutInfo )
