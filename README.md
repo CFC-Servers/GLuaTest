@@ -54,7 +54,6 @@ GLuaTest can be used in a number of ways. Whether you want to run your tests whe
  - [I want to run my tests locally or on a dev server](#running-locally)
  - [I want to run my tests without setting up a local or dev server](#running-locally-without-a-server)
 
----
 
 ## Automated testing on Pull Requests
 
