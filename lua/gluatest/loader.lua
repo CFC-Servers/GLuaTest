@@ -30,8 +30,9 @@ local function getTestsInDir( dir, tests )
 
             table.insert( tests, {
                 fileName = fileName,
-                project = getProjectName( filePath ),
+                groupName = fileOutput.groupName,
                 cases = fileOutput.cases,
+                project = getProjectName( filePath ),
                 beforeAll = fileOutput.beforeAll or noop,
                 beforeEach = fileOutput.beforeEach or noop,
                 afterAll = fileOutput.afterAll or noop,
