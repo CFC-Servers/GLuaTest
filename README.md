@@ -231,8 +231,6 @@ You can even follow the test output live.
 </details>
 
 
----
-
 
 # Writing Tests ✍️
 
