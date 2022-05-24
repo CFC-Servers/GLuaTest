@@ -25,7 +25,7 @@ local function getTestsInDir( dir, tests )
         local filePath = dir .. "/" .. fileName
         local fileOutput = include( filePath )
 
-        if istable( fileOutput ) then
+        if istable( fileOutput ) and fileOutput.cases then
             if SERVER then checkSendToClients( filePath, fileOutput.cases ) end
 
             table.insert( tests, {

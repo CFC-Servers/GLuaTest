@@ -126,7 +126,7 @@ local function logLocals( errInfo )
     MsgC( "\n" )
 end
 
-local function logFailedTest( errInfo )
+local function logTestCaseFailure( errInfo )
     --
     -- Draw information about a given test failure
     --
@@ -139,31 +139,46 @@ local function logFailedTest( errInfo )
     logCodeContext( errInfo )
 end
 
-function ResultLogger.LogFileStart( name )
-    prefixLog( colors.blue, "Starting tests cases from: [", name , "]...", "\n" )
+function ResultLogger.LogFileStart( testGroup )
+    local fileName = testGroup.fileName
+    local groupName = testGroup.groupName
+    local project = testGroup.project
+
+    local identifier = project .. "/" .. fileName
+    if groupName then
+        identifier = identifier .. ": " .. groupName
+    end
+
+    prefixLog( colors.blue, "Starting tests cases for: [", identifier , "]...", "\n" )
 end
 
-function ResultLogger.LogTestResults( results )
-    local resultCount = #results
+function ResultLogger.LogTestResult( result )
+    local case = result.case
+    local success = result.success
 
-    for i = 1, resultCount do
-        local result = results[i]
-        local case = result.case
-        local success = result.success
-        local errInfo = result.errInfo
+    if success then
+        prefixLog( colors.green, "PASS " )
+    else
+        prefixLog( colors.red, "FAIL " )
+    end
 
-        if success then
-            prefixLog( colors.green, "PASS " )
-        else
-            prefixLog( colors.red, "FAIL " )
-        end
+    MsgC( colors.grey, "[" )
+    MsgC( colors.white, case.name )
+    MsgC( colors.grey, "]" )
+    MsgC( "\n" )
+end
 
-        MsgC( colors.grey, "[" )
-        MsgC( colors.white, case.name )
-        MsgC( colors.grey, "]" )
+function ResultLogger.LogTestFailureDetails( failures )
+    -- TODO: Allow this to combine case errors into one visual report
+    -- instead of printing multiple reports for the same test case
 
-        if not success then
-            MsgC( "\n" )
+    MsgC( "\n", "\n" )
+    MsgC( colors.white, "GLuaTest failures:", "\n", "\n" )
+
+    for _, fails in pairs( failures ) do
+        for _, failure in ipairs( fails ) do
+            local case = failure.case
+            local errInfo = failure.errInfo
 
             -- If the error came through without a source line,
             -- we'll use the function definition
@@ -173,11 +188,12 @@ function ResultLogger.LogTestResults( results )
                 errInfo.lineNumber = debugInfo.linedefined
             end
 
-            logFailedTest( errInfo )
-        end
+            ResultLogger.LogTestResult( failure )
+            logTestCaseFailure( errInfo )
+            hook.Run( "GLuaTest_LoggedTestFailure", errInfo )
 
-        hook.Run( "GLuaTest_LoggedTestResult", success, result, case, errInfo )
-        MsgC( "\n" )
+            MsgC( "\n" )
+        end
     end
 end
 
