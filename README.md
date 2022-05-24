@@ -9,7 +9,24 @@ Its job is to make writing tests for Garry's Mod projects easy.
 It offers an approachable (albeit strange) syntax that lets you get started quickly.
 
 
-GLuaTest also supports multiple methods to integrate with your workflow.
+## It also has some pretty rad test output:
+
+### **In the terminal:**
+![image](https://user-images.githubusercontent.com/7936439/169943373-2d31a676-66a4-4eda-8cf8-2aad46122e86.png)
+
+
+<br>
+
+### **In GCompute:**
+![image](https://user-images.githubusercontent.com/7936439/169943331-fd280fe0-57e9-4f38-993e-b99763e3b86e.png)
+
+
+<br>
+
+### **In a Pull Request:**
+![image](https://user-images.githubusercontent.com/7936439/169943290-e531d722-cc36-4191-b882-2cb74f820f20.png)
+
+
 
 <br>
 
