@@ -16,7 +16,7 @@ if GLuaTest.RUN_CLIENTSIDE then
 end
 
 GLuaTest.loader = include( "gluatest/loader.lua" )
-GLuaTest.runner = include( "gluatest/runner.lua" )
+GLuaTest.runner = include( "gluatest/runner/runner.lua" )
 
 local _, projects = file.Find( "tests/*", "LUA" )
 local testFiles = {}
