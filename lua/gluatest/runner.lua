@@ -336,19 +336,80 @@ end
 
 local expect = include( "gluatest/expectations.lua" )
 
+------------------
+-- Cleanup stuff--
+------------------
+-- TODO: Make these explicitly per-test so it can work with async
+local trackedHooks = {}
+local hook_Add = function( event, name, func, ... )
+    if not trackedHooks[event] then trackedHooks[event] = {} end
+    table.insert( trackedHooks[event], name )
+
+    return hook.Add( event, name, func, ... )
+end
+
+local timerCount = 0
+local timerNames = {}
+local timer_Create = function( identifier, delay, reps, func, ... )
+    table.insert( timerNames, identifier )
+
+    return timer.Create( identifier, delay, reps, func, ... )
+end
+local timer_Simple = function( delay, func )
+    local name = "simple_timer_" .. timerCount
+    timerCount = timerCount + 1
+
+    timer_Create( name, delay, 1, func )
+end
+
+local function cleanupPostTest()
+    for event, names in pairs( trackedHooks ) do
+        for _, name in ipairs( names ) do
+            hook.Remove( event, name )
+        end
+    end
+
+    for _, name in ipairs( timerNames ) do
+        timer.Remove( name )
+    end
+
+    trackedHooks = {}
+    timerNames = {}
+    timerCount = 0
+end
+
+------------------------
+-- Main Test Function --
+------------------------
 return function( testFiles )
     if CLIENT and not GLuaTest.RUN_CLIENTSIDE then return end
 
     -- TODO: Scope these by file or print/clear results after each file
     local results = {}
 
+    -- TODO: Move the environment creation elsewhere
     local defaultEnv = getfenv( 1 )
     local testEnv = setmetatable(
         {
             expect = expect,
-            _R = _R
+            _R = _R,
         },
-        { __index = _G }
+        {
+            __index = function( _, idx )
+                if idx == "hook" then
+                    return table.Inherit( { Add = hook_Add }, hook )
+                end
+
+                if idx == "timer" then
+                    return table.Inherit( {
+                        Create = timer_Create,
+                        Simple = timer_Simple
+                    }, timer )
+                end
+
+                return _G[idx]
+            end
+        }
     )
 
     local function getLocals( level )
@@ -449,6 +510,8 @@ return function( testFiles )
                     local success, errInfo = xpcall( func, failCallback )
                     setfenv( func, defaultEnv )
 
+                    cleanupPostTest()
+
                     hook.Run( "GLuaTest_RanTestCase", test, case, success, errInfo )
 
                     table.insert( results, {
@@ -516,7 +579,7 @@ return function( testFiles )
 
                     done = function()
                         if callbacks[name] ~= nil then
-                            print( "Tried to call done() after we already recorded a result?" )
+                            ErrorNoHaltWithStack( "Tried to call done() after we already recorded a result?" )
                             print( name )
                             return
                         end
