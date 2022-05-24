@@ -23,6 +23,7 @@ local function makeExpectations( subject )
             expected( "to equal '%s'", comparison )
         end
     end
+    expectations.equal = expectations.eq
 
     function expectations.beLessThan( comparison )
         if subject >= comparison then
@@ -77,7 +78,7 @@ local function makeExpectations( subject )
         end
     end
 
-    function expectations.error()
+    function expectations.err()
         local success = pcall( subject )
 
         if success == true then
@@ -85,13 +86,17 @@ local function makeExpectations( subject )
         end
     end
 
-    function expectations.errorWith( comparison )
+    function expectations.errWith( comparison )
         local success, err = pcall( subject )
 
         if success == true then
             expected( "to error with '%s'", comparison )
-        elseif err ~= comparison then
-            expected( "to error with '%s', got '%s'", comparison, err )
+        else
+            err = string.Split( err, ": " )[2]
+
+            if err ~= comparison then
+                expected( "to error with '%s', got '%s'", comparison, err )
+            end
         end
     end
 
