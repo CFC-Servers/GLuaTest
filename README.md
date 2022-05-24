@@ -433,7 +433,9 @@ For example, if you had five Test Cases that all needed to spawn an Entity and m
 GLuaTest has a few convenience functions for you to use.
 
 <br>
+ 
 ---
+ 
 <br>
 
 #### **`beforeEach/afterEach`**
@@ -494,7 +496,9 @@ As you see in the example, we can create our Tickle Monster, assign it a spot on
 You also have access to `beforeAll` and `afterAll`, which are self-explanatory. Please note that these two functions **do not** take a `state` table.
 
 <br>
+ 
 ---
+ 
 <br>
  
 #### **`setup`/`cleanup`**
