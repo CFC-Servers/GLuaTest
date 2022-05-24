@@ -8,6 +8,9 @@ It offers an approachable (albeit strange) syntax that lets you get started quic
 
 GLuaTest also supports multiple methods to integrate with your workflow.
 
+
+_**Are you an impatient software developer? Check out the [quickstart](https://github.com/CFC-Servers/GLuaTest/blob/main/quickstart.md) guide to go fast**_
+
 <details>
  <summary><strong>Foreward about automated testing in GMod</strong></summary>
 <br>
