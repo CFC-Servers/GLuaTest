@@ -1,6 +1,9 @@
 local istable = istable
+local runClientside = GLuaTest.RUN_CLIENTSIDE
 
 local checkSendToClients = function( filePath, cases )
+    if not runClientside then return end
+
     for _, case in ipairs( cases ) do
         if case.clientside then
             print( "Found clientside test case, sending file to clients: ", filePath )

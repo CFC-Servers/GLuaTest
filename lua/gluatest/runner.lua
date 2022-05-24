@@ -337,6 +337,8 @@ end
 local expect = include( "gluatest/expectations.lua" )
 
 return function( testFiles )
+    if CLIENT and not GLuaTest.RUN_CLIENTSIDE then return end
+
     -- TODO: Scope these by file or print/clear results after each file
     local results = {}
 
