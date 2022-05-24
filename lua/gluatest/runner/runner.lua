@@ -15,7 +15,6 @@ return function( testFiles )
     -- TODO: Scope these by file or print/clear results after each file
     local results = {}
 
-    -- TODO: Move the environment creation elsewhere
     local defaultEnv = getfenv( 1 )
     local testEnv = MakeTestEnv()
 
@@ -47,6 +46,7 @@ return function( testFiles )
 
         for c = 1, caseCount do
             local case = cases[c]
+            case.state = case.state or {}
 
             local shared = case.shared
             local clientside = case.clientside
@@ -58,19 +58,18 @@ return function( testFiles )
                     asyncCases[case.name] = case
                 else
                     local func = case.func
-                    local state = case.state or {}
                     local setup = case.setup or noop
                     local cleanup = case.cleanup or noop
 
-                    beforeEach()
-                    setup( state )
+                    beforeEach( case.state )
+                    setup( case.state )
 
                     setfenv( func, testEnv )
-                    local success, errInfo = xpcall( func, FailCallback, state )
+                    local success, errInfo = xpcall( func, FailCallback, case.state )
                     setfenv( func, defaultEnv )
 
-                    cleanup( state )
-                    afterEach()
+                    cleanup( case.state )
+                    afterEach( case.state )
 
                     CleanupPostTest()
 
@@ -105,6 +104,8 @@ return function( testFiles )
         for name, case in pairs( asyncCases ) do
             local caseFunc = case.func
             local caseTimeout = case.timeout
+            local setup = case.setup or noop
+            local cleanup = case.cleanup or noop
 
             local asyncEnv = setmetatable(
                 {
@@ -131,7 +132,9 @@ return function( testFiles )
                             timer.Remove( "GLuaTest_AsyncTimeout_" .. name )
 
                             callbacks[name] = false
-                            checkComplete()
+
+                            afterEach( case.state )
+                            checkComplete() -- FIXME: Should this run here, before the error()?
 
                             -- Halt the test?
                             -- (Should be caught by the outer xpcall)
@@ -156,6 +159,10 @@ return function( testFiles )
 
                         callbacks[name] = true
                         setfenv( caseFunc, defaultEnv )
+
+                        cleanup( case.state )
+                        afterEach( case.state )
+
                         checkComplete()
                     end,
 
@@ -164,8 +171,11 @@ return function( testFiles )
                 { __index = _G }
             )
 
+            beforeEach( casae.state )
+            setup( case.state )
+
             setfenv( caseFunc, asyncEnv )
-            local success, errInfo = xpcall( caseFunc, FailCallback )
+            local success, errInfo = xpcall( caseFunc, FailCallback, case.state )
 
             if caseTimeout then
                 timer.Create( "GluaTest_AsyncTimeout_" .. name, caseTimeout, 1, function()
@@ -180,6 +190,7 @@ return function( testFiles )
                     })
 
                     setfenv( caseFunc, defaultEnv )
+                    afterEach( case.state )
                 end )
             end
 
@@ -195,6 +206,9 @@ return function( testFiles )
                     case = case,
                     errInfo = errInfo
                 })
+
+                cleanup( case.state )
+                afterEach( case.state )
             end
         end
 
@@ -207,11 +221,14 @@ return function( testFiles )
                         case = case,
                         errInfo = { reason = "Timeout" }
                     })
+
+                    cleanup( case.state )
+                    afterEach( case.state )
                 end
             end
 
-            afterAll()
-            runNextTest( tests )
+            -- Should always run the next tests
+            checkComplete()
         end )
     end
 
