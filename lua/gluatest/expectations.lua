@@ -69,6 +69,32 @@ local function makeExpectations( subject )
     end
     expectations.beAn = expectations.beA
 
+    function expectations.succeed()
+        local success, err = pcall( subject )
+
+        if success == false then
+            expected( "to succeed, got: %s", err )
+        end
+    end
+
+    function expectations.error()
+        local success = pcall( subject )
+
+        if success == true then
+            expected( "to error" )
+        end
+    end
+
+    function expectations.errorWith( comparison )
+        local success, err = pcall( subject )
+
+        if success == true then
+            expected( "to error with '%s'", comparison )
+        elseif err ~= comparison then
+            expected( "to error with '%s', got '%s'", comparison, err )
+        end
+    end
+
     return expectations
 end
 
