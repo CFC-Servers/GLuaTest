@@ -1,16 +1,23 @@
 # GLuaTest 
-🎉 **GLuaTest 🎉 - an endearing testing framework for GMod**
+🎉 **An endearing testing framework for GMod** 🎉
 ---
 
-GLuaTest is a testing framework built for Garry's Mod. Its job is to make writing tests for Garry's Mod projects easy.
+GLuaTest is a testing framework built for Garry's Mod.
+Its job is to make writing tests for Garry's Mod projects easy.
+
 
 It offers an approachable (albeit strange) syntax that lets you get started quickly.
 
+
 GLuaTest also supports multiple methods to integrate with your workflow.
 
+<br>
 
 _**Are you an impatient software developer? Check out the [quickstart](https://github.com/CFC-Servers/GLuaTest/blob/main/QUICKSTART.md) guide to go fast**_
 
+<br>
+
+**Some additional reading:**
 <details>
  <summary><strong>Foreward about automated testing in GMod</strong></summary>
 <br>
@@ -40,7 +47,9 @@ You can use the GLuaTest Docker image to spin up a test server, run your tests, 
 This makes it easy to test your code in a real Garry's Mod environment without worrying about other addons or config values.
 </details>
 
----
+
+<br>
+
 _Just looking for a taste of what GLuaTest has to offer? Check out the [Writing tests](#writing-tests-%EF%B8%8F) section._
 
 _Interested in giving it a shot on your own project? Take a look at the [Usage](#usage) section to find out how to get started._
