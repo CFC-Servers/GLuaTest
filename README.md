@@ -293,6 +293,8 @@ Each Test Case is a table with the following keys:
 | **`clientside`** | `bool`     | Should run clientside-only                                                     | `false`  | `false` |
 | **`shared`**     | `bool`     | Should run clientside and serverside                                           | `false`  | `false` |
 
+<br>
+
 ### The `expect` function
 The heart of a test is the _expectation_. You did a thing, and now you expect a result.
 
