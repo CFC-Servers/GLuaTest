@@ -12,7 +12,7 @@ It offers an approachable (albeit strange) syntax that lets you get started quic
 ### It also has some pretty rad test output:
 
 #### **In the terminal:**
-![image](https://user-images.githubusercontent.com/7936439/169943373-2d31a676-66a4-4eda-8cf8-2aad46122e86.png)
+![image](https://user-images.githubusercontent.com/7936439/169948915-c75e07a3-563a-43ee-825c-12ee76149b05.png)
 
 
 <br>
