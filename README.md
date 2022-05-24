@@ -1,6 +1,6 @@
 # GLuaTest
 
-🎉 **An endearing testing framework for GMod** 🎉
+🎉 **The missing test framework for GMod** 🎉
 ---
 
 GLuaTest is a testing framework built for Garry's Mod.
