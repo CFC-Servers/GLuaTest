@@ -169,10 +169,6 @@ Nothing better than free 😎
 
 
 
----
-
-
-
 ## Running locally
 <details>
 <summary><strong>Running Locally</strong></summary>
@@ -185,9 +181,6 @@ Just put GLuaTest into your `addons/` directory, set `gluatest_enable 1` on the 
 
 All of your tests will run when the server starts up and you can view the output in the server console/logs.
 </details>
-
-
----
 
 
 ## Running locally without a server
