@@ -1,13 +1,34 @@
 local istable = istable
 
+local checkSendToClients = function( filePath, cases )
+    for _, case in ipairs( cases ) do
+        if case.clientside then
+            print( "Found clientside test case, sending file to clients: ", filePath )
+            return AddCSLuaFile( filePath )
+        end
+    end
+end
+
+local getProjectName = function( dir )
+    return string.match( dir, "^tests/(.+)/.*$" )
+end
+
 local function getTestsInDir( dir, tests )
     if not tests then tests = {} end
     local files, dirs = file.Find( dir .. "/*.lua", "LUA" )
 
     for _, fileName in ipairs( files ) do
-        local fileOutput = include( dir .. "/" .. fileName )
+        local filePath = dir .. "/" .. fileName
+        local fileOutput = include( filePath )
+
         if istable( fileOutput ) then
-            table.insert( tests, { fileName = fileName, cases = fileOutput } )
+            if SERVER then checkSendToClients( filePath, fileOutput ) end
+
+            table.insert( tests, {
+                fileName = fileName,
+                project = getProjectName( filePath ),
+                cases = fileOutput
+            } )
         end
     end
 

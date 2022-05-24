@@ -8,35 +8,45 @@ local colors = {
     blue = Color( 120, 162, 204 )
 }
 
--- == MsgC Ansi Wrapper == --
-local _MsgC = _G["MsgC"]
-local endColor = "\x1b[0m"
-local startColor = "\x1b[38;2;"
-
-local function colorToAnsi( col )
-    local r = col.r
-    local g = col.g
-    local b = col.b
-    return string.format( "%s%d;%d;%dm", startColor, r, g, b )
+if CLIENT then
+    -- The default darkgrey is too dark for gmod terminal
+    colors.darkgrey = Color( 125, 125, 125 )
 end
 
-local MsgC = function( ... )
-    --
-    -- Wraps MsgC to convert colors to ANSI
-    --
-    local line = ""
+-- == MsgC Ansi Wrapper == --
+local MsgC = _G["MsgC"]
 
-    for _, t in ipairs( {...} ) do
-        if IsColor( t ) then
-            line = line .. colorToAnsi( t )
-        else
-            line = line .. tostring( t )
-        end
+if SERVER then
+    _G["_MsgC"] = _G["MsgC"]
+    local _MsgC = _G["_MsgC"]
+    local endColor = "\x1b[0m"
+    local startColor = "\x1b[38;2;"
+
+    local function colorToAnsi( col )
+        local r = col.r
+        local g = col.g
+        local b = col.b
+        return string.format( "%s%d;%d;%dm", startColor, r, g, b )
     end
 
-    line = string.Replace( line, "\n", endColor .. "\n" )
+    MsgC = function( ... )
+        --
+        -- Wraps MsgC to convert colors to ANSI
+        --
+        local line = ""
 
-    return _MsgC( line )
+        for _, t in ipairs( {...} ) do
+            if IsColor( t ) then
+                line = line .. colorToAnsi( t )
+            else
+                line = line .. tostring( t )
+            end
+        end
+
+        line = string.Replace( line, "\n", endColor .. "\n" )
+
+        return _MsgC( line )
+    end
 end
 
 -- == Logging == --
@@ -212,6 +222,15 @@ local function logCodeContext( errInfo )
     local sourceFile = errInfo.sourceFile
     local lineNumber = errInfo.lineNumber
 
+    if CLIENT then
+        -- Clients can't read the failing files to get code context
+        -- So we just print some simple output here
+        MsgC( colors.white, "    Cause:", "\n" )
+        MsgC( colors.white, "       Line ", lineNumber, ": " )
+        MsgC( colors.red, reason, "\n" )
+        return
+    end
+
     local lines = getLineWithContext( sourceFile, lineNumber )
     local lineCount = #lines
     lines = normalizeLinesIndent( lines )
@@ -234,7 +253,6 @@ local function logCodeContext( errInfo )
             drawLine( lineContent, lineNumStr )
             MsgC( "\n" )
         end
-
     end
 
     MsgC( colors.grey,  "     |", divider, "\n" )
@@ -413,22 +431,30 @@ return function( testFiles )
 
         for c = 1, caseCount do
             local case = cases[c]
-            if case.async then
-                asyncCases[case.name] = case
-            else
-                local func = case.func
 
-                setfenv( func, testEnv )
-                local success, errInfo = xpcall( func, failCallback )
-                setfenv( func, defaultEnv )
+            local shared = case.shared
+            local clientside = case.clientside
+            local serverside = not case.clientside
+            local shouldRun = shared or ( clientside and CLIENT ) or ( serverside and SERVER )
 
-                hook.Run( "GLuaTest_RanTestCase", test, case, success, errInfo )
+            if shouldRun then
+                if case.async then
+                    asyncCases[case.name] = case
+                else
+                    local func = case.func
 
-                table.insert( results, {
-                    success = success,
-                    case = case,
-                    errInfo = success and nil or errInfo
-                } )
+                    setfenv( func, testEnv )
+                    local success, errInfo = xpcall( func, failCallback )
+                    setfenv( func, defaultEnv )
+
+                    hook.Run( "GLuaTest_RanTestCase", test, case, success, errInfo )
+
+                    table.insert( results, {
+                        success = success,
+                        case = case,
+                        errInfo = success and nil or errInfo
+                    } )
+                end
             end
         end
 
