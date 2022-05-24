@@ -269,6 +269,8 @@ return {
     }
 }
 ```
+ 
+<br>
 
 ### The Test Case
 Each Test Case is a table with the following keys:
@@ -299,6 +301,8 @@ expect( "a" ).to.equal( "b" )
 
 Kinda cool, right?
 
+<br>
+
 There are a number of different expectations you can use.
 
 #### Expectations
@@ -316,6 +320,8 @@ There are a number of different expectations you can use.
 | **`succeed`**        | Expects the subject function to run without error     | `expect( CurTime ).to.succeed()`                                |
 | **`err`**            | Expects the subject function to throw an error        | `expect( error ).to.err()`                                      |
 | **`errWith`**        | Expects the subject function to throw the given error | `expect( function() error( "oops" ) end ).to.errWith( "oops" )` |
+
+<br>
 
 ### The `done` function
 Some tests can't run synchronously. Sometimes you need to wait for something else to happen.
