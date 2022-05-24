@@ -367,7 +367,7 @@ There are a number of different expectations you can use.
 | **`beA`**/**`beAn`**     | Expects the subject to have the given `type`          | `expect( "test" ).to.beA( "string" )`                           |
 | **`succeed`**        | Expects the subject function to run without error     | `expect( CurTime ).to.succeed()`                                |
 | **`err`**            | Expects the subject function to throw an error        | `expect( error ).to.err()`                                      |
-| **`errWith`**        | Expects the subject function to throw the given error | `expect( function() error( "oops" ) end ).to.errWith( "oops" )` |
+| **`errWith`**        | Expects the subject function to throw the given error | `expect( badFunc ).to.errWith( "error message" )`               |
 
 <br>
 
