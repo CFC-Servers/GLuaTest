@@ -51,4 +51,4 @@ jobs:
 
 That's it! You have a working automated test runner for your project.
 
-Check out the README for more details about [what expectations you can use]() and [how to make async tests]().
+Check out the README for more details about [what expectations you can use](https://github.com/CFC-Servers/GLuaTest#expectations) and [how to make async tests](https://github.com/CFC-Servers/GLuaTest#the-done-function).
