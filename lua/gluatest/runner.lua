@@ -387,7 +387,7 @@ return function( testFiles )
     -- TODO: Scope these by file or print/clear results after each file
     local results = {}
 
-    local testHook = table.Inherit( { Add = hook_add }, hook )
+    local testHook = table.Inherit( { Add = hook_Add }, hook )
     local testTimer = table.Inherit( { Create = timer_Create, Simple = timer_Simple }, timer )
 
     -- TODO: Move the environment creation elsewhere
