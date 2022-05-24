@@ -571,7 +571,7 @@ If we didn't use the `setup`/`cleanup` functions and just tried to do:
 
 What would happen if `WrapperFunc` errored, or the expectation failed (the test exits on the first expectation failure)?
 
-`GlobalFunc` would still be defined as our local function for all future tests, causing all of them to fail.
+`GlobalFunc` would still be defined as our local function for all future tests, potentially causing them to fail.
 
 
 By using the `setup`/`cleanup` functions, we can be 100% sure that `GlobalFunc` gets re-defined properly, regardless of what happens in our test.
