@@ -438,7 +438,7 @@ GLuaTest has a few convenience functions for you to use.
  
 <br>
 
-#### **`beforeEach/afterEach`**
+#### **`beforeEach`/`afterEach`**
 
 Sticking with our example of needing to create an Entity, here's an example of how `beforeEach` and `afterEach` can make your life easier:
 
