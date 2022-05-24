@@ -36,7 +36,7 @@ _**Are you an impatient software developer? Check out the [quickstart](https://g
 
 **Some additional reading:**
 <details>
- <summary><strong>Foreward about automated testing in GMod</strong></summary>
+ <summary><strong>Foreword about automated testing in GMod</strong></summary>
 <br>
 Automated testing is a crucial part of any software workflow.
 Your automated tests define a contract that give you and your would-be users confidence that the project will behave properly.
