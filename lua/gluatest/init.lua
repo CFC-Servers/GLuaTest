@@ -1,7 +1,17 @@
 GLuaTest = {
-    loader = include( "gluatest/loader.lua" ),
-    runner = include( "gluatest/runner.lua" )
+    -- If, for some reason, you need to run GLuaTest clientside, set this to true
+    RUN_CLIENTSIDE = false
 }
+
+if GLuaTest.RUN_CLIENTSIDE then
+    AddCSLuaFile()
+    AddCSLuaFile( "gluatest/loader.lua" )
+    AddCSLuaFile( "gluatest/runner.lua" )
+    AddCSLuaFile( "gluatest/expectations.lua" )
+end
+
+GLuaTest.loader = include( "gluatest/loader.lua" )
+GLuaTest.runner = include( "gluatest/runner.lua" )
 
 local _, projects = file.Find( "tests/*", "LUA" )
 local testFiles = {}
