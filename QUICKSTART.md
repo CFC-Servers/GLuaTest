@@ -16,17 +16,20 @@ Create the basic test structure:
 -- lua/tests/project_name/main.lua
 
 return {
-    {
-        name = "Should create project tables",
-        func = function()
-            expect( MyProject ).to.exist()
-        end
-    },
-    {
-        name = "Should not load modules automatically",
-        func = function()
-            expect( MyProject.Modules ).to.beNil()
-        end
+    groupName = "MyProject",
+    cases = {
+        {
+            name = "Should create project tables",
+            func = function()
+                expect( MyProject ).to.exist()
+            end
+        },
+        {
+            name = "Should not load modules automatically",
+            func = function()
+                expect( MyProject.Modules ).to.beNil()
+            end
+        }
     }
 }
 ```

@@ -435,8 +435,6 @@ GLuaTest has a few convenience functions for you to use.
 <br>
  
 ---
- 
-<br>
 
 #### **`beforeEach`/`afterEach`**
 
@@ -491,15 +489,11 @@ You'll notice the `state` variable in that example. The `state` parameter is jus
 As you see in the example, we can create our Tickle Monster, assign it a spot on the `state`, and reference it inside of our Test Case and `afterEach` function.
 
 
-<br>
-
 You also have access to `beforeAll` and `afterAll`, which are self-explanatory. Please note that these two functions **do not** take a `state` table.
 
 <br>
  
 ---
- 
-<br>
  
 #### **`setup`/`cleanup`**
 
