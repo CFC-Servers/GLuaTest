@@ -1,4 +1,5 @@
 local Helpers = {}
+local expect = include( "gluatest/expectations.lua" )
 
 ------------------
 -- Cleanup stuff--

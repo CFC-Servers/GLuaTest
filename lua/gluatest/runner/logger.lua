@@ -1,11 +1,11 @@
-local Helpers = include( "gluatest/log_helpers.lua" )
+local Helpers = include( "gluatest/runner/log_helpers.lua" )
 local GenerateDivider = Helpers.GenerateDivider
 local GetLineWithContext = Helpers.GetLineWithContext
 local GetLeadingWhitespace = Helpers.GetLeadingWhitespace
 local NormalizeLinesIndent = Helpers.NormalizeLinesIndent
 
-local colors = include( "gluatest/colors.lua" )
-local MsgC = include( "gluatest/msgc_wrapper.lua" )
+local colors = include( "gluatest/runner/colors.lua" )
+local MsgC = include( "gluatest/runner/msgc_wrapper.lua" )
 
 local ResultLogger = {}
 
@@ -139,7 +139,7 @@ local function logFailedTest( errInfo )
     logCodeContext( errInfo )
 end
 
-function ResultLogger.logFileStart( name )
+function ResultLogger.LogFileStart( name )
     prefixLog( colors.blue, "Starting tests cases from: [", name , "]...", "\n" )
 end
 
