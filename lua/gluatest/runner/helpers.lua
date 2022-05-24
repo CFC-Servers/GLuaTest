@@ -47,25 +47,25 @@ end
 local testHook = table.Inherit( { Add = hook_Add }, hook )
 local testTimer = table.Inherit( { Create = timer_Create, Simple = timer_Simple }, timer )
 
-function Helpers.MakeTestEnv()
+local function makeTestEnv()
     return setmetatable(
-        {
-            expect = expect,
-            _R = _R,
-        },
-        {
-            __index = function( _, idx )
-                if idx == "hook" then
-                    return testHook
-                end
-
-                if idx == "timer" then
-                    return testTimer
-                end
-
-                return _G[idx]
+    {
+        expect = expect,
+        _R = _R,
+    },
+    {
+        __index = function( _, idx )
+            if idx == "hook" then
+                return testHook
             end
-        }
+
+            if idx == "timer" then
+                return testTimer
+            end
+
+            return _G[idx]
+        end
+    }
     )
 end
 
@@ -127,6 +127,45 @@ function Helpers.FailCallback( reason )
         lineNumber = info.currentline,
         locals = locals
     }
+end
+
+function Helpers.MakeAsyncEnv( onDone, onFailedExpectation )
+    return setmetatable(
+        {
+            -- We manually catch expectation errors here in case
+            -- they're called in an async function
+            expect = function( subject )
+                local built = expect( subject )
+                local expected = built.to.expected
+                local recordedFailure = false
+
+                -- Wrap the error-throwing function
+                -- and handle the error with the correct context
+                built.to.expected = function( ... )
+                    if recordedFailure then return end
+
+                    local _, errInfo = xpcall( expected, FailCallback, ... )
+                    onFailedExpectation( errInfo )
+
+                    recordedFailure = true
+                end
+
+                return built
+            end,
+
+            done = onDone,
+            _R = _R
+        },
+        { __index = _G }
+    )
+end
+
+function Helpers.SafeRunWithEnv( defaultEnv, func, ... )
+    setfenv( func, makeTestEnv() )
+    local success, errInfo = xpcall( func, Helpers.FailCallback, ... )
+    setfenv( func, defaultEnv )
+
+    return success, errInfo
 end
 
 return Helpers

@@ -17,8 +17,7 @@ local function cleanSource( fileName )
     return spl
 end
 
-hook.Add( "GLuaTest_LoggedTestResult", "TestLog", function( success, _, _, errInfo )
-    if success then return end
+hook.Add( "GLuaTest_LoggedTestFailure", "TestLog", function( errInfo )
     local failInfo = {
         reason = errInfo.reason,
         lineNumber = errInfo.lineNumber,
