@@ -9,7 +9,7 @@ It offers an approachable (albeit strange) syntax that lets you get started quic
 GLuaTest also supports multiple methods to integrate with your workflow.
 
 
-_**Are you an impatient software developer? Check out the [quickstart](https://github.com/CFC-Servers/GLuaTest/blob/main/quickstart.md) guide to go fast**_
+_**Are you an impatient software developer? Check out the [quickstart](https://github.com/CFC-Servers/GLuaTest/blob/main/QUICKSTART.md) guide to go fast**_
 
 <details>
  <summary><strong>Foreward about automated testing in GMod</strong></summary>
@@ -198,8 +198,8 @@ In fact, many of the steps are the same.
 ### Requirements / Server Configs
 If your project depends on other projects, you can have GLuaTest automatically acquire them for you.
 
-[Check out the instructions from the GitHub Actions setup.]()
-[Same thing for any special server config changes you need.]()
+ - [Check out the instructions from the GitHub Actions setup.](#requirements)
+ - [Same thing for any special server config changes you need.](#server-configs)
 
 
 ### Environment setup
