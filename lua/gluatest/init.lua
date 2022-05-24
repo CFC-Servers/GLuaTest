@@ -6,8 +6,13 @@ GLuaTest = {
 if GLuaTest.RUN_CLIENTSIDE then
     AddCSLuaFile()
     AddCSLuaFile( "gluatest/loader.lua" )
-    AddCSLuaFile( "gluatest/runner.lua" )
     AddCSLuaFile( "gluatest/expectations.lua" )
+
+    AddCSLuaFile( "gluatest/runner/runner.lua" )
+    AddCSLuaFile( "gluatest/runner/helpers.lua" )
+    AddCSLuaFile( "gluatest/runner/log_helpers.lua" )
+    AddCSLuaFile( "gluatest/runner/msgc_wrapper.lua" )
+    AddCSLuaFile( "gluatest/runner/result_logger.lua" )
 end
 
 GLuaTest.loader = include( "gluatest/loader.lua" )
