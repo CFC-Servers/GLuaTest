@@ -7,7 +7,7 @@ GLuaTest is a testing framework built for Garry's Mod.
 Its job is to make writing tests for Garry's Mod projects easy.
 
 
-It offers an approachable (albeit strange) syntax that lets you get started quickly.
+It offers an approachable (albeit strange) syntax that makes writing tests intuitive.
 
 
 ### It also has some pretty rad test output:
