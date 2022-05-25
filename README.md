@@ -78,16 +78,12 @@ _Interested in giving it a shot on your own project? Take a look at the [Usage](
 
 GLuaTest can be used in a number of ways. Whether you want to run your tests when you open a PR, or if you just want to have it run on your development server - we've got you covered.
 
- - [I want to run my tests on my Pull Requests](#automated-testing-on-pull-requests)
- - [I want to run my tests locally or on a dev server](#running-locally)
- - [I want to run my tests without setting up a local or dev server](#running-locally-without-a-server)
-
 <br>
 
 ## Automated testing on Pull Requests
 
 <details>
-<summary><strong>GitHub Actions Automation</strong></summary>
+<summary><strong>Run your tests in a Pull Request</strong></summary>
 <br>
 
 To set up automated test runs, we'll use Github Workflows.
@@ -204,7 +200,7 @@ Nothing better than free 😎
 
 ## Running locally
 <details>
-<summary><strong>Running Locally</strong></summary>
+<summary><strong>Running your tests locally</strong></summary>
 <br>
 
 It's actually extremely simple to run GLuaTest locally.
@@ -218,7 +214,7 @@ All of your tests will run when the server starts up and you can view the output
 
 ## Running locally without a server
 <details>
-<summary><strong>Running Locally without a server</strong></summary>
+<summary><strong>Running your tests locally without a server</strong></summary>
 <br>
 
 Sounds weird, right? Well it's really not all that different from running GLuaTest on GitHub.
