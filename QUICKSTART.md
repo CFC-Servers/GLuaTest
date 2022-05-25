@@ -33,9 +33,9 @@ return {
     }
 }
 ```
- - **[Here's a list](https://github.com/CFC-Servers/GLuaTest/blob/main/README.md#the-test-group) of the keys the outermost table (the "Test Group") accepts**
- - **[Here's a list](https://github.com/CFC-Servers/GLuaTest/blob/main/README.md#the-test-case) of the keys the "Test Cases" (the items inside of the `cases` table) accept**
- - **[Here's a list](https://github.com/CFC-Servers/GLuaTest/blob/main/README.md#expectations) of the expectations you can use inside of your test functions**
+ - **[Here's a list](https://github.com/CFC-Servers/GLuaTest/blob/main/README.md#the-test-group) of the keys the outermost table (the _"Test Group"_) accepts**
+ - **[Here's a list](https://github.com/CFC-Servers/GLuaTest/blob/main/README.md#the-test-case) of the keys the items inside of the `cases` table (the _"Test Cases"_ accept)**
+ - **There are a number of different [expectations](https://github.com/CFC-Servers/GLuaTest/blob/main/README.md#expectations) you can use inside of your test functions**
 
 _Sidenote: There are a lot of ways to structure the test file. Play around with some different methods to see what works for you!_
 
