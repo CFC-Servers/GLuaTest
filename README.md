@@ -6,7 +6,7 @@
  - [Additional reading](#some-additional-reading)
  - [Usage](#usage)
  - [Writing Tests](#writing-tests-%EF%B8%8F)
- - [Troubleshooting]
+ - [Troubleshooting](#troubleshooting-)
 ---
 
 GLuaTest is a testing framework built for Garry's Mod.
