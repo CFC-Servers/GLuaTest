@@ -115,7 +115,7 @@ Let's say you needed:
  - The Lua branch CFC's Logging Library ( https://github.com/CFC-Servers/gm_logger )
 
 
-Make a new file somewhere in your project (`lua/tests/my_project/requirements.txt` maybe?) with the following:
+Make a new file somewhere in your project (i.e. `lua/tests/my_project/requirements.txt`) with the following:
 ```
 TeamUlysses/ulx
 TeamUlysses/ulib
@@ -303,7 +303,7 @@ return {
 The Test Group (that is, the table you return from your Test File) can have the following keys:
 | Key              |    Type    | Description                                                                         | Required |
 |------------------|:----------:|-------------------------------------------------------------------------------------|:--------:|
-| **`cases`**      |   `table`  | A table of Test Cases                                                               |     ✔️     |
+| **`cases`**      |   `table`  | A table of Test Cases                                                               |     ✔️    |
 | **`groupName`**  |  `string`  | The name of the module/function this Test Group is testing                          |     ❌    |
 | **`beforeAll`**  | `function` | A function to run once before running your Test Group                               |     ❌    |
 | **`beforeEach`** | `function` | A function to run before each Test Case in your Test Group. Takes a `state` table   |     ❌    |
@@ -352,7 +352,7 @@ There are a number of different expectations you can use.
 #### Expectations
 | Expectation          | Description                                           | Example                                                         |
 |----------------------|-------------------------------------------------------|-----------------------------------------------------------------|
-| **`equal`**/**`eq`**     | Basic `==` equality check                             | `expect( a ).to.equal( b )`                                        |
+| **`equal`**/**`eq`**     | Basic `==` equality check                             | `expect( a ).to.equal( b )`                                 |
 | **`beLessThan`**     | Basic `<` comparison                                  | `expect( 5 ).to.beLessThan( 6 )`                                |
 | **`beGreaterThan`**  | Basic `>` comparison                                  | `expect( 10 ).to.beGreaterThan( 1 )`                            |
 | **`beTrue`**         | Expects the subject to literally be `true`            | `expect( Entity( 1 ):IsPlayer() ).to.beTrue()`                  |
@@ -361,7 +361,7 @@ There are a number of different expectations you can use.
 | **`beInvalid`**      | Expects `IsValid( value )` to return `false`          | `expect( nil ).to.beInalid()`                                   |
 | **`beNil`**          | Expects the subject to literally be `nil`             | `expect( player.GetAll()[2] ).to.beNil()`                       |
 | **`exist`**          | Expects the subject to not be `nil`                   | `expect( MyProject ).to.exist()`                                |
-| **`beA`**/**`beAn`**     | Expects the subject to have the given `type`          | `expect( "test" ).to.beA( "string" )`                           |
+| **`beA`**/**`beAn`**     | Expects the subject to have the given `type`          | `expect( "test" ).to.beA( "string" )`                       |
 | **`succeed`**        | Expects the subject function to run without error     | `expect( CurTime ).to.succeed()`                                |
 | **`err`**            | Expects the subject function to throw an error        | `expect( error ).to.err()`                                      |
 | **`errWith`**        | Expects the subject function to throw the given error | `expect( badFunc ).to.errWith( "error message" )`               |
@@ -415,7 +415,7 @@ return {
     groupName = "StartRun",
     cases = {
         {
-            name = "It should run within 2 seconds of calling StartRun",
+            name = "Should run within two seconds of being called",
             async = true,
             timeout = 3, -- If it hasn't finished in 3 seconds, something went wrong and it can be marked as failed
             func = function()
@@ -436,8 +436,6 @@ return {
 ### Before / After functions
 You may find yourself writing a lot of repetitive setup/teardown code in each of your Test Cases.
 
-For example, if you had five Test Cases that all needed to spawn an Entity and manipulate it, you'd have to write `ents.Create` a lot of times.
-
 GLuaTest has a few convenience functions for you to use.
 
 <br>
@@ -446,7 +444,7 @@ GLuaTest has a few convenience functions for you to use.
 
 #### **`beforeEach`/`afterEach`**
 
-Sticking with our example of needing to create an Entity, here's an example of how `beforeEach` and `afterEach` can make your life easier:
+Here's an example of how `beforeEach` and `afterEach` could make your life easier while working with entities:
 
 ```lua
 -- lua/tests/my_project/tickle_monster.lua
@@ -494,8 +492,6 @@ The `beforeEach` function created a brand-new Tickle Monster before every test, 
 
 You'll notice the `state` variable in that example. The `state` parameter is just a table that's shared between the before/after funcs and the Test Case function.
 
-As you see in the example, we can create our Tickle Monster, assign it a spot on the `state`, and reference it inside of our Test Case and `afterEach` function.
-
 
 You also have access to `beforeAll` and `afterAll`, which are self-explanatory. Please note that these two functions **do not** take a `state` table.
 
@@ -507,17 +503,23 @@ You also have access to `beforeAll` and `afterAll`, which are self-explanatory. 
 
 The `setup` and `cleanup` functions are a lot like `beforeEach` and `afterEach`, except they're used only for a specific Test Case.
 
-One important way to use these is to make sure that your test cleans up after itself even if it errors.
+One common way to use these is to make sure that your test cleans up after itself even if it errors.
+
 
 <br>
-
-For example let's say I have a `WrapperFunc` that eventually calls the global `GlobalFunc`. I want my test to make sure that when I call `WrapperFunc`, it also calls `GlobalFunc`.,
-
-To do this, I'm going to re-define `GlobalFunc` in my test and have it set a variable that I can check afterwards.
-
-Once I'm done, I'll re-set `GlobalFunc` so that future tests can still use it:
-
+ 
+For example:
 ```lua
+-- lua/my_project/wrapper.lua
+ GlobalFunc = function()
+     return "Test"
+ end
+ 
+ WrapperFunc = function()
+     return GlobalFunc()
+ end
+ 
+ 
 -- lua/tests/my_project/wrapper.lua
 
 return {
@@ -571,7 +573,7 @@ If we didn't use the `setup`/`cleanup` functions and just tried to do:
 }
 ```
 
-What would happen if `WrapperFunc` errored, or the expectation failed (the test exits on the first expectation failure)?
+What would happen if `WrapperFunc` errored, or the expectation failed?
 
 `GlobalFunc` would still be defined as our local function for all future tests, potentially causing them to fail.
 
