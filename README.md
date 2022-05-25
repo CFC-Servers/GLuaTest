@@ -1,6 +1,12 @@
 # GLuaTest
 
 🎉 **The missing test framework for GMod** 🎉
+
+**Glossary**
+ - [Additional reading]
+ - [Usage]
+ - [Writing Tests]
+ - [Troubleshooting]
 ---
 
 GLuaTest is a testing framework built for Garry's Mod.
@@ -35,7 +41,7 @@ _**Are you an impatient software developer? Check out the [quickstart](https://g
 
 <br>
 
-**Some additional reading:**
+#### **Some additional reading:**
 <details>
  <summary><strong>Foreword about automated testing in GMod</strong></summary>
 <br>
