@@ -44,7 +44,7 @@ Your automated tests define a contract that give you and your would-be users con
 
 
 Without tests, you may find yourself spending large amounts of time debugging obscure issues.
-Automated tests require more work up front, but will save you time and frustration in the future when more people start using your project.
+Automated tests require more work up front, but will save you time and frustration in the future as your project grows.
 
 ---
 
