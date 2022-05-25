@@ -3,9 +3,9 @@
 🎉 **The missing test framework for GMod** 🎉
 
 **Glossary**
- - [Additional reading]
- - [Usage]
- - [Writing Tests]
+ - [Additional reading](#some-additional-reading)
+ - [Usage](#usage)
+ - [Writing Tests](#writing-tests-%EF%B8%8F)
  - [Troubleshooting]
 ---
 
@@ -586,3 +586,13 @@ return {
 
 }
 ```
+
+# Troubleshooting 🤔
+<details>
+ <summary>Solutions to common problems</summary>
+ 
+ ### Does your test output look completely unreadable?
+ ![image](https://user-images.githubusercontent.com/7936439/170231750-e59f880f-138a-485d-be47-8b81f60c9cad.png)
+
+ **Try setting the `gluatest_use_ansi` convar to `0`**
+</details>
