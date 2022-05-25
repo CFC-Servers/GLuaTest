@@ -7,9 +7,9 @@ Here's the bare minimum you need to get started
 
 ## Setup
 
-1. Create a new branch on your project
-2. Create a new directory in your project, `lua/tests/project_name/`
-3. Open your first test file, `lua/tests/project_name/main.lua`
+### 1. Create a new branch on your project
+### 2. Create a new directory in your project, `lua/tests/project_name/`
+### 3. Open your first test file, `lua/tests/project_name/main.lua`
 
 Create the basic test structure:
 ```lua
@@ -39,7 +39,7 @@ return {
 
 _Sidenote: There are a lot of ways to structure the test file. Play around with some different methods to see what works for you!_
 
-4. Add the GitHub Workflow to `.github/workflows/gluatest.yml`:
+### 4. Add the GitHub Workflow to `.github/workflows/gluatest.yml`:
 ```yml
 name: GLuaTest Runner
 
@@ -51,7 +51,7 @@ jobs:
     uses: CFC-Servers/GLuaTest/.github/workflows/run_tests.yml@main
 ```
 
-5. Commit your changes, push your branch, and open a new PR
+### 5. Commit your changes, push your branch, and open a new PR
 
 
 
