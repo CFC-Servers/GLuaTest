@@ -2,42 +2,31 @@
 
 🎉 **The missing test framework for GMod** 🎉
 
+**GLuaTest is a testing framework built for Garry's Mod.**
+**Its job is to make writing tests for Garry's Mod projects easy.**
+
+**It offers an approachable (albeit strange) syntax that makes writing tests intuitive.**
+
 **Glossary**
  - [Additional reading](#some-additional-reading)
  - [Usage](#usage)
  - [Writing Tests](#writing-tests-%EF%B8%8F)
  - [Troubleshooting](#troubleshooting-)
 ---
+_(Are you an impatient software developer? Check out the [quickstart](https://github.com/CFC-Servers/GLuaTest/blob/main/QUICKSTART.md) guide to go fast)_
 
-GLuaTest is a testing framework built for Garry's Mod.
-Its job is to make writing tests for Garry's Mod projects easy.
+<br>
 
-
-It offers an approachable (albeit strange) syntax that makes writing tests intuitive.
-
-
-### It also has some pretty rad test output:
+#### It also has some pretty rad test output:
 
 #### **In the terminal:**
 ![image](https://user-images.githubusercontent.com/7936439/169948915-c75e07a3-563a-43ee-825c-12ee76149b05.png)
 
-
-<br>
-
 #### **In GCompute:**
 ![image](https://user-images.githubusercontent.com/7936439/169943331-fd280fe0-57e9-4f38-993e-b99763e3b86e.png)
 
-
-<br>
-
 #### **In a Pull Request:**
 ![image](https://user-images.githubusercontent.com/7936439/169943290-e531d722-cc36-4191-b882-2cb74f820f20.png)
-
-
-
-<br>
-
-_**Are you an impatient software developer? Check out the [quickstart](https://github.com/CFC-Servers/GLuaTest/blob/main/QUICKSTART.md) guide to go fast**_
 
 <br>
 
@@ -70,13 +59,6 @@ You can use the GLuaTest Docker image to spin up a test server, run your tests, 
 
 This makes it easy to test your code in a real Garry's Mod environment without worrying about other addons or config values.
 </details>
-
-
-<br>
-
-_Just looking for a taste of what GLuaTest has to offer? Check out the [Writing tests](#writing-tests-%EF%B8%8F) section._
-
-_Interested in giving it a shot on your own project? Take a look at the [Usage](#usage) section to find out how to get started._
 
 <br>
 
