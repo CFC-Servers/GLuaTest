@@ -2,7 +2,8 @@ local type = type
 local IsValid = IsValid
 local string_format = string.format
 
-local function makeExpectations( subject )
+-- Positive checks
+return function( subject )
     local expectations = {
         expected = function( suffix, ... )
             local fmt = "Expectation Failed: Expected %s " .. suffix
@@ -48,6 +49,12 @@ local function makeExpectations( subject )
     function expectations.beValid()
         if not IsValid( subject ) then
             i.expected( "to be valid" )
+        end
+    end
+
+    function expectations.beInvalid()
+        if IsValid( subject ) then
+            i.expected( "to be invalid" )
         end
     end
 
@@ -104,11 +111,3 @@ local function makeExpectations( subject )
 
     return expectations
 end
-
-local function expect( subject )
-    local expectations = makeExpectations( subject )
-
-    return { to = expectations }
-end
-
-return expect

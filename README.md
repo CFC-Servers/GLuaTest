@@ -362,12 +362,24 @@ There are a number of different expectations you can use.
 | **`beTrue`**         | Expects the subject to literally be `true`            | `expect( Entity( 1 ):IsPlayer() ).to.beTrue()`                  |
 | **`beFalse`**        | Expects the subject to literally be `false`           | `expect( istable( "test" ) ).to.beFalse()`                      |
 | **`beValid`**        | Expects `IsValid( value )` to return `true`           | `expect( ply ).to.beValid()`                                    |
+| **`beInvalid`**      | Expects `IsValid( value )` to return `false`          | `expect( nil ).to.beInalid()`                                   |
 | **`beNil`**          | Expects the subject to literally be `nil`             | `expect( player.GetAll()[2] ).to.beNil()`                       |
 | **`exist`**          | Expects the subject to not be `nil`                   | `expect( MyProject ).to.exist()`                                |
 | **`beA`**/**`beAn`**     | Expects the subject to have the given `type`          | `expect( "test" ).to.beA( "string" )`                           |
 | **`succeed`**        | Expects the subject function to run without error     | `expect( CurTime ).to.succeed()`                                |
 | **`err`**            | Expects the subject function to throw an error        | `expect( error ).to.err()`                                      |
 | **`errWith`**        | Expects the subject function to throw the given error | `expect( badFunc ).to.errWith( "error message" )`               |
+
+<br>
+
+#### Expecation Negation
+You can invert an Expectation by using `.toNot` or `.notTo` in place of your `.to`
+
+i.e.:
+```lua
+expect( ply ).toNot.beInvalid()
+expect( "test" ).notTo.beA( "table" )
+```
 
 <br>
 
