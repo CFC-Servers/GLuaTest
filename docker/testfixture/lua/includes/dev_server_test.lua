@@ -32,7 +32,7 @@ hook.Add( "GLuaTest_LoggedTestFailure", "TestLog", function( errInfo )
     end
 end )
 
-hook.Add( "GLuaTest_RanTestFiles", "TestComplete", function()
+hook.Add( "GLuaTest_Finished", "TestComplete", function()
     if #failures > 0 then
         print( tostring( #failures ) .. " test failures detected, writing to log.." )
         local failureJSON = util.TableToJSON( failures )
