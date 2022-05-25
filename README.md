@@ -508,9 +508,10 @@ One common way to use these is to make sure that your test cleans up after itsel
 
 <br>
  
-For example:
+For example, say I want to test my `WrapperFunc` in this file:
 ```lua
 -- lua/my_project/wrapper.lua
+ 
  GlobalFunc = function()
      return "Test"
  end
@@ -518,8 +519,36 @@ For example:
  WrapperFunc = function()
      return GlobalFunc()
  end
+```
+
+I might write something like this:
+```lua
+{
+    name = "Wrapper should call the original function",
+    func = function()
+        local ogGlobalFunc = GlobalFunc
+        local wasCalled = false
+
+        GlobalFunc = function()
+            wasCalled = true
+        end
+
+        WrapperFunc()
+
+        expect( wasCalled ).to.beTrue()
+
+        GlobalFunc = ogGlobalFunc
+    end,
+}
+```
  
  
+But consider, what would happen if `WrapperFunc` errored, or the expectation failed?
+
+`GlobalFunc` would still be defined as our local function for all future tests, potentially causing them to fail.
+
+Instead, we can use GLuaTest's `setup` and `cleanup` functions to make our test safer:
+```lua
 -- lua/tests/my_project/wrapper.lua
 
 return {
@@ -551,31 +580,3 @@ return {
 
 }
 ```
-
-If we didn't use the `setup`/`cleanup` functions and just tried to do:
-```lua
-{
-    name = "Wrapper should call the original function",
-    func = function()
-        local ogGlobalFunc = GlobalFunc
-        local wasCalled = false
-
-        GlobalFunc = function()
-            wasCalled = true
-        end
-
-        WrapperFunc()
-
-        expect( wasCalled ).to.beTrue()
-
-        GlobalFunc = ogGlobalFunc
-    end,
-}
-```
-
-What would happen if `WrapperFunc` errored, or the expectation failed?
-
-`GlobalFunc` would still be defined as our local function for all future tests, potentially causing them to fail.
-
-
-By using the `setup`/`cleanup` functions, we can be 100% sure that `GlobalFunc` gets re-defined properly, regardless of what happens in our test.
