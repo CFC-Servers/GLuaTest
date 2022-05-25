@@ -56,28 +56,28 @@ local function getLeastSharedIndent( lines )
     -- without losing any context
     --
 
-    local leastShared = nil
+    local leastShared = math.huge
 
     for _, lineContent in ipairs( lines ) do
         if #lineContent > 0 then
             local leading = LogHelpers.GetLeadingWhitespace( lineContent )
 
-            if not leastShared or ( #leading < #leastShared ) then
-                leastShared = leading
+            if #leading < leastShared then
+                leastShared = #leading
             end
         end
     end
 
-    return leastShared or ""
+    return leastShared or 0
 end
 
 function LogHelpers.NormalizeLinesIndent( lines )
     local leastSharedIndent = getLeastSharedIndent( lines )
-    if leastSharedIndent == "" then return lines end
+    if leastSharedIndent == 0 then return lines end
 
     for i = 1, #lines do
         local lineContent = lines[i]
-        lines[i] = string.Replace( lineContent, leastSharedIndent, "" )
+        lines[i] = string.Right( lineContent, #lineContent - leastSharedIndent )
     end
 
     return lines
