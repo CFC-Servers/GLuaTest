@@ -2,6 +2,9 @@
 local MsgC = _G["MsgC"]
 
 if SERVER then
+    local shouldWrap = CreateConVar( "gluatest_use_ansi", 1, FCVAR_ARCHIVE, "Should GLuaTest use ANSI coloring in its output", 0, 1 )
+    if shouldWrap:GetBool() == false then return end
+
     _G["_MsgC"] = _G["MsgC"]
     local _MsgC = _G["_MsgC"]
     local endColor = "\x1b[0m"
