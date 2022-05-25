@@ -33,8 +33,11 @@ return {
     }
 }
 ```
+ - **[Here's a list](https://github.com/CFC-Servers/GLuaTest/blob/main/README.md#the-test-group) of the keys the outermost table (the "Test Group") accepts**
+ - **[Here's a list](https://github.com/CFC-Servers/GLuaTest/blob/main/README.md#the-test-case) of the keys the "Test Cases" (the items inside of the `cases` table) accept**
+ - **[Here's a list](https://github.com/CFC-Servers/GLuaTest/blob/main/README.md#expectations) of the expectations you can use inside of your test functions**
 
-_Sidenote: There are a lot of ways to structure the test file. Ultimately it just needs to return a table of tables. Play around with some different methods to see what works for you!_
+_Sidenote: There are a lot of ways to structure the test file. Play around with some different methods to see what works for you!_
 
 4. Add the GitHub Workflow to `.github/workflows/gluatest.yml`:
 ```yml
@@ -54,4 +57,4 @@ jobs:
 
 That's it! You have a working automated test runner for your project.
 
-Check out the README for more details about [what expectations you can use](https://github.com/CFC-Servers/GLuaTest#expectations) and [how to make async tests](https://github.com/CFC-Servers/GLuaTest#the-done-function).
+Check out the README for more details about [before/after functions](https://github.com/CFC-Servers/GLuaTest/blob/main/README.md#before--after-functions) and [how to make async tests](https://github.com/CFC-Servers/GLuaTest/blob/main/README.md#async-tests-and-the-done-function).
