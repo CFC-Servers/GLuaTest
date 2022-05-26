@@ -17,16 +17,31 @@ _(Are you an impatient software developer? Check out the [quickstart](https://gi
 
 <br>
 
-#### It also has some pretty rad test output:
+# Features
 
-#### **In the terminal:**
-![image](https://user-images.githubusercontent.com/7936439/169948915-c75e07a3-563a-43ee-825c-12ee76149b05.png)
+## **Simple test setup and quirky (yet intuitive!) test syntax**
+```lua
+-- lua/tests/project_name/main.lua
 
-#### **In GCompute:**
-![image](https://user-images.githubusercontent.com/7936439/169943331-fd280fe0-57e9-4f38-993e-b99763e3b86e.png)
+return {
+    groupName = "MyProject",
+    cases = {
+        {
+            name = "Should create project tables",
+            func = function()
+                expect( MyProject ).to.exist()
+            end
+        }
+    }
+}
+```
 
-#### **In a Pull Request:**
-![image](https://user-images.githubusercontent.com/7936439/169943290-e531d722-cc36-4191-b882-2cb74f820f20.png)
+## **Beautiful test output**
+<img src="https://user-images.githubusercontent.com/7936439/170405271-abbd745a-f9ca-48c5-8228-5160c8349a2c.png" width="725" height="300">
+
+
+## **Handsome, informative error reporting**
+<img src="https://user-images.githubusercontent.com/7936439/170405324-2079c7ce-5928-4bef-94b4-4ca036047c3c.png" width="725" height="300">
 
 <br>
 
@@ -368,7 +383,8 @@ expect( "test" ).notTo.beA( "table" )
 <br>
 
 ### Async tests and the `done` function
-If your test relies on timers, hooks, callbacks, etc., then you need to run your test Asynchronously.
+<details>
+ <summary><strong>If your test relies on timers, hooks, callbacks, etc., then you need to run your test Asynchronously.</strong></summary>
 
 The test is otherwise completely normal, but it's your job to tell GLuaTest when the test is done by calling `done()` anywhere in your test.
 
@@ -418,17 +434,17 @@ return {
     }
 }
 ```
+</details>
 
 <br>
 
 ### Before / After functions
 You may find yourself writing a lot of repetitive setup/teardown code in each of your Test Cases.
 
-GLuaTest has a few convenience functions for you to use.
+<details>
+ <summary><strong>GLuaTest has a few convenience functions for you to use.</strong></summary>
 
 <br>
-
----
 
 #### **`beforeEach`/`afterEach`**
 
@@ -568,6 +584,7 @@ return {
 
 }
 ```
+</details>
 
 # Troubleshooting 🤔
 <details>
