@@ -475,7 +475,7 @@ You can use the Stub like normal. This is particularly useful for functions that
 
 Restoring empty stubs is a no-op, but won't break anything.
 
-#### **Stub return values&&
+#### **Stub return values**
 You can tell your stubs what to return when they're called.
 
 **`.with( function )`**
