@@ -118,7 +118,7 @@ return function( subject, ... )
 
         if n == nil then
             if callCount == 0 then
-                i.expected( "to have been called at least once " )
+                i.expected( "to have been called at least once" )
             end
         else
             if callCount < n then
