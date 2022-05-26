@@ -479,11 +479,13 @@ Restoring empty stubs is a no-op, but won't break anything.
 You can tell your stubs what to return when they're called.
 
 **`.with( function )`**
+ 
 If you want to replace a function with another function, you can use the `.with` modifier.
 
 When your stub is called, it will pass all of the parameters it received to the function you gave to `.with`, and will return whatever your given function returns.
 
 **`.returns( ... )`**
+ 
 If you just want to return a certain value every time your Stub is called, you can use the `.returns` modifier.
 
 When your Stub is called, it will simply return everything you passed into `.returns`.
