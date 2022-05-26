@@ -24,6 +24,7 @@ return function( allTestGroups )
     -- Sequential table of Result structures
     local allResults = {}
 
+    -- success and errInfo can be nil if the test case was empty
     local function _addResult( testGroup, success, case, errInfo )
         local result = {
             success = success,
@@ -35,7 +36,7 @@ return function( allTestGroups )
         table.insert( allResults, result )
 
         LogTestResult( result )
-        if not success then LogTestFailureDetails( result ) end
+        if success == false then LogTestFailureDetails( result ) end
     end
 
     hook.Run( "GLuaTest_StartedTestRun", allTestGroups )

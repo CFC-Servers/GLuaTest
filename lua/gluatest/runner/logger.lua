@@ -10,7 +10,9 @@ local MsgC = include( "gluatest/runner/msgc_wrapper.lua" )
 local ResultLogger = {}
 
 local function prefixLog( ... )
-    MsgC( colors.darkgrey, "[GLuaTest] " )
+    MsgC( colors.darkgrey, "[" )
+    MsgC( colors.white, "GLuaTest" )
+    MsgC( colors.darkgrey, "] " )
     MsgC( ... )
 end
 
@@ -144,22 +146,26 @@ function ResultLogger.LogFileStart( testGroup )
     local groupName = testGroup.groupName
     local project = testGroup.project
 
-    local identifier = project .. "/" .. fileName
-    if groupName then
-        identifier = identifier .. ": " .. groupName
-    end
+    local identifier = project .. "/" .. ( groupName or fileName )
 
-    prefixLog( colors.blue, "Starting tests cases for: [", identifier , "]...", "\n" )
+    MsgC( "\n" )
+    prefixLog( colors.blue, "=== Running ", identifier , "... ===", "\n" )
 end
 
 function ResultLogger.LogTestResult( result )
     local case = result.case
     local success = result.success
 
-    if success then
+    if success == true then
         prefixLog( colors.green, "PASS " )
-    else
+    elseif success == false then
         prefixLog( colors.red, "FAIL " )
+    elseif success == nil then
+        prefixLog( colors.darkgrey, "EMPT " )
+    else
+        ErrorNoHaltWithStack( "Improper success type" )
+        PrintTable( result )
+        return
     end
 
     MsgC( colors.grey, "[" )

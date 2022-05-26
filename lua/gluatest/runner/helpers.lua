@@ -167,9 +167,24 @@ function Helpers.MakeAsyncEnv( onDone, onFailedExpectation )
 end
 
 function Helpers.SafeRunWithEnv( defaultEnv, func, ... )
-    setfenv( func, makeTestEnv() )
+    local testEnv = makeTestEnv()
+    local ranExpect = false
+
+    local ogExpect = testEnv.expect
+    testEnv.expect = function( ... )
+        ranExpect = true
+        testEnv.expect = ogExpect
+        return ogExpect( ... )
+    end
+
+    setfenv( func, testEnv )
     local success, errInfo = xpcall( func, Helpers.FailCallback, ... )
     setfenv( func, defaultEnv )
+
+    -- If it succeeded but never ran `expect`, it's an empty test
+    if success and not ranExpect then
+        return nil, nil
+    end
 
     return success, errInfo
 end
