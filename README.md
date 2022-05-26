@@ -457,7 +457,7 @@ If you need to restore the original functionality of the stubbed function, you c
 
 Un-restored stubs are automatically restored after each Test Case, but you can manually call `:Restore()` any time you need.
 
-#### ****Empty Stubs**
+#### **Empty Stubs**
 You can create an empty Stub that doesn't automatically replace anything by calling `stub()` with no arguments.
 
 You can use the Stub like normal. This is particularly useful for functions that take callbacks, i.e.:
@@ -476,7 +476,7 @@ You can use the Stub like normal. This is particularly useful for functions that
 
 Restoring empty stubs is a no-op, but won't break anything.
 
-#### Stub return values
+#### **Stub return values&&
 You can tell your stubs what to return when they're called.
 
 **`.with( function )`** 
