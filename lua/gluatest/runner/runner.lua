@@ -70,7 +70,6 @@ return function( allTestGroups )
             local case = cases[c]
             case.id = getCaseID()
             case.state = case.state or {}
-            case.setup = case.setup or noop
             case.cleanup = case.cleanup or noop
 
             local shared = case.shared
@@ -83,7 +82,6 @@ return function( allTestGroups )
                     asyncCases[case.id] = case
                 else
                     testGroup.beforeEach( case.state )
-                    case.setup( case.state )
 
                     local success, errInfo = SafeRunWithEnv( defaultEnv, case.func, case.state )
 
@@ -112,7 +110,6 @@ return function( allTestGroups )
 
         for _, case in pairs( asyncCases ) do
             testGroup.beforeEach( case.state )
-            case.setup( case.state )
 
             local expectationFailure = false
 

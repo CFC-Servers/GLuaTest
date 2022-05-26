@@ -326,7 +326,6 @@ Each Test Case is a table with the following keys:
 | **`func`**       | `function` | The actual test function. Takes a `state` table                                |  ✔️     |         |
 | **`async`**      | `bool`     | If your test relies on timers, hooks, or callbacks, it must run asynchronously |  ❌     | `false` |
 | **`timeout`**    | `int`      | How long to wait for your async test before marking it as having timed out     |  ❌     | 60      |
-| **`setup`**      | `function` | The function to run before running your test. Takes a `state` table            |  ❌     |         |
 | **`cleanup`**    | `function` | The function to run after running your test. Takes a `state` table             |  ❌     |         |
 
 <br>
@@ -479,7 +478,7 @@ Restoring empty stubs is a no-op, but won't break anything.
 #### **Stub return values&&
 You can tell your stubs what to return when they're called.
 
-**`.with( function )`** 
+**`.with( function )`**
 If you want to replace a function with another function, you can use the `.with` modifier.
 
 When your stub is called, it will pass all of the parameters it received to the function you gave to `.with`, and will return whatever your given function returns.
@@ -615,23 +614,23 @@ You also have access to `beforeAll` and `afterAll`, which are self-explanatory. 
 
 ---
 
-#### **`setup`/`cleanup`**
+#### **`cleanup`**
 
-The `setup` and `cleanup` functions are a lot like `beforeEach` and `afterEach`, except they're used only for a specific Test Case.
+The `cleanup` function is a lot like `afterEach`, except it's used only for a specific Test Case.
 
-One common way to use these is to make sure that your test cleans up after itself even if it errors.
+One common way to use this is to make sure that your test cleans up after itself even if it errors.
 
 
 <br>
- 
+
 For example, say I want to test my `WrapperFunc` in this file:
 ```lua
 -- lua/my_project/wrapper.lua
- 
+
  GlobalFunc = function()
      return "Test"
  end
- 
+
  WrapperFunc = function()
      return GlobalFunc()
  end
@@ -657,13 +656,13 @@ I might write something like this:
     end,
 }
 ```
- 
- 
+
+
 But consider, what would happen if `WrapperFunc` errored, or the expectation failed?
 
 `GlobalFunc` would still be defined as our local function for all future tests, potentially causing them to fail.
 
-Instead, we can use GLuaTest's `setup` and `cleanup` functions to make our test safer:
+Instead, we can use GLuaTest's `cleanup` function to make our test safer:
 ```lua
 -- lua/tests/my_project/wrapper.lua
 
@@ -672,11 +671,9 @@ return {
     cases = {
         {
             name = "Wrapper should call the original function",
-            setup = function( state )
-                state.GlobalFunc = GlobalFunc
-            end,
 
-            func = function()
+            func = function( state )
+                state.GlobalFunc = GlobalFunc
                 local wasCalled = false
 
                 GlobalFunc = function()
@@ -701,7 +698,7 @@ return {
 # Troubleshooting 🤔
 <details>
  <summary>Solutions to common problems</summary>
- 
+
  ### Does your test output look completely unreadable?
  ![image](https://user-images.githubusercontent.com/7936439/170231750-e59f880f-138a-485d-be47-8b81f60c9cad.png)
 
