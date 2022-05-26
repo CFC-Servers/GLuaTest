@@ -116,5 +116,15 @@ return function( subject )
         end
     end
 
+    -- An important distinction between this and the Positive version:
+    -- the Positive expectation lets you specify how many times it
+    -- should have been called, but this one does not
+    function expectations.haveBeenCalled()
+        local callCount = subject.callCount
+        if callCount > 0 then
+            i.expected( "to not have been called, got: %d", callCount )
+        end
+    end
+
     return expectations
 end

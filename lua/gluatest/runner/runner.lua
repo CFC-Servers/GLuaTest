@@ -2,7 +2,6 @@ local Helpers = include( "gluatest/runner/helpers.lua" )
 local FailCallback = Helpers.FailCallback
 local MakeAsyncEnv = Helpers.MakeAsyncEnv
 local SafeRunWithEnv = Helpers.SafeRunWithEnv
-local CleanupPostTest = Helpers.CleanupPostTest
 
 local ResultLogger = include( "gluatest/runner/logger.lua" )
 local LogFileStart = ResultLogger.LogFileStart
@@ -24,7 +23,8 @@ return function( allTestGroups )
     -- Sequential table of Result structures
     local allResults = {}
 
-    -- success and errInfo can be nil if the test case was empty
+    -- success and errInfo can be nil if the test case
+    -- didn't error or call an expectation
     local function _addResult( testGroup, success, case, errInfo )
         local result = {
             success = success,
@@ -89,7 +89,6 @@ return function( allTestGroups )
 
                     case.cleanup( case.state )
                     testGroup.afterEach( case.state )
-                    CleanupPostTest()
 
                     addResult( success, case, errInfo )
                 end

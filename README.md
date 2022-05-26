@@ -364,10 +364,11 @@ There are a number of different expectations you can use.
 | **`beInvalid`**      | Expects `IsValid( value )` to return `false`          | `expect( nil ).to.beInalid()`                                   |
 | **`beNil`**          | Expects the subject to literally be `nil`             | `expect( player.GetAll()[2] ).to.beNil()`                       |
 | **`exist`**          | Expects the subject to not be `nil`                   | `expect( MyProject ).to.exist()`                                |
-| **`beA`**/**`beAn`**     | Expects the subject to have the given `type`          | `expect( "test" ).to.beA( "string" )`                       |
-| **`succeed`**        | Expects the subject function to run without error     | `expect( CurTime ).to.succeed()`                                |
+| **`beA`**/**`beAn`**     | Expects the subject to have the given `type`          | `expect( "test" ).to.beA( "string" )`                           |
+| **`succeed`**        | Expects the subject function to run without error     | `expect( func, param ).to.succeed()`                            |
 | **`err`**            | Expects the subject function to throw an error        | `expect( error ).to.err()`                                      |
-| **`errWith`**        | Expects the subject function to throw the given error | `expect( badFunc ).to.errWith( "error message" )`               |
+| **`errWith`**        | Expects the subject function to throw the given error | `expect( badFunc, param ).to.errWith( "error message" )`        |
+| **`haveBeenCalled`** | Expects the subject Stub have been called             | `expect( myStub ).to.haveBeenCalled()`                          |
 
 <br>
 
@@ -379,6 +380,117 @@ i.e.:
 expect( ply ).toNot.beInvalid()
 expect( "test" ).notTo.beA( "table" )
 ```
+
+<br>
+
+### The `stub` function
+<details>
+ <summary><strong>Isolating your tests is important. Stubs are a powerful way of controling which parts of your code your tests invoke.</strong></summary>
+
+Let's say your addon looks like this:
+```lua
+MyProject = {}
+
+function MyProject.UserExistsInDatabase( user )
+    local userObject = lookupUserInDatabase( user )
+    return userObject.exists
+end
+
+function MyProject.CheckUser( user )
+    if not MyProject.UserExistsInDatabase( user ) then return end
+    if not user.name then return end
+    if #user.name == 0 then return end
+
+    return true
+end
+```
+
+You want to test the functionality of `CheckUser`.
+
+There are three checks in `CheckUser`:
+ - The user exists in the database
+ - The user's name exists
+ - The user's name is not emtpy
+
+You could add a fake user to the database and use the function normally, but you're not testing the _database_, you're testing `CheckUser`.
+
+Instead, we could _pretend_ that `UserExistsInDatabase` returns `true` for our tests. We can do this using a Stub.
+
+```lua
+-- lua/tests/my_project/checkuser.lua
+
+return {
+    groupName = "CheckUser",
+    beforeEach = function( state )
+        state.validUser = { name = "Valid User" }
+    end,
+
+    cases = {
+        {
+            name = "Should return true with a valid User",
+            func = function( state )
+                stub( MyProject, "UserExistsInDatabase" ).returns( true )
+
+                expect( MyProject.CheckUser, state.validUser ).to.beTrue()
+            end
+        },
+        {
+            name = "Should check if user exists in database",
+            func = function()
+                local dbCheck = stub( MyProject, "UserExistsInDatabase" ).returns( true )
+
+                MyProject.CheckUser( state.validUser )
+
+                expect( dbCheck ).to.haveBeenCalled()
+            end
+        }
+    }
+}
+```
+
+Now our `CheckUser` test _only_ tests the functionality in `CheckUser`, and doesn't depend on any other function's correctness.
+
+A Stub will replace the given function on the given table with a callable Stub object. The Stub keeps track of how many times it was called, and what parameters it was called with.
+
+#### Stub Restoration
+If you need to restore the original functionality of the stubbed function, you can use `stub:Restore()`.
+
+Un-restored stubs are automatically restored after each Test Case, but you can manually call `:Restore()` any time you need.
+
+#### ****Empty Stubs**
+You can create an empty Stub that doesn't automatically replace anything by calling `stub()` with no arguments.
+
+You can use the Stub like normal. This is particularly useful for functions that take callbacks, i.e.:
+```lua
+{
+    name = "RunCallback should run the given callback",
+    func = function()
+        local myStub = stub()
+
+        MyProject.RunCallback( myStub )
+
+        expect( myStub ).to.haveBeenCalled()
+    end
+}
+```
+
+Restoring empty stubs is a no-op, but won't break anything.
+
+#### Stub return values
+You can tell your stubs what to return when they're called.
+
+**`.with( function )`** 
+If you want to replace a function with another function, you can use the `.with` modifier.
+
+When your stub is called, it will pass all of the parameters it received to the function you gave to `.with`, and will return whatever your given function returns.
+
+**`.returns( ... )`**
+If you just want to return a certain value every time your Stub is called, you can use the `.returns` modifier.
+
+When your Stub is called, it will simply return everything you passed into `.returns`.
+
+</details>
+
 
 <br>
 

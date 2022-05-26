@@ -1,72 +1,107 @@
 local Helpers = {}
 local expect = include( "gluatest/expectations/expect.lua" )
+local stubMaker = include( "gluatest/stubs/stubMaker.lua" )
 
 ------------------
 -- Cleanup stuff--
 ------------------
 
--- TODO: Make these explicitly per-test so it can work with async
-local trackedHooks = {}
-local hook_Add = function( event, name, func, ... )
-    if not trackedHooks[event] then trackedHooks[event] = {} end
-    table.insert( trackedHooks[event], name )
+local makeHookTable = function()
+    local trackedHooks = {}
+    local hook_Add = function( event, name, func, ... )
+        if not trackedHooks[event] then trackedHooks[event] = {} end
+        table.insert( trackedHooks[event], name )
 
-    return hook.Add( event, name, func, ... )
-end
+        return hook.Add( event, name, func, ... )
+    end
 
-local timerCount = 0
-local timerNames = {}
-local timer_Create = function( identifier, delay, reps, func, ... )
-    table.insert( timerNames, identifier )
-
-    return timer.Create( identifier, delay, reps, func, ... )
-end
-local timer_Simple = function( delay, func )
-    local name = "simple_timer_" .. timerCount
-    timerCount = timerCount + 1
-
-    timer_Create( name, delay, 1, func )
-end
-
-function Helpers.CleanupPostTest()
-    for event, names in pairs( trackedHooks ) do
-        for _, name in ipairs( names ) do
-            hook.Remove( event, name )
+    local function cleanup()
+        for event, names in pairs( trackedHooks ) do
+            for _, name in ipairs( names ) do
+                hook.Remove( event, name )
+            end
         end
     end
 
-    for _, name in ipairs( timerNames ) do
-        timer.Remove( name )
-    end
-
-    trackedHooks = {}
-    timerNames = {}
-    timerCount = 0
+    return table.Inherit( { Add = hook_Add }, hook ), cleanup
 end
 
-local testHook = table.Inherit( { Add = hook_Add }, hook )
-local testTimer = table.Inherit( { Create = timer_Create, Simple = timer_Simple }, timer )
+local function makeTimerTable()
+    local timerCount = 0
+    local timerNames = {}
+
+    local timer_Create = function( identifier, delay, reps, func, ... )
+        table.insert( timerNames, identifier )
+
+        return timer.Create( identifier, delay, reps, func, ... )
+    end
+
+    local timer_Simple = function( delay, func )
+        local name = "simple_timer_" .. timerCount
+        timerCount = timerCount + 1
+
+        timer_Create( name, delay, 1, func )
+    end
+
+    local function cleanup()
+        for _, name in ipairs( timerNames ) do
+            timer.Remove( name )
+        end
+    end
+
+    return table.Inherit( { Create = timer_Create, Simple = timer_Simple }, timer ), cleanup
+end
+
+local function makeTestLibStubs()
+    local testHook, hookCleanup = makeHookTable()
+    local testTimer, timerCleanup = makeTimerTable()
+
+    local testEnv = {
+        hook = testHook,
+        timer = testTimer
+    }
+
+    local function cleanup()
+        hookCleanup()
+        timerCleanup()
+    end
+
+    return testEnv, cleanup
+end
+
+local function makeTestTools()
+    local stub, stubCleanup = stubMaker()
+
+    local tools = {
+        _R = _R,
+        stub = stub,
+        expect = expect,
+    }
+
+    local function cleanup()
+        stubCleanup()
+    end
+
+    return tools, cleanup
+end
 
 local function makeTestEnv()
+    local testEnv, envCleanup = makeTestLibStubs()
+    local testTools, toolsCleanup = makeTestTools()
+
+    local function cleanup()
+        envCleanup()
+        toolsCleanup()
+    end
+
     return setmetatable(
-    {
-        expect = expect,
-        _R = _R,
-    },
-    {
-        __index = function( _, idx )
-            if idx == "hook" then
-                return testHook
+        testTools,
+        {
+            __index = function( _, idx )
+                return testEnv[idx] or _G[idx]
             end
-
-            if idx == "timer" then
-                return testTimer
-            end
-
-            return _G[idx]
-        end
-    }
-    )
+        }
+    ), cleanup
 end
 
 local function getLocals( level )
@@ -167,7 +202,7 @@ function Helpers.MakeAsyncEnv( onDone, onFailedExpectation )
 end
 
 function Helpers.SafeRunWithEnv( defaultEnv, func, ... )
-    local testEnv = makeTestEnv()
+    local testEnv, cleanup = makeTestEnv()
     local ranExpect = false
 
     local ogExpect = testEnv.expect
@@ -180,6 +215,8 @@ function Helpers.SafeRunWithEnv( defaultEnv, func, ... )
     setfenv( func, testEnv )
     local success, errInfo = xpcall( func, Helpers.FailCallback, ... )
     setfenv( func, defaultEnv )
+
+    cleanup()
 
     -- If it succeeded but never ran `expect`, it's an empty test
     if success and not ranExpect then

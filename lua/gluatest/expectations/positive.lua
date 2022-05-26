@@ -3,7 +3,9 @@ local IsValid = IsValid
 local string_format = string.format
 
 -- Positive checks
-return function( subject )
+return function( subject, ... )
+    local args = { ... }
+
     local expectations = {
         expected = function( suffix, ... )
             local fmt = "Expectation Failed: Expected %s " .. suffix
@@ -23,12 +25,14 @@ return function( subject )
     expectations.equal = expectations.eq
 
     function expectations.beLessThan( comparison )
+
         if subject >= comparison then
             i.expected( "to be less than '%s'", comparison )
         end
     end
 
     function expectations.beGreaterThan( comparison )
+
         if subject <= comparison then
             i.expected( "to be greater than '%s'", comparison )
         end
@@ -80,7 +84,7 @@ return function( subject )
     expectations.beAn = expectations.beA
 
     function expectations.succeed()
-        local success, err = pcall( subject )
+        local success, err = pcall( subject, unpack( args ) )
 
         if success == false then
             i.expected( "to succeed, got: %s", err )
@@ -88,7 +92,7 @@ return function( subject )
     end
 
     function expectations.err()
-        local success = pcall( subject )
+        local success = pcall( subject, unpack( args ) )
 
         if success == true then
             i.expected( "to error" )
@@ -96,7 +100,7 @@ return function( subject )
     end
 
     function expectations.errWith( comparison )
-        local success, err = pcall( subject )
+        local success, err = pcall( subject, unpack( args ) )
 
         if success == true then
             i.expected( "to error with '%s'", comparison )
@@ -108,6 +112,25 @@ return function( subject )
             end
         end
     end
+
+    function expectations.haveBeenCalled( n )
+        local callCount = subject.callCount
+
+        if n == nil then
+            if callCount == 0 then
+                i.expected( "to have been called at least once " )
+            end
+        else
+            if callCount < n then
+                i.expected( "to have been called exactly %d times, got: %d", n, callCount )
+            end
+        end
+    end
+
+    -- Soon..
+    --
+    -- function expectations.haveBeenCalledWith( ... )
+    -- end
 
     return expectations
 end
