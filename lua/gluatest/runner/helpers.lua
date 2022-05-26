@@ -85,14 +85,20 @@ local function getLocals( level )
     return locals
 end
 
+-- FIXME: There has to be a better way to do this
 local function findStackInfo()
     -- Step up through the stacks to find the error we care about
 
-    for stack = 6, 12 do
+    for stack = 1, 12 do
         local info = debug.getinfo( stack, "lnS" )
         if not info then break end
 
-        if #info.namewhat == 0 then return stack, info end
+        local emptyName = #info.namewhat == 0
+        local notGluatest = not string.StartWith( info.short_src, "addons/gluatest" )
+
+        if emptyName and notGluatest then
+            return stack, info
+        end
     end
 
     -- This should never happen!!

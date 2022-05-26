@@ -20,8 +20,9 @@ local function cleanPathForRead( path )
     for i = 1, #expl do
         local step = expl[i]
 
-        if step == "tests" then
-            startCopy = i
+        if step == "lua" then
+            startCopy = i + 1
+            assert( startCopy < #expl )
             break
         end
     end
