@@ -41,7 +41,9 @@ return {
 
 
 ## **Handsome, informative error reporting**
-<img src="https://user-images.githubusercontent.com/7936439/170405324-2079c7ce-5928-4bef-94b4-4ca036047c3c.png" width="725" height="300">
+![image](https://user-images.githubusercontent.com/7936439/171299517-72dde73c-3b29-492b-b2a9-0fe821c05f83.png)
+
+
 
 <br>
 
