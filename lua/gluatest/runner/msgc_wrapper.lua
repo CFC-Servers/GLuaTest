@@ -2,7 +2,7 @@
 local MsgC = _G["MsgC"]
 
 if SERVER then
-    local shouldWrap = CreateConVar( "gluatest_use_ansi", 1, FCVAR_ARCHIVE, "Should GLuaTest use ANSI coloring in its output", 0, 1 )
+    local shouldWrap = GetConVar( "gluatest_use_ansi" )
 
     _G["_MsgC"] = _G["MsgC"]
     local _MsgC = _G["_MsgC"]

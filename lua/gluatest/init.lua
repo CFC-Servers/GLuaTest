@@ -21,6 +21,8 @@ if GLuaTest.RUN_CLIENTSIDE then
     AddCSLuaFile( "gluatest/runner/msgc_wrapper.lua" )
 end
 
+CreateConVar( "gluatest_use_ansi", 1, FCVAR_ARCHIVE, "Should GLuaTest use ANSI coloring in its output", 0, 1 )
+
 GLuaTest.loader = include( "gluatest/loader.lua" )
 GLuaTest.runner = include( "gluatest/runner/runner.lua" )
 
