@@ -356,16 +356,16 @@ There are a number of different expectations you can use.
 #### Expectations
 | Expectation          | Description                                           | Example                                                         |
 |----------------------|-------------------------------------------------------|-----------------------------------------------------------------|
-| **`equal`**/**`eq`**     | Basic `==` equality check                             | `expect( a ).to.equal( b )`                                 |
+| **`equal`**/**`eq`** | Basic `==` equality check                             | `expect( a ).to.equal( b )`                                     |
 | **`beLessThan`**     | Basic `<` comparison                                  | `expect( 5 ).to.beLessThan( 6 )`                                |
 | **`beGreaterThan`**  | Basic `>` comparison                                  | `expect( 10 ).to.beGreaterThan( 1 )`                            |
 | **`beTrue`**         | Expects the subject to literally be `true`            | `expect( Entity( 1 ):IsPlayer() ).to.beTrue()`                  |
 | **`beFalse`**        | Expects the subject to literally be `false`           | `expect( istable( "test" ) ).to.beFalse()`                      |
 | **`beValid`**        | Expects `IsValid( value )` to return `true`           | `expect( ply ).to.beValid()`                                    |
-| **`beInvalid`**      | Expects `IsValid( value )` to return `false`          | `expect( nil ).to.beInalid()`                                   |
+| **`beInvalid`**      | Expects `IsValid( value )` to return `false`          | `expect( nil ).to.beInvalid()`                                   |
 | **`beNil`**          | Expects the subject to literally be `nil`             | `expect( player.GetAll()[2] ).to.beNil()`                       |
 | **`exist`**          | Expects the subject to not be `nil`                   | `expect( MyProject ).to.exist()`                                |
-| **`beA`**/**`beAn`**     | Expects the subject to have the given `type`          | `expect( "test" ).to.beA( "string" )`                           |
+| **`beA`**/**`beAn`** | Expects the subject to have the given `type`          | `expect( "test" ).to.beA( "string" )`                           |
 | **`succeed`**        | Expects the subject function to run without error     | `expect( func, param ).to.succeed()`                            |
 | **`err`**            | Expects the subject function to throw an error        | `expect( error ).to.err()`                                      |
 | **`errWith`**        | Expects the subject function to throw the given error | `expect( badFunc, param ).to.errWith( "error message" )`        |
@@ -631,13 +631,13 @@ For example, say I want to test my `WrapperFunc` in this file:
 ```lua
 -- lua/my_project/wrapper.lua
 
- GlobalFunc = function()
-     return "Test"
- end
+GlobalFunc = function()
+    return "Test"
+end
 
- WrapperFunc = function()
-     return GlobalFunc()
- end
+WrapperFunc = function()
+    return GlobalFunc()
+end
 ```
 
 I might write something like this:
@@ -657,7 +657,7 @@ I might write something like this:
         expect( wasCalled ).to.beTrue()
 
         GlobalFunc = ogGlobalFunc
-    end,
+    end
 }
 ```
 
