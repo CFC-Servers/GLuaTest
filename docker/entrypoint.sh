@@ -28,6 +28,9 @@ while read p; do
     eval $(getCloneLine "$p")
 done <"$gmodroot"/requirements.txt
 
+gamemode="${GAMEMODE:-sandbox}"
+echo "Starting the server with gamemode: $gamemode"
+
 srcds_args=(
     # Test requirements
     -systemtest       # Allows us to exit the game from inside Lua
@@ -59,7 +62,7 @@ srcds_args=(
     -ip 127.0.0.1
     -port 27015
     +clientport 27005
-    +gamemode sandbox
+    +gamemode "$gamemode"
     +map gm_construct
     -maxplayers 12
     +servercfgfile test.cfg

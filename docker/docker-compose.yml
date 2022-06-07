@@ -20,3 +20,5 @@ services:
         source: $PROJECT_DIR
         target: /home/steam/gmodserver/garrysmod/addons/project
         read_only: true
+    environment:
+      - GAMEMODE=$GAMEMODE

@@ -184,6 +184,24 @@ And that's it!
 
 ---
 
+### Gamemodes
+If your tests require you to run a non-sandbox gamemode, you can specify it in the `with` section.
+
+```yml
+name: GLuaTest Runner
+
+on:
+  pull_request:
+
+jobs:
+  run-tests:
+    uses: CFC-Servers/GLuaTest/.github/workflows/run_tests.yml@main
+    with:
+      gamemode: darkrp
+```
+
+---
+
 
 ### Speed 🏃
 Running tests in a GitHub Runner is surprisingly fast.
@@ -241,9 +259,12 @@ You can do that with simple environment variables, i.e.:
 export REQUIREMENTS=/absolute/path/to/requirements.txt
 export CUSTOM_SERVER_CONFIG=/absolute/path/to/server.cfg
 export PROJECT_DIR=/home/me/Code/my_project
+export GAMEMODE="sandbox"
 ```
 
 You can skip the `REQUIREMENTS` and `CUSTOM_SERVER_CONFIG` if you don't need them, but you must set the `PROJECT_DIR` variable.
+
+The `GAMEMODE` variable defaults to `"sandbox"`, so you can omit it if that's appropriate for your tests.
 
 
 ### Running in Docker
