@@ -9,14 +9,14 @@ local MsgC = include( "gluatest/runner/msgc_wrapper.lua" )
 
 local ResultLogger = {}
 
-local function prefixLog( ... )
+function ResultLogger.prefixLog( ... )
     MsgC( colors.darkgrey, "[" )
     MsgC( colors.white, "GLuaTest" )
     MsgC( colors.darkgrey, "] " )
     MsgC( ... )
 end
 
-local function drawLine( content, lineNumber )
+function ResultLogger.drawLine( content, lineNumber )
     --
     -- Draws a line of code in the Context Block
     --
@@ -25,7 +25,7 @@ local function drawLine( content, lineNumber )
     MsgC( colors.grey, "| ", content )
 end
 
-local function drawFailingLine( content, lineNumber, divider, reason )
+function ResultLogger.drawFailingLine( content, lineNumber, divider, reason )
     --
     -- Draw a given line of code, a pointer-arrow, and the failure reason
     --
@@ -43,7 +43,7 @@ local function drawFailingLine( content, lineNumber, divider, reason )
         MsgC( colors.red, "v ", reason, "\n" )
     end
 
-    drawLine( content, lineNumber )
+    ResultLogger.drawLine( content, lineNumber )
 
     if not drawAbove then
         if drawBelow then
@@ -58,7 +58,7 @@ local function drawFailingLine( content, lineNumber, divider, reason )
     end
 end
 
-local function logCodeContext( errInfo )
+function ResultLogger.logCodeContext( errInfo )
     --
     -- Given a test failure, gather info about the failing code
     -- and draw a block of code context with a pointer-arrow to the failure
@@ -93,9 +93,9 @@ local function logCodeContext( errInfo )
         local onFailingLine = contextLineNumber == lineNumber
 
         if onFailingLine then
-            drawFailingLine( lineContent, lineNumStr, divider, reason )
+            ResultLogger.drawFailingLine( lineContent, lineNumStr, divider, reason )
         else
-            drawLine( lineContent, lineNumStr )
+            ResultLogger.drawLine( lineContent, lineNumStr )
             MsgC( "\n" )
         end
     end
@@ -103,7 +103,7 @@ local function logCodeContext( errInfo )
     MsgC( colors.grey,  "     |", divider, "\n" )
 end
 
-local function logLocals( errInfo )
+function ResultLogger.logLocals( errInfo )
     --
     -- Given a test failure with local variables,
     -- draw a section to display the name and values
@@ -128,7 +128,7 @@ local function logLocals( errInfo )
     MsgC( "\n" )
 end
 
-local function logTestCaseFailure( errInfo )
+function ResultLogger.logTestCaseFailure( errInfo )
     --
     -- Draw information about a given test failure
     --
@@ -137,8 +137,8 @@ local function logTestCaseFailure( errInfo )
     MsgC( colors.white, "    File:", "\n" )
     MsgC( colors.grey,  "       ", sourceFile, "\n\n" )
 
-    logLocals( errInfo )
-    logCodeContext( errInfo )
+    ResultLogger.logLocals( errInfo )
+    ResultLogger.logCodeContext( errInfo )
 end
 
 function ResultLogger.LogFileStart( testGroup )
@@ -149,19 +149,21 @@ function ResultLogger.LogFileStart( testGroup )
     local identifier = project .. "/" .. ( groupName or fileName )
 
     MsgC( "\n" )
-    prefixLog( colors.blue, "=== Running ", identifier , "... ===", "\n" )
+    ResultLogger.prefixLog( colors.blue, "=== Running ", identifier , "... ===", "\n" )
 end
 
 function ResultLogger.LogTestResult( result )
     local case = result.case
     local success = result.success
 
+    local plog = ResultLogger.prefixLog
+
     if success == true then
-        prefixLog( colors.green, "PASS " )
+        plog( colors.green, "PASS " )
     elseif success == false then
-        prefixLog( colors.red, "FAIL " )
+        plog( colors.red, "FAIL " )
     elseif success == nil then
-        prefixLog( colors.darkgrey, "EMPT " )
+        plog( colors.darkgrey, "EMPT " )
     else
         ErrorNoHaltWithStack( "Improper success type" )
         PrintTable( result )
@@ -186,7 +188,7 @@ function ResultLogger.LogTestFailureDetails( failure )
         errInfo.lineNumber = debugInfo.linedefined
     end
 
-    logTestCaseFailure( errInfo )
+    ResultLogger.logTestCaseFailure( errInfo )
     hook.Run( "GLuaTest_LoggedTestFailure", errInfo )
 
     MsgC( "\n" )
@@ -194,8 +196,10 @@ end
 
 function ResultLogger.LogTestsComplete()
     MsgC( "\n", "\n" )
-    prefixLog( colors.white, "Test run complete! 🎉")
+    ResultLogger.prefixLog( colors.white, "Test run complete! 🎉")
     MsgC( "\n" )
 end
+
+hook.Run( "GLuaTest_CreateResultLogger", ResultLogger )
 
 return ResultLogger

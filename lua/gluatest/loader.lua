@@ -7,7 +7,6 @@ local checkSendToClients = function( filePath, cases )
 
     for _, case in ipairs( cases ) do
         if case.clientside then
-            print( "Found clientside test case, sending file to clients: ", filePath )
             return AddCSLuaFile( filePath )
         end
     end

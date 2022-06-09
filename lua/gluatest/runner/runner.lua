@@ -33,6 +33,8 @@ return function( allTestGroups )
             errInfo = errInfo
         }
 
+        hook.Run( "GLuaTest_LogTestResult", result )
+
         table.insert( allResults, result )
 
         LogTestResult( result )
@@ -77,7 +79,10 @@ return function( allTestGroups )
             local serverside = not case.clientside
             local shouldRun = shared or ( clientside and CLIENT ) or ( serverside and SERVER )
 
-            if shouldRun then
+            local canRun = hook.Run( "GLuaTest_CanRunTestCase", testGroup, case )
+            if canRun == nil then canRun = true end
+
+            if canRun and shouldRun then
                 if case.async then
                     asyncCases[case.id] = case
                 else

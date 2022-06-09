@@ -8,4 +8,6 @@ local colors = {
     blue = Color( 120, 162, 204 )
 }
 
+hook.Run( "GLuaTest_MakeColors", colors )
+
 return colors
