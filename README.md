@@ -307,15 +307,18 @@ export PROJECT_DIR=/home/me/Code/my_project
 export GAMEMODE="sandbox"
 export COLLECTION_ID="12345"
 export SSH_PRIVATE_KEY="the-entire-private-key"
+export GITHUB_TOKEN="a-personal-access-token"
 ```
 
-You can skip the `REQUIREMENTS` and `CUSTOM_SERVER_CONFIG` if you don't need them, but you must set the `PROJECT_DIR` variable.
+ - You can skip the `REQUIREMENTS` and `CUSTOM_SERVER_CONFIG` if you don't need them, but you must set the `PROJECT_DIR` variable.
 
-The `GAMEMODE` variable defaults to `"sandbox"`, so you can omit it if that's appropriate for your tests.
+ - The `GAMEMODE` variable defaults to `"sandbox"`, so you can omit it if that's appropriate for your tests.
 
-The `COLLECTION_ID` variable allows you to pass a workshop collection ID for the server to grab before starting.
+ - The `COLLECTION_ID` variable allows you to pass a workshop collection ID for the server to grab before starting.
 
-The `SSH_PRIVATE_KEY` variable is used when one or more of your Requirements are hosted on a Private Repository. (More info [here](https://github.com/CFC-Servers/GLuaTest/wiki/Working-with-private-dependencies))
+ - The `SSH_PRIVATE_KEY` variable is used when one or more of your Requirements are hosted on a Private Repository. (More info [here](https://github.com/CFC-Servers/GLuaTest/wiki/Working-with-private-dependencies))
+
+ - The `GITHUB_TOKEN` variable, like the `SSH_PRIVATE_KEY` is also used to grant access to private repositories. Personal Access Tokens are a simpler (but ultimately worse) alternative to a full SSH keypair.
 
 
 ### Running in Docker

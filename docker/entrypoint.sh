@@ -2,6 +2,7 @@
 
 gmodroot=/home/steam/gmodserver
 server=/home/steam/gmodserver/garrysmod
+pat=$GITHUB_TOKEN@
 
 cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
 cat "$gmodroot/custom_server.cfg" >> "$server/cfg/test.cfg"
@@ -25,7 +26,7 @@ line = "$1"
 spl = line.split("@")
 
 name = spl[0].split("/")[1].lower()
-url = "https://github.com/" + spl[0] + ".git"
+url = "https://${pat}github.com/" + spl[0] + ".git"
 
 branch = " --branch " + spl[1] if len(spl) > 1 else ""
 
@@ -49,9 +50,10 @@ EOF
 
 while read p; do
     echo "$p"
-    if ! eval $(getCloneLine "$p"); then
-        echo "Failed to get $p, trying SSH..."
-        eval $(getSSHCloneLine "$p")
+    if [[ -z "$SSH_PRIVATE_KEY" ]]; then
+        eval $(getCloneLine "$p" )
+    else
+        eval $(getSSHCloneLine "$p" )
     fi
 done <"$gmodroot"/requirements.txt
 

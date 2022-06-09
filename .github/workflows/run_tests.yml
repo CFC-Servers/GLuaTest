@@ -33,6 +33,11 @@ on:
         required: false
         description: "The Private SSH key to use when cloning the dependencies"
 
+      github-token:
+        type: string
+        required: false
+        description: "A GitHub Personal Access Token"
+
 jobs:
   test:
     name: "Run tests"
@@ -77,6 +82,7 @@ jobs:
           GAMEMODE: "${{ inputs.gamemode }}"
           COLLECTION_ID: "${{ inputs.collection }}"
           SSH_PRIVATE_KEY: "${{ inputs.ssh-private-key }}"
+          GITHUB_TOKEN: "${{ inputs.github-token }}"
 
         run: |
           docker-compose up --no-log-prefix --exit-code-from runner
