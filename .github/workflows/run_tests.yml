@@ -26,7 +26,7 @@ on:
       collection:
         type: string
         required: false
-        description: "The workshop ID of the collection for the test server to use."
+        description: "The workshop ID of the collection for the test server to use"
 
 jobs:
   test:
