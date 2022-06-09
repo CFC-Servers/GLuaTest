@@ -8,6 +8,11 @@ cat "$gmodroot/custom_server.cfg" >> "$server/cfg/test.cfg"
 echo "false" > "$server/data/gluatest_clean_exit.txt"
 touch "$server/data/gluatest_failures.json"
 
+if [[ -z "${SSH_PRIVATE_KEY}" ]]; then
+    eval `ssh-agent -s`
+    ssh-add - <<< "$SSH_PRIVATE_KEY"
+fi
+
 cd "$server"/addons
 function getCloneLine {
     python3 - <<-EOF

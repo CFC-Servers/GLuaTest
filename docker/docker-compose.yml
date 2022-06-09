@@ -24,3 +24,4 @@ services:
     environment:
       - GAMEMODE=$GAMEMODE
       - COLLECTION_ID=$COLLECTION_ID
+      - SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY

@@ -28,6 +28,11 @@ on:
         required: false
         description: "The workshop ID of the collection for the test server to use"
 
+      ssh-private-key:
+        type: string
+        required: false
+        description: "The Private SSH key to use when cloning the dependencies"
+
 jobs:
   test:
     name: "Run tests"
@@ -71,6 +76,7 @@ jobs:
           PROJECT_DIR: "${{ github.workspace }}/project"
           GAMEMODE: "${{ inputs.gamemode }}"
           COLLECTION_ID: "${{ inputs.collection }}"
+          SSH_PRIVATE_KEY: "${{ inputs.ssh-private-key }}"
 
         run: |
           docker-compose up --no-log-prefix --exit-code-from runner
