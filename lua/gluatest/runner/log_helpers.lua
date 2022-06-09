@@ -36,7 +36,7 @@ function LogHelpers.getFileLines( filePath )
     -- Reads a given file path and returns the contents split by newline.
     -- Caches the output for future calls.
     --
-    local cached = fileCache[filePath]
+    local cached = LogHelpers.fileCache[filePath]
     if cached then return cached end
 
     local cleanPath = LogHelpers.cleanPathForRead( filePath )
@@ -45,7 +45,7 @@ function LogHelpers.getFileLines( filePath )
     testFile:Close()
 
     local fileLines = string.Split( fileContents, "\n" )
-    fileCache[filePath] = fileLines
+    LogHelpers.fileCache[filePath] = fileLines
 
     return fileLines
 end
