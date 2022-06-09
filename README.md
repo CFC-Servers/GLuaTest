@@ -12,6 +12,7 @@
  - [Usage](#usage)
  - [Writing Tests](#writing-tests-%EF%B8%8F)
  - [Troubleshooting](#troubleshooting-)
+ - [Developers](#de
 ---
 _(Are you an impatient software developer? Check out the [quickstart](https://github.com/CFC-Servers/GLuaTest/blob/main/QUICKSTART.md) guide to go fast)_
 
@@ -785,4 +786,13 @@ return {
  ![image](https://user-images.githubusercontent.com/7936439/170231750-e59f880f-138a-485d-be47-8b81f60c9cad.png)
 
  **Try setting the `gluatest_use_ansi` convar to `0`**
+</details>
+
+# Developers 👨‍💻
+<details>
+ <summary>Information about working with GLuaTest</summary>
+ 
+ ### Interested in making an extension for GLuaTest?
+ Check out the wiki article outlining the hooks you can use: https://github.com/CFC-Servers/GLuaTest/wiki/Developers
+ </summary>
 </details>
