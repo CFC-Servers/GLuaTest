@@ -12,7 +12,7 @@
  - [Usage](#usage)
  - [Writing Tests](#writing-tests-%EF%B8%8F)
  - [Troubleshooting](#troubleshooting-)
- - [Developers](#de
+ - [Developers](#developers-)
 ---
 _(Are you an impatient software developer? Check out the [quickstart](https://github.com/CFC-Servers/GLuaTest/blob/main/QUICKSTART.md) guide to go fast)_
 
