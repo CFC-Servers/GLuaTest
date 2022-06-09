@@ -5,9 +5,13 @@ return function( subject, ... )
     local positive = makePositive( subject, ... )
     local negative = makeNegative( subject, ... )
 
-    return {
+    local expect = {
         to = positive,
         notTo = negative,
         toNot = negative
     }
+
+    hook.Run( "GLuaTest_CreateExpect", expect )
+
+    return expect
 end

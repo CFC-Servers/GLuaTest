@@ -26,21 +26,25 @@ CreateConVar( "gluatest_use_ansi", 1, FCVAR_ARCHIVE, "Should GLuaTest use ANSI c
 GLuaTest.loader = include( "gluatest/loader.lua" )
 GLuaTest.runner = include( "gluatest/runner/runner.lua" )
 
-local _, projects = file.Find( "tests/*", "LUA" )
-local testFiles = {}
-
-for i = 1, #projects do
-    local project = projects[i]
-    table.Add( testFiles, GLuaTest.loader( "tests/" .. project ) )
-end
-
-GLuaTest.testFiles = testFiles
-
 local shouldRun = CreateConVar( "gluatest_enable", 0, FCVAR_ARCHIVE + FCVAR_PROTECTED )
+
+GLuaTest.runAllTests = function()
+    if not shouldRun:GetBool() then return end
+
+    local _, projects = file.Find( "tests/*", "LUA" )
+    local testFiles = {}
+
+    for i = 1, #projects do
+        local project = projects[i]
+        table.Add( testFiles, GLuaTest.loader( "tests/" .. project ) )
+    end
+
+    hook.Run( "GLuaTest_RunTestFiles", testFiles )
+
+    GLuaTest.runner( testFiles )
+end
 
 hook.Add( "Tick", "GLuaTest_Runner", function()
     hook.Remove( "Tick", "GLuaTest_Runner" )
-    if not shouldRun:GetBool() then return end
-
-    GLuaTest.runner( GLuaTest.testFiles )
+    GLuaTest.runAllTests()
 end )

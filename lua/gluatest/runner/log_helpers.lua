@@ -7,7 +7,7 @@ function LogHelpers.GetLeadingWhitespace( line )
     return string.match( line, "^%s+" ) or ""
 end
 
-local function cleanPathForRead( path )
+function LogHelpers.cleanPathForRead( path )
     --
     -- Given an absolute path, returns the path required to read
     -- the file in Lua
@@ -30,8 +30,8 @@ local function cleanPathForRead( path )
     return table_concat( expl, "/", startCopy, #expl )
 end
 
-local fileCache = {}
-local function getFileLines( filePath )
+LogHelpers.fileCache = {}
+function LogHelpers.getFileLines( filePath )
     --
     -- Reads a given file path and returns the contents split by newline.
     -- Caches the output for future calls.
@@ -39,7 +39,7 @@ local function getFileLines( filePath )
     local cached = fileCache[filePath]
     if cached then return cached end
 
-    local cleanPath = cleanPathForRead( filePath )
+    local cleanPath = LogHelpers.cleanPathForRead( filePath )
     local testFile = file.Open( cleanPath, "r", "LUA" )
     local fileContents = testFile:Read( testFile:Size() )
     testFile:Close()
@@ -50,7 +50,7 @@ local function getFileLines( filePath )
     return fileLines
 end
 
-local function getLeastSharedIndent( lines )
+function LogHelpers.getLeastSharedIndent( lines )
     --
     -- Given a table of code lines, return a string
     -- containing the leading spacing can be removed
@@ -73,7 +73,7 @@ local function getLeastSharedIndent( lines )
 end
 
 function LogHelpers.NormalizeLinesIndent( lines )
-    local leastSharedIndent = getLeastSharedIndent( lines )
+    local leastSharedIndent = LogHelpers.getLeastSharedIndent( lines )
     if leastSharedIndent == 0 then return lines end
 
     for i = 1, #lines do
@@ -87,7 +87,7 @@ end
 
 function LogHelpers.GetLineWithContext( path, line, context )
     if not context then context = 5 end
-    local fileLines = getFileLines( path )
+    local fileLines = LogHelpers.getFileLines( path )
 
     local lineWithContext = {}
     for i = line - context, line do
@@ -118,5 +118,6 @@ function LogHelpers.GenerateDivider( lines, reason )
     return string.rep( "_", dividerLength )
 end
 
+hook.Run( "GLuaTest_MakeLogHelpers", LogHelpers )
 
 return LogHelpers
