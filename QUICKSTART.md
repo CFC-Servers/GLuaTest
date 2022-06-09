@@ -49,27 +49,29 @@ on:
 jobs:
   run-tests:
     uses: CFC-Servers/GLuaTest/.github/workflows/run_tests.yml@main
-    
+
     # The entire 'with' block and every item in it are optional
     with:
         # Relative path to a supplemental startup config file for the test server
         server-cfg: lua/tests/my_project/test.cfg
-        
+
         # Relative path to a text file with your dependencies
         #  Example contents:
         #   CFC-Servers/logger@lua
         #   FPtje/DarkRP
         requirements: lua/tests/my_project/deps.txt
-        
+
         # The gamemode for the test server to run (defaults to sandbox)
         gamemode: darkrp
-        
+
         # Workshop collection ID
         collection: 1234
-        
+
         # Passwordless Private key with access to your private requirements
-        # Read more: https://github.com/CFC-Servers/GLuaTest/wiki/Working-with-private-dependencies
         ssh-private-key: "${{ secrets.GLUATEST_PRIVATE_KEY }}"
+
+        # A GitHub Personal ACcess Token with access to your private requirements
+        github-token: "${{ secrets.GLUATEST_TOKEN }}"
 ```
 
 ### 5. Commit your changes, push your branch, and open a new PR

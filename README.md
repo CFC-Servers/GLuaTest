@@ -316,9 +316,12 @@ export GITHUB_TOKEN="a-personal-access-token"
 
  - The `COLLECTION_ID` variable allows you to pass a workshop collection ID for the server to grab before starting.
 
- - The `SSH_PRIVATE_KEY` variable is used when one or more of your Requirements are hosted on a Private Repository. (More info [here](https://github.com/CFC-Servers/GLuaTest/wiki/Working-with-private-dependencies))
+ - The `SSH_PRIVATE_KEY` variable is used when one or more of your Requirements are hosted on a Private Repository. 
 
  - The `GITHUB_TOKEN` variable, like the `SSH_PRIVATE_KEY` is also used to grant access to private repositories. Personal Access Tokens are a simpler (but ultimately worse) alternative to a full SSH keypair.
+
+
+_(Read more about privately-hosted project requirements: https://github.com/CFC-Servers/GLuaTest/wiki/Private-Requirements )_
 
 
 ### Running in Docker
