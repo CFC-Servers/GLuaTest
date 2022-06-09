@@ -70,7 +70,7 @@ jobs:
         # Passwordless Private key with access to your private requirements
         ssh-private-key: "${{ secrets.GLUATEST_PRIVATE_KEY }}"
 
-        # A GitHub Personal ACcess Token with access to your private requirements
+        # A GitHub Personal Access Token with access to your private requirements
         github-token: "${{ secrets.GLUATEST_TOKEN }}"
 ```
 
