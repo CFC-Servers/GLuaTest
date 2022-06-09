@@ -8,12 +8,17 @@ cat "$gmodroot/custom_server.cfg" >> "$server/cfg/test.cfg"
 echo "false" > "$server/data/gluatest_clean_exit.txt"
 touch "$server/data/gluatest_failures.json"
 
-if [[ -z "${SSH_PRIVATE_KEY}" ]]; then
+if [[ ! -z "$SSH_PRIVATE_KEY" ]]; then
+    echo "Private key found, adding"
+    mkdir -pv /home/steam/.ssh
+    cat /home/steam/github_known_hosts >> /home/steam/.ssh/known_hosts
+
     eval `ssh-agent -s`
     ssh-add - <<< "$SSH_PRIVATE_KEY"
 fi
 
 cd "$server"/addons
+
 function getCloneLine {
     python3 - <<-EOF
 line = "$1"
@@ -24,13 +29,30 @@ url = "https://github.com/" + spl[0] + ".git"
 
 branch = " --branch " + spl[1] if len(spl) > 1 else ""
 
+print("git clone -vv " + url + branch + " --single-branch " + name)
+EOF
+}
+
+function getSSHCloneLine {
+    python3 - <<-EOF
+line = "$1"
+spl = line.split("@")
+
+name = spl[0].split("/")[1].lower()
+url = "git@github.com:" + spl[0] + ".git"
+
+branch = " --branch " + spl[1] if len(spl) > 1 else ""
+
 print("git clone -v " + url + branch + " --single-branch " + name)
 EOF
 }
 
 while read p; do
     echo "$p"
-    eval $(getCloneLine "$p")
+    if ! eval $(getCloneLine "$p"); then
+        echo "Failed to get $p, trying SSH..."
+        eval $(getSSHCloneLine "$p")
+    fi
 done <"$gmodroot"/requirements.txt
 
 gamemode="${GAMEMODE:-sandbox}"

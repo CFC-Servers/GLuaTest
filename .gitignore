@@ -1,1 +1,3 @@
 docker/.env
+docker/reqs.txt
+docker/srv.cfg
