@@ -200,6 +200,6 @@ function ResultLogger.LogTestsComplete()
     MsgC( "\n" )
 end
 
-hook.Run( "GLuaTest_CreateResultLogger", ResultLogger )
+hook.Run( "GLuaTest_MakeResultLogger", ResultLogger )
 
 return ResultLogger
