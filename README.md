@@ -16,6 +16,8 @@
 ---
 _(Are you an impatient software developer? Check out the [quickstart](https://github.com/CFC-Servers/GLuaTest/blob/main/QUICKSTART.md) guide to go fast)_
 
+_(Is the idea of testing your code new to you? That's great! Check out the [guided testing guide](https://github.com/CFC-Servers/GLuaTest/wiki/I-set-up-GLuaTest...-now-what) to see some great examples of how to test real code)_
+
 <br>
 
 # Features
@@ -777,6 +779,18 @@ return {
 }
 ```
 </details>
+
+---
+
+<br>
+
+At this point, you might be excited to try GLuaTest. Maybe you already have a test file set up!
+
+But... now what?
+
+Check out this wiki page addressing that very question: https://github.com/CFC-Servers/GLuaTest/wiki/I-set-up-GLuaTest...-now-what
+
+<br>
 
 # Troubleshooting 🤔
 <details>
