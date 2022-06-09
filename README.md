@@ -202,6 +202,24 @@ jobs:
 
 ---
 
+### Workshop Collection
+To make dependency management easier, you're also able to pass a workshop collection ID for the server to download on startup.
+
+```yml
+name: GLuaTest Runner
+
+on:
+  pull_request:
+
+jobs:
+  run-tests:
+    uses: CFC-Servers/GLuaTest/.github/workflows/run_tests.yml@main
+    with:
+      collection: 1629732176
+```
+
+---
+
 
 ### Speed 🏃
 Running tests in a GitHub Runner is surprisingly fast.
@@ -260,11 +278,14 @@ export REQUIREMENTS=/absolute/path/to/requirements.txt
 export CUSTOM_SERVER_CONFIG=/absolute/path/to/server.cfg
 export PROJECT_DIR=/home/me/Code/my_project
 export GAMEMODE="sandbox"
+export COLLECTION_ID="12345"
 ```
 
 You can skip the `REQUIREMENTS` and `CUSTOM_SERVER_CONFIG` if you don't need them, but you must set the `PROJECT_DIR` variable.
 
 The `GAMEMODE` variable defaults to `"sandbox"`, so you can omit it if that's appropriate for your tests.
+
+The `COLLECTION_ID` variable allows you to pass a workshop collection ID for the server to grab before starting.
 
 
 ### Running in Docker
@@ -502,13 +523,13 @@ Restoring empty stubs is a no-op, but won't break anything.
 You can tell your stubs what to return when they're called.
 
 **`.with( function )`**
- 
+
 If you want to replace a function with another function, you can use the `.with` modifier.
 
 When your stub is called, it will pass all of the parameters it received to the function you gave to `.with`, and will return whatever your given function returns.
 
 **`.returns( ... )`**
- 
+
 If you just want to return a certain value every time your Stub is called, you can use the `.returns` modifier.
 
 When your Stub is called, it will simply return everything you passed into `.returns`.

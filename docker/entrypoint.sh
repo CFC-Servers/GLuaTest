@@ -29,6 +29,7 @@ while read p; do
 done <"$gmodroot"/requirements.txt
 
 gamemode="${GAMEMODE:-sandbox}"
+collection="${COLLECTION_ID:-0}"
 echo "Starting the server with gamemode: $gamemode"
 
 srcds_args=(
@@ -63,6 +64,7 @@ srcds_args=(
     -port 27015
     +clientport 27005
     +gamemode "$gamemode"
+    +host_workshop_collection "$collection"
     +map gm_construct
     -maxplayers 12
     +servercfgfile test.cfg
