@@ -112,7 +112,9 @@ There are a couple of config options you can use though.
 ---
 
 ### Requirements
-If your project depends on an external project, GLuaTest can automatically grab them for you.
+<details>
+ <summary><strong>If your project depends on an external project, GLuaTest can automatically grab them for you</strong></summary>
+<br>
 
 Let's say you needed:
  - ULX
@@ -131,6 +133,8 @@ Each line should be in the format of: **`<Github owner name>/<Project name>`**.
 
 You can use a specific branch of the project by adding **`@<branch-name>`** to the end of the line.
 
+(**If your requirement is hosted in a private GitHub repo**, you'll need to do some annoying legwork to get everything connected. [More info here.](https://github.com/CFC-Servers/GLuaTest/wiki/Working-with-private-dependencies))
+
 
 Great, now we update our workflow to use our requirements file
 ```yml
@@ -148,10 +152,15 @@ jobs:
 
 All done! Commit those changes and GLuaTest will automatically clone your requirements.
 
+</summary>
+</details>
+
 ---
 
 ### Server Configs
-**Sometimes your project requires specific convars to be set.**
+<details>
+ <summary><strong>Sometimes your project requires specific convars / server settings</strong></summary>
+<br>
 
 Similar to how you define requirements, we'll make a new `.cfg` file.
 
@@ -182,10 +191,17 @@ jobs:
 
 And that's it!
 
+</summary>
+</details>
+
 ---
 
 ### Gamemodes
-If your tests require you to run a non-sandbox gamemode, you can specify it in the `with` section.
+<details>
+ <summary><strong>If you're testing a non-sandbox project, you need to tell the test server which gamemode to run</strong></summary>
+<br>
+
+Simply specify the desired gamemode in your workflow's `with` section.
 
 ```yml
 name: GLuaTest Runner
@@ -200,10 +216,18 @@ jobs:
       gamemode: darkrp
 ```
 
+</summary>
+</details>
+
 ---
 
 ### Workshop Collection
-To make dependency management easier, you're also able to pass a workshop collection ID for the server to download on startup.
+<details>
+ <summary><strong>To make dependency management easier, you can tell the test server to use a specific workshop collection.</strong></summary>
+<br>
+
+
+Add the collection ID in your workflow's `with` section.
 
 ```yml
 name: GLuaTest Runner
@@ -217,6 +241,9 @@ jobs:
     with:
       collection: 1629732176
 ```
+
+</summary>
+</details>
 
 ---
 
@@ -279,6 +306,7 @@ export CUSTOM_SERVER_CONFIG=/absolute/path/to/server.cfg
 export PROJECT_DIR=/home/me/Code/my_project
 export GAMEMODE="sandbox"
 export COLLECTION_ID="12345"
+export SSH_PRIVATE_KEY="the-entire-private-key"
 ```
 
 You can skip the `REQUIREMENTS` and `CUSTOM_SERVER_CONFIG` if you don't need them, but you must set the `PROJECT_DIR` variable.
@@ -286,6 +314,8 @@ You can skip the `REQUIREMENTS` and `CUSTOM_SERVER_CONFIG` if you don't need the
 The `GAMEMODE` variable defaults to `"sandbox"`, so you can omit it if that's appropriate for your tests.
 
 The `COLLECTION_ID` variable allows you to pass a workshop collection ID for the server to grab before starting.
+
+The `SSH_PRIVATE_KEY` variable is used when one or more of your Requirements are hosted on a Private Repository. (More info [here](https://github.com/CFC-Servers/GLuaTest/wiki/Working-with-private-dependencies))
 
 
 ### Running in Docker
