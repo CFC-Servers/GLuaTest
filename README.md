@@ -7,6 +7,8 @@
 
 **It offers an approachable (albeit strange) syntax that makes writing tests intuitive.**
 
+GLuaTest takes a lot of inspiration from both Ruby's [RSpec](https://rspec.info/) and Javascript's [Jest](https://jestjs.io/)
+
 **Glossary**
  - [Additional reading](#some-additional-reading)
  - [Usage](#usage)
