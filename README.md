@@ -3,7 +3,7 @@
 🎉 **The missing test framework for GMod** 🎉
 
 **GLuaTest is a testing framework built for Garry's Mod.**
-**Its job is to make writing tests for Garry's Mod projects easy.**
+**Its job is to make writing automated tests for Garry's Mod projects easy and tolerable.**
 
 **It offers an approachable (albeit strange) syntax that makes writing tests intuitive.**
 
