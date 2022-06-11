@@ -49,6 +49,9 @@ function LogHelpers.getFileLines( filePath )
 
     return fileLines
 end
+hook.Add( "GLuaTest_Finished", "GLuaTest_FileCacheCleanup", function()
+    LogHelpers.fileCache = {}
+end )
 
 function LogHelpers.getLeastSharedIndent( lines )
     --
