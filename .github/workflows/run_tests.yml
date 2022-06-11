@@ -19,7 +19,7 @@ on:
 
       gamemode:
         type: string
-        required: true
+        required: false
         description: "The name of the gamemode for the test server to run. (You must list the gamemode as a requirement)"
         default: "sandbox"
 
