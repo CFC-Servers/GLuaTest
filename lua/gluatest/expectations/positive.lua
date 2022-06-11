@@ -105,7 +105,9 @@ return function( subject, ... )
         if success == true then
             i.expected( "to error with '%s'", comparison )
         else
-            err = string.Split( err, ": " )[2]
+            if string.StartWith( err, "lua/" ) then
+                err = string.Split( err, ": " )[2]
+            end
 
             if err ~= comparison then
                 i.expected( "to error with '%s', got '%s'", comparison, err )
