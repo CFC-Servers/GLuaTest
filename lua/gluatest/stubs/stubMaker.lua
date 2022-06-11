@@ -52,7 +52,7 @@ return function()
                 return rawget( self, idx )
             end,
 
-            __call = function( ... )
+            __call = function( _, ... )
                 stubTbl.callCount = stubTbl.callCount + 1
                 table.insert( stubTbl.callHistory, { ... } )
 
