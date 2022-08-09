@@ -786,11 +786,15 @@ return {
 
 <br>
 
+# Now what?
+
 At this point, you might be excited to try GLuaTest. Maybe you already have a test file set up!
 
 But... now what?
 
-Check out this wiki page addressing that very question: https://github.com/CFC-Servers/GLuaTest/wiki/I-set-up-GLuaTest...-now-what
+Check out this wiki page addressing that very question:
+
+https://github.com/CFC-Servers/GLuaTest/wiki/I-set-up-GLuaTest...-now-what
 
 <br>
 
