@@ -41,7 +41,7 @@ local function getTestsInDir( dir, tests )
     end
 
     for _, dirName in ipairs( dirs ) do
-        getTestsInDir( tests, dir .. "/" .. dirName )
+        getTestsInDir( dir .. "/" .. dirName, tests )
     end
 
     return tests
