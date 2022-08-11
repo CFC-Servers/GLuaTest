@@ -52,6 +52,7 @@ return function( allTestGroups )
 
         if not testGroup then
             LogTestsComplete()
+
             hook.Run( "GLuaTest_Finished", testGroups, allResults )
             return
         end
@@ -86,9 +87,8 @@ return function( allTestGroups )
                 if case.async then
                     asyncCases[case.id] = case
                 else
-                    testGroup.beforeEach( case.state )
-
-                    local success, errInfo = SafeRunWithEnv( defaultEnv, case.func, case.state )
+                    local beforeFunc = testGroup.beforeEach
+                    local success, errInfo = SafeRunWithEnv( defaultEnv, beforeFunc, case.func, case.state )
 
                     case.cleanup( case.state )
                     testGroup.afterEach( case.state )
@@ -114,9 +114,10 @@ return function( allTestGroups )
         end
 
         for _, case in pairs( asyncCases ) do
-            testGroup.beforeEach( case.state )
-
             local expectationFailure = false
+            local asyncCleanup = function()
+                ErrorNoHaltWithStack( "Running an empty Async Cleanup func" )
+            end
 
             -- TODO: Find a better way to handle this function
             -- It shouldn't take a param like this to modify its behavior
@@ -126,6 +127,8 @@ return function( allTestGroups )
 
                 case.cleanup( case.state )
                 testGroup.afterEach( case.state )
+
+                asyncCleanup()
 
                 if shouldCheckComplete == false then return end
 
@@ -154,7 +157,12 @@ return function( allTestGroups )
                 expectationFailure = true
             end
 
-            local asyncEnv = MakeAsyncEnv( onDone, onFailedExpectation )
+            local asyncEnv, asyncCleanupFunc = MakeAsyncEnv( onDone, onFailedExpectation )
+            asyncCleanup = asyncCleanupFunc
+
+            setfenv( testGroup.beforeEach, asyncEnv )
+            testGroup.beforeEach( case.state )
+            setfenv( testGroup.beforeEach, defaultEnv )
 
             setfenv( case.func, asyncEnv )
             local success, errInfo = xpcall( case.func, FailCallback, case.state )

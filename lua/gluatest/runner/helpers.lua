@@ -171,6 +171,15 @@ function Helpers.FailCallback( reason )
 end
 
 function Helpers.MakeAsyncEnv( onDone, onFailedExpectation )
+    -- TODO: How can we make Stubs safer in Async environments?
+    local stub, stubCleanup = stubMaker()
+    local testEnv, envCleanup = makeTestLibStubs()
+
+    local function cleanup()
+        envCleanup()
+        stubCleanup()
+    end
+
     return setmetatable(
         {
             -- We manually catch expectation errors here in case
@@ -195,13 +204,18 @@ function Helpers.MakeAsyncEnv( onDone, onFailedExpectation )
             end,
 
             done = onDone,
+            stub = stub,
             _R = _R
         },
-        { __index = _G }
-    )
+        {
+            __index = function( _, idx )
+                return testEnv[idx] or _G[idx]
+            end
+        }
+    ), cleanup
 end
 
-function Helpers.SafeRunWithEnv( defaultEnv, func, ... )
+function Helpers.SafeRunWithEnv( defaultEnv, before, func, state )
     local testEnv, cleanup = makeTestEnv()
     local ranExpect = false
 
@@ -212,8 +226,12 @@ function Helpers.SafeRunWithEnv( defaultEnv, func, ... )
         return ogExpect( ... )
     end
 
+    setfenv( before, testEnv )
+    before( state )
+    setfenv( before, defaultEnv )
+
     setfenv( func, testEnv )
-    local success, errInfo = xpcall( func, Helpers.FailCallback, ... )
+    local success, errInfo = xpcall( func, Helpers.FailCallback, state )
     setfenv( func, defaultEnv )
 
     cleanup()
