@@ -1,4 +1,5 @@
 return function()
+
     local stubs = {}
 
     local function cleanup()

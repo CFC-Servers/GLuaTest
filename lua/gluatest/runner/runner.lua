@@ -2,6 +2,7 @@ local Helpers = include( "gluatest/runner/helpers.lua" )
 local FailCallback = Helpers.FailCallback
 local MakeAsyncEnv = Helpers.MakeAsyncEnv
 local SafeRunWithEnv = Helpers.SafeRunWithEnv
+local CreateCaseState = Helpers.CreateCaseState
 
 local ResultLogger = include( "gluatest/runner/logger.lua" )
 local LogFileStart = ResultLogger.LogFileStart
@@ -45,10 +46,12 @@ return function( allTestGroups )
     local defaultEnv = getfenv( 1 )
 
     local testGroup
+    local testGroupState = {}
     local function runNextTestGroup( testGroups )
-        if testGroup then testGroup.afterAll() end
+        if testGroup then testGroup.afterAll( testGroupState ) end
 
         testGroup = table.remove( testGroups )
+        testGroupState = {}
 
         if not testGroup then
             LogTestsComplete()
@@ -65,14 +68,14 @@ return function( allTestGroups )
         local caseCount = #cases
 
         LogFileStart( testGroup )
-        testGroup.beforeAll()
+        testGroup.beforeAll( testGroupState )
 
         local asyncCases = {}
 
         for c = 1, caseCount do
             local case = cases[c]
             case.id = getCaseID()
-            case.state = case.state or {}
+            case.state = case.state or CreateCaseState( testGroupState )
             case.cleanup = case.cleanup or noop
 
             local shared = case.shared

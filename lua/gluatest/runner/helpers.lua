@@ -244,4 +244,18 @@ function Helpers.SafeRunWithEnv( defaultEnv, before, func, state )
     return success, errInfo
 end
 
+function Helpers.CreateCaseState( testGroupState )
+    return setmetatable( {}, {
+        __index = function( self, idx )
+            if testGroupState[idx] ~= nil then
+                return testGroupState[idx]
+            end
+
+            if rawget( self, idx ) ~= nil then
+                return rawget( self, idx )
+            end
+        end
+    })
+end
+
 return Helpers
