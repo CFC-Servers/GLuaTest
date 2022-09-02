@@ -105,7 +105,7 @@ return function( subject, ... )
         if success == true then
             i.expected( "to error with '%s'", comparison )
         else
-            if string.StartWith( err, "lua/" ) then
+            if string.StartWith( err, "lua/" ) or string.StartWith( err, "addons/" ) then
                 err = string.Split( err, ": " )[2]
             end
 
