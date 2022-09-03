@@ -7,7 +7,7 @@
 
 **It offers an approachable (albeit strange) syntax that makes writing tests intuitive.**
 
-GLuaTest takes a lot of inspiration from both Ruby's [RSpec](https://rspec.info/) and Javascript's [Jest](https://jestjs.io/)
+GLuaTest takes a lot of inspiration from both Ruby's [RSpec](https://rspec.info/) and JavaScript's [Jest](https://jestjs.io/)
 
 **Glossary**
  - [Additional reading](#some-additional-reading)
@@ -96,7 +96,7 @@ GLuaTest can be used in a number of ways. Whether you want to run your tests whe
 <summary><strong>Run your tests in a Pull Request</strong></summary>
 <br>
 
-To set up automated test runs, we'll use Github Workflows.
+To set up automated test runs, we'll use GitHub Workflows.
 
 It's actually really simple to set up the workflow. Add the following file to your project:
 ```yml
@@ -456,7 +456,7 @@ There are a number of different expectations you can use.
 
 <br>
 
-#### Expecation Negation
+#### Expectation Negation
 You can invert an Expectation by using `.toNot` or `.notTo` in place of your `.to`
 
 i.e.:
@@ -469,7 +469,7 @@ expect( "test" ).notTo.beA( "table" )
 
 ### The `stub` function
 <details>
- <summary><strong>Isolating your tests is important. Stubs are a powerful way of controling which parts of your code your tests invoke.</strong></summary>
+ <summary><strong>Isolating your tests is important. Stubs are a powerful way of controlling which parts of your code your tests invoke.</strong></summary>
 
 Let's say your addon looks like this:
 ```lua
@@ -494,7 +494,7 @@ You want to test the functionality of `CheckUser`.
 There are three checks in `CheckUser`:
  - The user exists in the database
  - The user's name exists
- - The user's name is not emtpy
+ - The user's name is not empty
 
 You could add a fake user to the database and use the function normally, but you're not testing the _database_, you're testing `CheckUser`.
 
@@ -591,7 +591,7 @@ If your test fails for some reason before it can call `done()`, it'll be marked 
 
 If you know the maximum amount of time your test will take, you can include the `timeout` key on the test with the number of seconds to wait until failing the test.
 
-If you don't include a `timeout` on your Test Case, you'll have to wait for the defaut 60-second timer before the test can complete. So if speed is important to you, consider setting a conservative `timeout` value for your async tests.
+If you don't include a `timeout` on your Test Case, you'll have to wait for the default 60-second timer before the test can complete. So if speed is important to you, consider setting a conservative `timeout` value for your async tests.
 
 
 For example, say we were trying to test this code:
