@@ -391,7 +391,7 @@ return {
 The Test Group (that is, the table you return from your Test File) can have the following keys:
 | Key              |    Type    | Description                                                                         | Required |
 |------------------|:----------:|-------------------------------------------------------------------------------------|:--------:|
-| **`cases`**      |   `table`  | A table of Test Cases                                                               |     ✔️    |
+| **`cases`**      |   `table`  | A table of [Test Cases](#the-test-case)                                             |     ✔️    |
 | **`groupName`**  |  `string`  | The name of the module/function this Test Group is testing                          |     ❌    |
 | **`beforeAll`**  | `function` | A function to run once before running your Test Group                               |     ❌    |
 | **`beforeEach`** | `function` | A function to run before each Test Case in your Test Group. Takes a `state` table   |     ❌    |
