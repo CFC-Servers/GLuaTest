@@ -65,7 +65,7 @@ jobs:
           cp docker/docker-compose.yml $GITHUB_WORKSPACE/docker-compose.yml
 
           git fetch --quiet --tags
-          latest="$(git tag | tail -1)"
+          latest="$(git describe --tags `git rev-list --tags --max-count=1`)"
           echo "Latest Tag: $latest"
           echo "::set-output name=LATEST_TAG::$latest"
 
