@@ -196,7 +196,7 @@ end
 
 function ResultLogger.LogTestsComplete()
     MsgC( "\n", "\n" )
-    ResultLogger.prefixLog( colors.white, "Test run complete! 🎉")
+    ResultLogger.prefixLog( colors.white, "Test run complete! 🎉" )
     MsgC( "\n" )
 end
 
