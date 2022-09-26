@@ -1,5 +1,7 @@
 name: "GLuaTest Test Runner"
 description: "Run GLuaTest in a GMod Lua project"
+icon: "check"
+color: "green"
 inputs:
     server-cfg:
       type: string
