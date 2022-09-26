@@ -27,7 +27,7 @@ if SERVER then
 
         local line = ""
 
-        for _, t in ipairs( {...} ) do
+        for _, t in ipairs( { ... } ) do
             if IsColor( t ) then
                 line = line .. colorToAnsi( t )
             else

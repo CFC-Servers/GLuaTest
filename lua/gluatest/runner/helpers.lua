@@ -137,7 +137,7 @@ local function findStackInfo()
     end
 
     -- This should never happen!!
-    ErrorNoHaltWithStack("The bad thing happened!!!!!")
+    ErrorNoHaltWithStack( "Could not find stack info! This should never happen - please report this!" )
     return 2, debug.getinfo( 2, "lnS" )
 end
 
@@ -255,7 +255,7 @@ function Helpers.CreateCaseState( testGroupState )
                 return rawget( self, idx )
             end
         end
-    })
+    } )
 end
 
 return Helpers
