@@ -12,32 +12,32 @@ inputs:
     description: "A path (relative to project directory) with extra server config options"
     default: "gluatest_custom.cfg"
 
-    requirements:
-      type: string
-      required: false
-      description: "A path (relative to project directory) with a list of all requirements to test this project"
-      default: "gluatest_requirements.txt"
+  requirements:
+    type: string
+    required: false
+    description: "A path (relative to project directory) with a list of all requirements to test this project"
+    default: "gluatest_requirements.txt"
 
-    gamemode:
-      type: string
-      required: false
-      description: "The name of the gamemode for the test server to run. (You must list the gamemode as a requirement)"
-      default: "sandbox"
+  gamemode:
+    type: string
+    required: false
+    description: "The name of the gamemode for the test server to run. (You must list the gamemode as a requirement)"
+    default: "sandbox"
 
-    collection:
-      type: string
-      required: false
-      description: "The workshop ID of the collection for the test server to use"
+  collection:
+    type: string
+    required: false
+    description: "The workshop ID of the collection for the test server to use"
 
-    ssh-private-key:
-      type: string
-      required: false
-      description: "The Private SSH key to use when cloning the dependencies"
+  ssh-private-key:
+    type: string
+    required: false
+    description: "The Private SSH key to use when cloning the dependencies"
 
-    github-token:
-      type: string
-      required: false
-      description: "A GitHub Personal Access Token"
+  github-token:
+    type: string
+    required: false
+    description: "A GitHub Personal Access Token"
 
 runs:
   using: "composite"
