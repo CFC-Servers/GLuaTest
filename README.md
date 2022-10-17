@@ -16,7 +16,8 @@ GLuaTest takes a lot of inspiration from both Ruby's [RSpec](https://rspec.info/
  - [Troubleshooting](#troubleshooting-)
  - [Developers](#developers-)
 
-![GLuaLint](https://github.com/CFC-Servers/GLuaTest/actions/workflows/gluafixer.yml/badge.svg)
+![GLuaLint](https://github.com/CFC-Servers/GLuaTest/actions/workflows/glualint.yml/badge.svg)
+
 ---
 _(Are you an impatient software developer? Check out the [quickstart](https://github.com/CFC-Servers/GLuaTest/blob/main/QUICKSTART.md) guide to go fast)_
 
