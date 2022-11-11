@@ -129,7 +129,7 @@ local function findStackInfo()
         if not info then break end
 
         local emptyName = #info.namewhat == 0
-        local notGluatest = not string.StartWith( info.short_src, "addons/gluatest" )
+        local notGluatest = not string.match( info.short_src, "/lua/gluatest/" )
 
         if emptyName and notGluatest then
             return stack, info
