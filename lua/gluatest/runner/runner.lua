@@ -156,6 +156,8 @@ return function( allTestGroups )
             -- This will only be called once, even though many
             -- expectations may fail.
             local onFailedExpectation = function( errInfo )
+                if callbacks[case.id] ~= nil then return end
+
                 addResult( false, case, errInfo )
                 expectationFailure = true
             end
