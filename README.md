@@ -583,7 +583,7 @@ When your Stub is called, it will simply return everything you passed into `.ret
 If you need to specify a sequence of values that your stub will return as it's called, `.returnsSequence` is the right choice.
 
 Every time your stub is called, it will return the next value in the sequence table.
-One cool trick is to include gaps in your sequence table. So, for example, if you wanted to return `nil` for every call except the 6th one, you could do:
+One cool trick is to include gaps in your sequence table. So, for example, if you wanted to return `""` for every call except the 6th one, you could do:
 ```lua
 stub( net, "ReadString" ).returnsSequence( { [6] = "hello" }, "" )
 ```
