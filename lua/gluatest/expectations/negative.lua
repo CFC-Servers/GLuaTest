@@ -89,7 +89,7 @@ return function( subject, ... )
     end
 
     function expectations.succeed()
-        local success = pcall( subject )
+        local success = pcall( subject, unpack( args ) )
 
         if success ~= false then
             i.expected( "to not succeed" )
@@ -97,7 +97,7 @@ return function( subject, ... )
     end
 
     function expectations.err()
-        local success = pcall( subject )
+        local success = pcall( subject, unpack( args ) )
 
         if success ~= true then
             i.expected( "to not error" )
