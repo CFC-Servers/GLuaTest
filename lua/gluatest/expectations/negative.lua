@@ -3,7 +3,9 @@ local IsValid = IsValid
 local string_format = string.format
 
 -- Inverse checks
-return function( subject )
+return function( subject, ... )
+    local args = { ... }
+
     local expectations = {
         expected = function( suffix, ... )
             local fmt = "Expectation Failed: Expected %s " .. suffix
@@ -87,7 +89,7 @@ return function( subject )
     end
 
     function expectations.succeed()
-        local success = pcall( subject )
+        local success = pcall( subject, unpack( args ) )
 
         if success ~= false then
             i.expected( "to not succeed" )
@@ -95,7 +97,7 @@ return function( subject )
     end
 
     function expectations.err()
-        local success = pcall( subject )
+        local success = pcall( subject, unpack( args ) )
 
         if success ~= true then
             i.expected( "to not error" )
@@ -103,12 +105,17 @@ return function( subject )
     end
 
     function expectations.errWith( comparison )
-        local success, err = pcall( subject )
+        local success, err = pcall( subject, unpack( args ) )
 
         if success == true then
             i.expected( "to error" )
         else
-            err = string.Split( err, ": " )[2]
+            if string.StartWith( err, "lua/" ) or string.StartWith( err, "addons/" ) then
+                local _, endOfPath = string.find( err, ":%d+: ", 1 )
+                assert( endOfPath, "Could not find end of path in error message: " .. err )
+
+                err = string.sub( err, endOfPath + 1 )
+            end
 
             if err == comparison then
                 i.expected( "to not error with '%s'", comparison )
