@@ -324,7 +324,7 @@ export GITHUB_TOKEN="a-personal-access-token"
 
  - The `COLLECTION_ID` variable allows you to pass a workshop collection ID for the server to grab before starting.
 
- - The `SSH_PRIVATE_KEY` variable is used when one or more of your Requirements are hosted on a Private Repository. 
+ - The `SSH_PRIVATE_KEY` variable is used when one or more of your Requirements are hosted on a Private Repository.
 
  - The `GITHUB_TOKEN` variable, like the `SSH_PRIVATE_KEY` is also used to grant access to private repositories. Personal Access Tokens are a simpler (but ultimately worse) alternative to a full SSH keypair.
 
@@ -578,6 +578,20 @@ If you just want to return a certain value every time your Stub is called, you c
 
 When your Stub is called, it will simply return everything you passed into `.returns`.
 
+**`.returnsSequence( table sequence, any default )`**
+
+If you need to specify a sequence of values that your stub will return as it's called, `.returnsSequence` is the right choice.
+
+Every time your stub is called, it will return the next value in the sequence table.
+One cool trick is to include gaps in your sequence table. So, for example, if you wanted to return `nil` for every call except the 6th one, you could do:
+```lua
+stub( net, "ReadString" ).returnsSequence( { [6] = "hello" }, "" )
+```
+
+This would make `net.ReadString` return `""` for the first 5 calls, `"hello"` for the 6th, and `""` for every call after.
+
+**Note**: Because lua discards all indices with `nil` values, using the `default` parameter will override any intentional `nil`s in your sequence table.
+
 </details>
 
 
@@ -814,7 +828,7 @@ https://github.com/CFC-Servers/GLuaTest/wiki/I-set-up-GLuaTest...-now-what
 # Developers 👨‍💻
 <details>
  <summary>Information about working with GLuaTest</summary>
- 
+
  ### Interested in making an extension for GLuaTest?
  Check out the wiki article outlining the hooks you can use: https://github.com/CFC-Servers/GLuaTest/wiki/Developers
  </summary>

@@ -48,6 +48,19 @@ return function()
                             return self
                         end
                     end
+
+                    if idx == "returnsSequence" then
+                        return function( sequence, default )
+                            assert( type( sequence ) == "table", "Sequence must be a table" )
+
+                            rawset( self, "stubbedFunc", function()
+                                local ret = sequence[stubTbl.callCount]
+                                if ret == nil then return default end
+                                return ret
+                            end )
+                            return self
+                        end
+                    end
                 end
 
                 return rawget( self, idx )
