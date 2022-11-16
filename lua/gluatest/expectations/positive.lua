@@ -106,7 +106,10 @@ return function( subject, ... )
             i.expected( "to error with '%s'", comparison )
         else
             if string.StartWith( err, "lua/" ) or string.StartWith( err, "addons/" ) then
-                err = string.Split( err, ": " )[2]
+                local _, endOfPath = string.find( err, ":%d+: ", 1 )
+                assert( endOfPath, "Could not find end of path in error message: " .. err )
+
+                err = string.sub( err, endOfPath + 1 )
             end
 
             if err ~= comparison then
