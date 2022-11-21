@@ -12,13 +12,20 @@ local makeHookTable = function()
         if not trackedHooks[event] then trackedHooks[event] = {} end
         table.insert( trackedHooks[event], name )
 
-        return hook.Add( event, name, func, ... )
+        if not isfunction( func ) and func.IsStub then
+            local givenStub = func
+            func = function( ... )
+                givenStub( ... )
+            end
+        end
+
+        return _G.hook.Add( event, name, func, ... )
     end
 
     local function cleanup()
         for event, names in pairs( trackedHooks ) do
             for _, name in ipairs( names ) do
-                hook.Remove( event, name )
+                _G.hook.Remove( event, name )
             end
         end
     end

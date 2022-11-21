@@ -14,13 +14,15 @@ return function()
         local original = tbl and tbl[key]
 
         local stubTbl = {
+            IsStub = true,
             callCount = 0,
             callHistory = {},
             restored = false,
             Restore = function( self )
                 if self.restored then return end
-
                 self.restored = true
+
+                if not tbl then return end
                 tbl[key] = original
             end,
         }
