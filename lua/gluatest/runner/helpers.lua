@@ -12,18 +12,39 @@ local makeHookTable = function()
         if not trackedHooks[event] then trackedHooks[event] = {} end
         table.insert( trackedHooks[event], name )
 
-        return hook.Add( event, name, func, ... )
+        if not isfunction( func ) and func.IsStub then
+            local givenStub = func
+            func = function( ... )
+                givenStub( ... )
+            end
+        end
+
+        return _G.hook.Add( event, name, func, ... )
     end
 
     local function cleanup()
         for event, names in pairs( trackedHooks ) do
             for _, name in ipairs( names ) do
-                hook.Remove( event, name )
+                _G.hook.Remove( event, name )
             end
         end
     end
 
-    return table.Inherit( { Add = hook_Add }, hook ), cleanup
+    local newHookTable = setmetatable( {}, {
+        __index = function( _, key )
+            if key == "Add" then
+                return hook_Add
+            end
+
+            return rawget( _G.hook, key )
+        end,
+
+        __newindex = function( _, key, value )
+            rawset( _G.hook, key, value )
+        end
+    } )
+
+    return newHookTable, cleanup
 end
 
 local function makeTimerTable()
@@ -99,7 +120,7 @@ local function makeTestEnv()
         {
             __index = function( _, idx )
                 return testEnv[idx] or _G[idx]
-            end
+            end,
         }
     ), cleanup
 end
