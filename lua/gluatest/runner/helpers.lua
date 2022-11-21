@@ -23,7 +23,21 @@ local makeHookTable = function()
         end
     end
 
-    return table.Inherit( { Add = hook_Add }, hook ), cleanup
+    local newHookTable = setmetatable( {}, {
+        __index = function( _, key )
+            if key == "Add" then
+                return hook_Add
+            end
+
+            return rawget( _G.hook, key )
+        end,
+
+        __newindex = function( _, key, value )
+            rawset( _G.hook, key, value )
+        end
+    } )
+
+    return newHookTable, cleanup
 end
 
 local function makeTimerTable()
@@ -99,7 +113,7 @@ local function makeTestEnv()
         {
             __index = function( _, idx )
                 return testEnv[idx] or _G[idx]
-            end
+            end,
         }
     ), cleanup
 end

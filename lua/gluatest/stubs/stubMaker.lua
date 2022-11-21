@@ -18,7 +18,6 @@ return function()
             callHistory = {},
             restored = false,
             Restore = function( self )
-                if not original then return end
                 if self.restored then return end
 
                 self.restored = true
