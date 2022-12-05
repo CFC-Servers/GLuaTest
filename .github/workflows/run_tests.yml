@@ -67,7 +67,7 @@ jobs:
           git fetch --quiet --tags
           latest="$(git describe --tags `git rev-list --tags --max-count=1`)"
           echo "Latest Tag: $latest"
-          echo "{LATEST_TAG}=$latest" >> $GITHUB_STATE
+          echo "LATEST_TAG=$latest" >> $GITHUB_OUTPUT
 
           cd $GITHUB_WORKSPACE
 
