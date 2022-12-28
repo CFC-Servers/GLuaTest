@@ -1,6 +1,13 @@
+local RED = Color( 255, 0, 0 )
+
 GLuaTest = {
     -- If, for some reason, you need to run GLuaTest clientside, set this to true
-    RUN_CLIENTSIDE = false
+    RUN_CLIENTSIDE = false,
+
+    DeprecatedNotice = function( old, new )
+        local msg = [[GLuaTest: (DEPRECATION NOTICE) "]] .. old .. [[" is deprecated, use "]] .. new .. [[" instead.]]
+        if SERVER then MsgC( RED, msg .. "\n" ) end
+    end
 }
 
 if GLuaTest.RUN_CLIENTSIDE then
