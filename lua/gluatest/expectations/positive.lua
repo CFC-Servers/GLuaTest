@@ -118,7 +118,7 @@ return function( subject, ... )
         end
     end
 
-    function expectations.haveBeenCalled( n )
+    function expectations.called( n )
         local callCount = subject.callCount
 
         if n == nil then
@@ -130,6 +130,11 @@ return function( subject, ... )
                 i.expected( "to have been called exactly %d times, got: %d", n, callCount )
             end
         end
+    end
+
+    function expectations.haveBeenCalled( n )
+        GLuaTest.DeprecatedNotice( "to.haveBeenCalled( number )", "was.called( number )" )
+        return expectations.called( n )
     end
 
     -- Soon..
