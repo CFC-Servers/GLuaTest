@@ -9,12 +9,14 @@ local MsgC = include( "gluatest/runner/msgc_wrapper.lua" )
 
 local ResultLogger = {}
 
+
 function ResultLogger.prefixLog( ... )
     MsgC( colors.darkgrey, "[" )
     MsgC( colors.white, "GLuaTest" )
     MsgC( colors.darkgrey, "] " )
     MsgC( ... )
 end
+
 
 function ResultLogger.drawLine( content, lineNumber )
     --
@@ -24,6 +26,7 @@ function ResultLogger.drawLine( content, lineNumber )
     MsgC( colors.white, lineNumber, " " )
     MsgC( colors.grey, "| ", content )
 end
+
 
 function ResultLogger.drawFailingLine( content, lineNumber, divider, reason )
     --
@@ -57,6 +60,7 @@ function ResultLogger.drawFailingLine( content, lineNumber, divider, reason )
         end
     end
 end
+
 
 function ResultLogger.logCodeContext( errInfo )
     --
@@ -103,6 +107,7 @@ function ResultLogger.logCodeContext( errInfo )
     MsgC( colors.grey,  "     |", divider, "\n" )
 end
 
+
 function ResultLogger.logLocals( errInfo )
     --
     -- Given a test failure with local variables,
@@ -128,6 +133,7 @@ function ResultLogger.logLocals( errInfo )
     MsgC( "\n" )
 end
 
+
 function ResultLogger.logTestCaseFailure( errInfo )
     --
     -- Draw information about a given test failure
@@ -141,6 +147,42 @@ function ResultLogger.logTestCaseFailure( errInfo )
     ResultLogger.logCodeContext( errInfo )
 end
 
+
+function ResultLogger.getResultCounts( allResults )
+    local passed = 0
+    local failed = 0
+    local empty = 0
+
+    for _, result in ipairs( allResults ) do
+        if result.success == true then
+            passed = passed + 1
+        elseif result.success == false then
+            failed = failed + 1
+        else
+            empty = empty + 1
+        end
+    end
+
+    return passed, failed, empty
+end
+
+
+function ResultLogger.getFailuresByGroup( allResults )
+    local failuresByGroup = {}
+
+    for _, result in ipairs( allResults ) do
+        if result.success == false then
+            local group = result.testGroup
+            local failures = failuresByGroup[group] or {}
+            table.insert( failures, result )
+            failuresByGroup[group] = failures
+        end
+    end
+
+    return failuresByGroup
+end
+
+
 function ResultLogger.LogFileStart( testGroup )
     local fileName = testGroup.fileName
     local groupName = testGroup.groupName
@@ -151,6 +193,7 @@ function ResultLogger.LogFileStart( testGroup )
     MsgC( "\n" )
     ResultLogger.prefixLog( colors.blue, "=== Running ", identifier, "... ===", "\n" )
 end
+
 
 function ResultLogger.LogTestResult( result )
     local case = result.case
@@ -176,6 +219,7 @@ function ResultLogger.LogTestResult( result )
     MsgC( "\n" )
 end
 
+
 function ResultLogger.LogTestFailureDetails( failure )
     local case = failure.case
     local errInfo = failure.errInfo
@@ -194,11 +238,73 @@ function ResultLogger.LogTestFailureDetails( failure )
     MsgC( "\n" )
 end
 
-function ResultLogger.LogTestsComplete()
+
+function ResultLogger.logSummaryIntro( testGroups, allResults, duration )
+    local niceDuration = string.format( "%.3f", duration )
+    local white = colors.white
+    local blue = colors.blue
+
+    ResultLogger.prefixLog( colors.white, "Test run complete! 🎉", "\n" )
+    ResultLogger.prefixLog(
+        white, "Ran ",
+        blue, #allResults,
+        white, " tests from ",
+        blue, #testGroups,
+        white, " test groups in ",
+        blue, niceDuration,
+        white, " seconds",
+        "\n"
+    )
+end
+
+
+function ResultLogger.logSummaryCounts( allResults )
+    local white = colors.white
+    local blue = colors.blue
+    local red = colors.red
+    local green = colors.green
+    local darkgrey = colors.darkgrey
+
+    local passed, failed, empty = ResultLogger.getResultCounts( allResults )
+    ResultLogger.prefixLog( white, "| ", green,    "PASS: ", blue, passed, "\n" )
+    ResultLogger.prefixLog( white, "| ", red,      "FAIL: ", blue, failed, "\n" )
+    ResultLogger.prefixLog( white, "| ", darkgrey, "EMPT: ", blue, empty,  "\n" )
+end
+
+
+function ResultLogger.logFailureSummary( allResults )
+    local allFailures = ResultLogger.getFailuresByGroup( allResults )
+    if table.Count( allFailures ) == 0 then return end
+
+    MsgC( "\n" )
+    ResultLogger.prefixLog( colors.yellow, "Failures:", "\n" )
+    ResultLogger.prefixLog( "\n" )
+
+    for group, failures in pairs( allFailures ) do
+        local fileName = group.fileName
+        local groupName = group.groupName
+        local project = group.project
+
+        local identifier = project .. "/" .. ( groupName or fileName )
+        ResultLogger.prefixLog( colors.blue, "=== ", identifier, " ===", "\n" )
+
+        for _, failure in ipairs( failures ) do
+            ResultLogger.LogTestResult( failure )
+        end
+
+        ResultLogger.prefixLog( "\n" )
+    end
+end
+
+
+function ResultLogger.LogTestsComplete( testGroups, allResults, duration )
     MsgC( "\n", "\n" )
-    ResultLogger.prefixLog( colors.white, "Test run complete! 🎉" )
+    ResultLogger.logSummaryIntro( testGroups, allResults, duration )
+    ResultLogger.logSummaryCounts( allResults )
+    ResultLogger.logFailureSummary( allResults )
     MsgC( "\n" )
 end
+
 
 hook.Run( "GLuaTest_MakeResultLogger", ResultLogger )
 

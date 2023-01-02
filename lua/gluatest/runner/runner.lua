@@ -21,6 +21,9 @@ end
 return function( allTestGroups )
     if CLIENT and not GLuaTest.RUN_CLIENTSIDE then return end
 
+    -- A copy of the original test groups for later reference
+    local originalTestGroups = table.Copy( allTestGroups )
+
     -- Sequential table of Result structures
     local allResults = {}
 
@@ -43,6 +46,7 @@ return function( allTestGroups )
     end
 
     hook.Run( "GLuaTest_StartedTestRun", allTestGroups )
+    local startTime = SysTime()
     local defaultEnv = getfenv( 1 )
 
     local testGroup
@@ -54,9 +58,11 @@ return function( allTestGroups )
         testGroupState = {}
 
         if not testGroup then
-            LogTestsComplete()
+            local duration = SysTime() - startTime
 
-            hook.Run( "GLuaTest_Finished", testGroups, allResults )
+            hook.Run( "GLuaTest_Finished", originalTestGroups, allResults, duration )
+            LogTestsComplete( originalTestGroups, allResults, duration )
+
             return
         end
 
