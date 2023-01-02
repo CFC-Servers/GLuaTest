@@ -149,7 +149,7 @@ function ResultLogger.LogFileStart( testGroup )
     local identifier = project .. "/" .. ( groupName or fileName )
 
     MsgC( "\n" )
-    ResultLogger.prefixLog( colors.blue, "=== Running ", identifier , "... ===", "\n" )
+    ResultLogger.prefixLog( colors.blue, "=== Running ", identifier, "... ===", "\n" )
 end
 
 function ResultLogger.LogTestResult( result )
