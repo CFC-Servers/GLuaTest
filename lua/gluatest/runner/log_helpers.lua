@@ -121,6 +121,8 @@ function LogHelpers.GenerateDivider( lines, reason )
     return string.rep( "_", dividerLength )
 end
 
+
+
 hook.Run( "GLuaTest_MakeLogHelpers", LogHelpers )
 
 return LogHelpers
