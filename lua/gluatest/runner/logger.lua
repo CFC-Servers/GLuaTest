@@ -195,11 +195,13 @@ function ResultLogger.LogFileStart( testGroup )
 end
 
 
-function ResultLogger.LogTestResult( result )
+function ResultLogger.LogTestResult( result, usePrefix )
+    if usePrefix == nil then usePrefix = true end
+
     local case = result.case
     local success = result.success
 
-    local plog = ResultLogger.prefixLog
+    local plog = usePrefix and ResultLogger.prefixLog or MsgC
 
     if success == true then
         plog( colors.green, "PASS " )
@@ -266,9 +268,9 @@ function ResultLogger.logSummaryCounts( allResults )
     local darkgrey = colors.darkgrey
 
     local passed, failed, empty = ResultLogger.getResultCounts( allResults )
-    ResultLogger.prefixLog( white, "| ", darkgrey, "EMPT: ", blue, empty,  "\n" )
     ResultLogger.prefixLog( white, "| ", green,    "PASS: ", blue, passed, "\n" )
     ResultLogger.prefixLog( white, "| ", red,      "FAIL: ", blue, failed, "\n" )
+    ResultLogger.prefixLog( white, "| ", darkgrey, "EMPT: ", blue, empty,  "\n" )
 end
 
 
@@ -276,7 +278,8 @@ function ResultLogger.logFailureSummary( allResults )
     local allFailures = ResultLogger.getFailuresByGroup( allResults )
     if table.Count( allFailures ) == 0 then return end
 
-    ResultLogger.prefixLog( "\n" )
+    MsgC( "\n" )
+    MsgC( colors.blue, "Test failures:", "\n" )
 
     for group, failures in pairs( allFailures ) do
         local fileName = group.fileName
@@ -284,13 +287,13 @@ function ResultLogger.logFailureSummary( allResults )
         local project = group.project
 
         local identifier = project .. "/" .. ( groupName or fileName )
-        ResultLogger.prefixLog( colors.blue, "=== ", identifier, " ===", "\n" )
+        MsgC( colors.blue, "=== ", identifier, " ===", "\n" )
 
         for _, failure in ipairs( failures ) do
-            ResultLogger.LogTestResult( failure )
+            ResultLogger.LogTestResult( failure, false )
         end
 
-        ResultLogger.prefixLog( "\n" )
+        MsgC( "\n" )
     end
 end
 
