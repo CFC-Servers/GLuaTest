@@ -266,9 +266,9 @@ function ResultLogger.logSummaryCounts( allResults )
     local darkgrey = colors.darkgrey
 
     local passed, failed, empty = ResultLogger.getResultCounts( allResults )
+    ResultLogger.prefixLog( white, "| ", darkgrey, "EMPT: ", blue, empty,  "\n" )
     ResultLogger.prefixLog( white, "| ", green,    "PASS: ", blue, passed, "\n" )
     ResultLogger.prefixLog( white, "| ", red,      "FAIL: ", blue, failed, "\n" )
-    ResultLogger.prefixLog( white, "| ", darkgrey, "EMPT: ", blue, empty,  "\n" )
 end
 
 
@@ -276,8 +276,6 @@ function ResultLogger.logFailureSummary( allResults )
     local allFailures = ResultLogger.getFailuresByGroup( allResults )
     if table.Count( allFailures ) == 0 then return end
 
-    MsgC( "\n" )
-    ResultLogger.prefixLog( colors.yellow, "Failures:", "\n" )
     ResultLogger.prefixLog( "\n" )
 
     for group, failures in pairs( allFailures ) do
