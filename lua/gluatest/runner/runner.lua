@@ -37,12 +37,14 @@ return function( allTestGroups )
             errInfo = errInfo
         }
 
-        hook.Run( "GLuaTest_LogTestResult", result )
+        hook.Run( "GLuaTest_TestCaseComplete", result )
 
         table.insert( allResults, result )
 
         LogTestResult( result )
         if success == false then LogTestFailureDetails( result ) end
+
+        return result
     end
 
     hook.Run( "GLuaTest_StartedTestRun", allTestGroups )
@@ -66,8 +68,8 @@ return function( allTestGroups )
             return
         end
 
-        local function addResult( ... )
-            return _addResult( testGroup, ... )
+        local function addResult( success, case, errInfo )
+            return _addResult( testGroup, success, case, errInfo )
         end
 
         local cases = testGroup.cases
@@ -96,6 +98,7 @@ return function( allTestGroups )
                 if case.async then
                     asyncCases[case.id] = case
                 else
+                    hook.Run( "GLuaTest_TestCaseStart", testGroup, case )
                     local beforeFunc = testGroup.beforeEach
                     local success, errInfo = SafeRunWithEnv( defaultEnv, beforeFunc, case.func, case.state )
 
@@ -138,6 +141,8 @@ return function( allTestGroups )
                 testGroup.afterEach( case.state )
 
                 asyncCleanup()
+
+                hook.Run( "GLuaTest_TestCaseComplete", testGroup, case )
 
                 if shouldCheckComplete == false then return end
 
