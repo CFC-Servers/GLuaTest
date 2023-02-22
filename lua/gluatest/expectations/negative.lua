@@ -24,6 +24,18 @@ return function( subject, ... )
     end
     expectations.equal = expectations.eq
 
+	function expectations.haveValuesMatch( comparison )
+		local match_count = 0
+		for k, v in pairs(subject) do
+			if table.HasValue(comparison, v) then
+				match_count = match_count + 1
+			end
+		end
+		if match_count == table.Count(subject) then
+            i.expected( "to not match '%s'", comparison)
+		end
+	end
+
     function expectations.beLessThan( comparison )
         if subject < comparison then
             i.expected( "to not be less than '%s'", comparison )
