@@ -24,9 +24,9 @@ return function( subject, ... )
     end
     expectations.equal = expectations.eq
 
-    local function findKeyByValue(tbl, value_to_find)
-        for key, value in pairs(tbl) do
-            if value == values_to_find then
+    local function findKeyByValue( tbl, value_to_find )
+        for key, value in pairs( tbl ) do
+            if value == value_to_find then
                 return key
             end
         end

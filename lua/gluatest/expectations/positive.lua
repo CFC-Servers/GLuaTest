@@ -24,9 +24,9 @@ return function( subject, ... )
     end
     expectations.equal = expectations.eq
 
-    local function findKeyByValue(tbl, value_to_find)
-        for key, value in pairs(tbl) do
-            if value == values_to_find then
+    local function findKeyByValue( tbl, value_to_find )
+        for key, value in pairs( tbl ) do
+            if value == value_to_find then
                 return key
             end
         end
@@ -46,14 +46,12 @@ return function( subject, ... )
     end
 
     function expectations.beLessThan( comparison )
-
         if subject >= comparison then
             i.expected( "to be less than '%s'", comparison )
         end
     end
 
     function expectations.beGreaterThan( comparison )
-
         if subject <= comparison then
             i.expected( "to be greater than '%s'", comparison )
         end
