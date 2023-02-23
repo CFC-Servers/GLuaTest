@@ -24,17 +24,17 @@ return function( subject, ... )
     end
     expectations.equal = expectations.eq
 
-	function expectations.haveValuesMatch( comparison )
-		local match_count = 0
-		for k, v in pairs(subject) do
-			if table.HasValue(comparison, v) then
-				match_count = match_count + 1
-			end
-		end
-		if match_count != table.Count(subject) then
+    function expectations.haveValuesMatch( comparison )
+        local values_to_find = table.Copy( subject )
+        for key, value in pairs( comparison ) do
+            if table.HasValue( values_to_find, value ) then
+                table.RemoveByValue( values_to_find, value )
+            end
+        end
+        if table.Count( values_to_find ) ~= 0 then
             i.expected( "to match '%s'", comparison)
-		end
-	end
+        end
+    end
 
     function expectations.beLessThan( comparison )
 
