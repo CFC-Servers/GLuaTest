@@ -9,7 +9,7 @@ local LogFileStart = ResultLogger.LogFileStart
 local LogTestResult = ResultLogger.LogTestResult
 local LogTestsComplete = ResultLogger.LogTestsComplete
 local LogTestFailureDetails = ResultLogger.LogTestFailureDetails
-
+local PlainLogStart = ResultLogger.PlainLogStart
 local noop = function() end
 
 local caseID = 0
@@ -45,7 +45,7 @@ return function( allTestGroups )
         if success == false then LogTestFailureDetails( result ) end
     end
 
-    ResultLogger.PlainLogStart()
+    PlainLogStart()
     hook.Run( "GLuaTest_StartedTestRun", allTestGroups )
     local startTime = SysTime()
     local defaultEnv = getfenv( 1 )
