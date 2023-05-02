@@ -304,8 +304,18 @@ function ResultLogger.LogTestsComplete( testGroups, allResults, duration )
     ResultLogger.logSummaryCounts( allResults )
     ResultLogger.logFailureSummary( allResults )
     MsgC( "\n" )
+    ResultLogger.PlainLogEnd()
 end
 
+-- External parsers rely on the output of this function it should not be changed often
+function ResultLogger.PlainLogStart()
+    print( "[GLuaTest]: Test run starting..." )
+end
+
+-- External parsers rely on the output of this function it should not be changed often
+function ResultLogger.PlainLogEnd()
+    print( "[GLuaTest]: Test run complete!" )
+end
 
 hook.Run( "GLuaTest_MakeResultLogger", ResultLogger )
 

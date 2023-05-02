@@ -45,6 +45,7 @@ return function( allTestGroups )
         if success == false then LogTestFailureDetails( result ) end
     end
 
+    ResultLogger.PlainLogStart()
     hook.Run( "GLuaTest_StartedTestRun", allTestGroups )
     local startTime = SysTime()
     local defaultEnv = getfenv( 1 )
