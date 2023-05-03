@@ -1,4 +1,4 @@
 config:
-  gamemode: sandbox
+  gamemode: terrortown
   projects_dir: "./"
   max_container_age: "1h"

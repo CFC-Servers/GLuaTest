@@ -24,6 +24,14 @@ func (f *GLuaTestFilter) Close() error {
 var startMessage = "[GLuaTest]: Test run starting..."
 var endMessage = "[GLuaTest]: Test run complete!"
 
+// TODO filter certain lines and trigger events like force closing the server or printing
+//
+// Error loading gamemode!
+// Cannot find/load "gamemodes/terrortown/gamemode/init.lua"!
+//
+// Add "-debug" to the /home/steam/gmodserver/srcds_run_x64 command line to generate a debug.log to help with solving this problem
+// : Server restart in 10 seconds
+
 func (f *GLuaTestFilter) Read(p []byte) (int, error) {
 	for {
 		f.scanner.Scan()

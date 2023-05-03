@@ -19,10 +19,11 @@ import (
 )
 
 type TestRun struct {
-	Client     *client.Client
-	Config     *config.Values
-	Log        logrus.FieldLogger
-	statusCode int
+	Client             *client.Client
+	Config             *config.Values
+	Log                logrus.FieldLogger
+	statusCode         int
+	runningContainerID string
 }
 
 func NewTestRun(cfg *config.Values) (*TestRun, error) {
@@ -48,6 +49,17 @@ func NewTestRun(cfg *config.Values) (*TestRun, error) {
 
 func (r *TestRun) ExitCode() int {
 	return r.statusCode
+}
+
+func (r *TestRun) Kill(ctx context.Context) error {
+	r.Log.WithField("containerID", r.runningContainerID).Info("Killing container")
+	timeout := 5
+	err := r.Client.ContainerStop(ctx, r.runningContainerID, container.StopOptions{Timeout: &timeout})
+	if err != nil {
+		return err
+	}
+	r.Log.Infof("Killed container %s", r.runningContainerID)
+	return nil
 }
 
 func (r *TestRun) Run(ctx context.Context) {
@@ -120,6 +132,7 @@ func (r *TestRun) createContainer(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return resp.ID, nil
 }
 
@@ -127,6 +140,9 @@ func (r *TestRun) runContainer(ctx context.Context, containerID string) {
 	r.Log.Info("Starting container...")
 
 	containerStartTime := time.Now()
+
+	r.runningContainerID = containerID
+
 	if err := r.Client.ContainerStart(ctx, containerID, types.ContainerStartOptions{}); err != nil {
 		logrus.Fatalf("Failed to start container: %v", err)
 	}
@@ -153,13 +169,15 @@ func (r *TestRun) runContainer(ctx context.Context, containerID string) {
 func (r *TestRun) handleContainerLogs(ctx context.Context, containerID string, since time.Time) {
 	sinceStr := since.Format(time.RFC3339)
 
-	logrus.WithField("since", sinceStr).Info("Getting container logs")
+	r.Log.WithField("since", sinceStr).Info("Getting container logs")
 
 	out, err := r.Client.ContainerLogs(ctx, containerID, types.ContainerLogsOptions{Follow: true, Since: since.Format(time.RFC3339), ShowStdout: true})
 	if err != nil {
 		log.Fatalf("Failed to get container logs: %v", err)
 	}
-	if r.Config.Flags.Filter {
+
+	if !r.Config.Flags.NoFilter {
+		r.Log.Debug("Filtering output enabled")
 		out = filtering.FilterGLuaTestOutput(out)
 	}
 
@@ -187,6 +205,7 @@ func getEnv(cfg *config.Values) []string {
 
 	return out
 }
+
 func getMounts(cfg *config.Values) []mount.Mount {
 	mounts := []mount.Mount{
 

@@ -30,7 +30,7 @@ type Config struct {
 // TODO merge config and flags, flags should always overwrite config values
 
 type Flags struct {
-	Filter   bool
+	NoFilter bool   `mapstructure:"nofilter"`
 	LogLevel string `mapstructure:"loglevel"`
 }
 
@@ -44,13 +44,13 @@ func defaults() {
 func getFlags() {
 	flagSet := pflag.NewFlagSet("gluatest", pflag.ExitOnError)
 
-	flagSet.Bool("filter", true, "filter projects")
-	viper.BindPFlag("flags.filter", flagSet.Lookup("filter"))
-
+	flagSet.Bool("nofilter", false, "filter projects")
 	flagSet.String("loglevel", "warn", "log level")
-	viper.BindPFlag("flags.loglevel", flagSet.Lookup("loglevel"))
 
 	flagSet.Parse(os.Args)
+
+	viper.BindPFlag("flags.nofilter", flagSet.Lookup("nofilter"))
+	viper.BindPFlag("flags.loglevel", flagSet.Lookup("loglevel"))
 }
 
 func LoadConfig() (*Values, error) {
