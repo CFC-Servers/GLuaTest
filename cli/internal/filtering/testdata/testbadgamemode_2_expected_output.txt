@@ -1,0 +1,4 @@
+Error loading gamemode!
+Error loading gamemode!
+Error loading gamemode!
+: Server restart in 10 seconds

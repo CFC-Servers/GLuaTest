@@ -1,0 +1,138 @@
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/docker/docker-compose.yml'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/docker/base_requirements.txt'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/docker/testfixture/lua/includes/dev_server_test.lua'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/docker/testfixture/lua/includes'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/docker/testfixture/lua'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/docker/testfixture'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/docker/base_server.cfg'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/docker/Dockerfile'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/docker/entrypoint.sh'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/docker'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/CODEOWNERS'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.gitignore'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/LICENSE'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/README.md'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/HEAD'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/packed-refs'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/config'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/description'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/hooks/fsmonitor-watchman.sample'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/hooks/push-to-checkout.sample'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/hooks/update.sample'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/hooks/pre-applypatch.sample'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/hooks/pre-push.sample'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/hooks/pre-receive.sample'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/hooks/pre-merge-commit.sample'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/hooks/applypatch-msg.sample'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/hooks/pre-commit.sample'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/hooks/prepare-commit-msg.sample'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/hooks/commit-msg.sample'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/hooks/post-update.sample'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/hooks/pre-rebase.sample'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/hooks'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/objects/pack/pack-ebe894f74e7b59caea556e108e56c3b0abc07460.idx'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/objects/pack/pack-ebe894f74e7b59caea556e108e56c3b0abc07460.pack'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/objects/pack'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/objects'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/info/exclude'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/info'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/refs/heads/main'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/refs/heads'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/refs'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/logs/HEAD'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/logs/refs/remotes/origin/HEAD'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/logs/refs/remotes/origin'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/logs/refs/remotes'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/logs/refs/heads/main'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/logs/refs/heads'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/logs/refs'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/.git/logs'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/.git'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/QUICKSTART.md'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.github/dependabot.yml'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.github/workflows/build_and_push.yml'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.github/workflows/run_tests.yml'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/.github/workflows/glualint.yml'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/.github/workflows'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/.github'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/autorun/gluatest.lua'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/autorun'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest/expectations/positive.lua'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest/expectations/expect.lua'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest/expectations/negative.lua'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest/expectations'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest/runner/colors.lua'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest/runner/helpers.lua'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest/runner/msgc_wrapper.lua'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest/runner/runner.lua'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest/runner/logger.lua'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest/runner/log_helpers.lua'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest/runner'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest/stubs/stubMaker.lua'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest/stubs'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest/loader.lua'
+removed '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest/init.lua'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/lua/gluatest'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest/lua'
+removed directory '/home/steam/gmodserver/garrysmod/addons/gluatest'
+CFC-Servers/GLuaTest
+Starting the server with gamemode: terrortown
+Auto detecting CPU
+Using default binary: ./bin/linux64/srcds
+Server will auto-restart if there is a crash.
+LD_LIBRARY_PATH=/home/steam/gmodserver/bin/linux64:.:bin/linux64:
+
+Console initialized.
+#FileSystem_LoadSearchPaths
+#Failed to load /home/steam/gmodserver/bin/linux64/stdshader_dbg.so: (null)
+#Failed to load stdshader_dbg.so: (null)
+#Failed to load /home/steam/gmodserver/bin/linux64/stdshader_dx6.so: (null)
+#Failed to load stdshader_dx6.so: (null)
+#Failed to load /home/steam/gmodserver/bin/linux64/stdshader_dx7.so: (null)
+#Failed to load stdshader_dx7.so: (null)
+#Failed to load /home/steam/gmodserver/bin/linux64/stdshader_dx8.so: (null)
+#Failed to load stdshader_dx8.so: (null)
+#Failed to load /home/steam/gmodserver/bin/linux64/stdshader_dx9.so: (null)
+#Failed to load stdshader_dx9.so: (null)
+#Convar mat_monitorgamma has conflicting FCVAR_ARCHIVE flags (child: has FCVAR_ARCHIVE, parent: no FCVAR_ARCHIVE, parent wins)
+#FileSystem_LoadSearchPaths
+#Failed to load /home/steam/gmodserver/bin/linux64/game_shader_dx6.so: (null)
+#Failed to load /home/steam/gmodserver/garrysmod/bin/game_shader_dx6.so: (null)
+#Failed to load game_shader_dx6.so: (null)
+#Failed to load /home/steam/gmodserver/bin/linux64/game_shader_dx7.so: (null)
+#Failed to load /home/steam/gmodserver/garrysmod/bin/game_shader_dx7.so: (null)
+#Failed to load game_shader_dx7.so: (null)
+#Failed to load /home/steam/gmodserver/bin/linux64/game_shader_dx8.so: (null)
+#Failed to load /home/steam/gmodserver/garrysmod/bin/game_shader_dx8.so: (null)
+#Failed to load game_shader_dx8.so: (null)
+#Failed to load /home/steam/gmodserver/bin/linux64/game_shader_dx9.so: (null)
+#Failed to load /home/steam/gmodserver/garrysmod/bin/game_shader_dx9.so: (null)
+#Failed to load game_shader_dx9.so: (null)
+#Failed to load /home/steam/gmodserver/bin/linux64/game_shader_generic_garrysmod.so: (null)
+#Failed to load /home/steam/gmodserver/garrysmod/bin/game_shader_generic_garrysmod.so: (null)
+#Failed to load game_shader_generic_garrysmod.so: (null)
+#Couldn't load shader dll: game_shader_generic_garrysmod.so#ConVarRef mat_dxlevel doesn't point to an existing ConVar
+#Game.so loaded for "Garry's Mod"
+Initializing Steam libraries for Workshop..
+WS: No +host_workshop_collection or it is invalid!
+Adding Filesystem Addon '/home/steam/gmodserver/garrysmod/addons/gluatest'
+Adding Filesystem Addon '/home/steam/gmodserver/garrysmod/addons/project'
+Adding Filesystem Addon '/home/steam/gmodserver/garrysmod/addons/testfixture'
+Unknown command "cl_cmdrate"
+Unknown command "cl_updaterate"
+Unknown command "rate"
+Changing gamemode to Trouble in Terrorist Town (terrortown)
+Network: IP 127.0.0.1, mode MP, dedicated Yes, ports 27015 SV / 27005 CL
+Error loading cfg/trusted_keys_base.txt
+Error loading cfg/pure_server_minimal.txt
+PREP OK
+Error loading gamemode!
+Cannot find/load "gamemodes/terrortown/gamemode/init.lua"!
+Error loading gamemode!
+Cannot find/load "gamemodes/terrortown/gamemode/init.lua"!
+
+Error loading gamemode!
+Cannot find/load "gamemodes/terrortown/gamemode/init.lua"!
+
+Add "-debug" to the /home/steam/gmodserver/srcds_run_x64 command line to generate a debug.log to help with solving this problem
+: Server restart in 10 seconds

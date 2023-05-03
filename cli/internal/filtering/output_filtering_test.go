@@ -19,11 +19,29 @@ func mustReadFile(t *testing.T, filename string) []byte {
 }
 
 func TestFilterGLuaTestOutput(t *testing.T) {
-	input := mustReadFile(t, "testdata/testfail_1.txt")
-	expected := mustReadFile(t, "testdata/testfail_1_expected_output.txt")
+	testCases := []struct {
+		name     string
+		input    []byte
+		expected []byte
+	}{
+		{
+			name:     "test failed",
+			input:    mustReadFile(t, "testdata/testfail_1.txt"),
+			expected: mustReadFile(t, "testdata/testfail_1_expected_output.txt"),
+		},
+		{
+			name:     "bad gamemode",
+			input:    mustReadFile(t, "testdata/testbadgamemode_2.txt"),
+			expected: mustReadFile(t, "testdata/testbadgamemode_2_expected_output.txt"),
+		},
+	}
 
-	output := FilterGLuaTestOutput(io.NopCloser(bytes.NewReader(input)))
-	outputdata, _ := io.ReadAll(output)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			output := FilterGLuaTestOutput(io.NopCloser(bytes.NewReader(tc.input)))
+			outputdata, _ := io.ReadAll(output)
 
-	assert.Equal(t, string(expected), string(outputdata))
+			assert.Equal(t, string(tc.expected), string(outputdata))
+		})
+	}
 }
