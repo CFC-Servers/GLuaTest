@@ -2,11 +2,18 @@ package config
 
 import (
 	"log"
+	"os"
 	"path/filepath"
 	"time"
 
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
+
+type Values struct {
+	Config Config `mapstructure:"config"`
+	Flags  Flags  `mapstructure:"flags"`
+}
 
 type Config struct {
 	MaxContainerAge  time.Duration `mapstructure:"max_container_age"`
@@ -17,17 +24,37 @@ type Config struct {
 	CollectionID     string        `mapstructure:"collection_id"`
 	GithubToken      string        `mapstructure:"github_token"`
 	SSHPrivateKey    string        `mapstructure:"ssh_private_key"`
+	Timeout          time.Duration `mapstructure:"timeout"`
+}
+
+// TODO merge config and flags, flags should always overwrite config values
+
+type Flags struct {
+	Filter   bool
+	LogLevel string `mapstructure:"loglevel"`
 }
 
 func defaults() {
 	viper.SetDefault("config.max_container_age", time.Hour*24)
 	viper.SetDefault("config.projects_dir", "./")
 	viper.SetDefault("config.gamemode", "sandbox")
+	viper.SetDefault("config.timeout", time.Minute*5)
 }
 
-func LoadConfig() (*Config, error) {
-	defaults()
+func getFlags() {
+	flagSet := pflag.NewFlagSet("gluatest", pflag.ExitOnError)
 
+	flagSet.Bool("filter", true, "filter projects")
+	viper.BindPFlag("flags.filter", flagSet.Lookup("filter"))
+
+	flagSet.String("loglevel", "warn", "log level")
+	viper.BindPFlag("flags.loglevel", flagSet.Lookup("loglevel"))
+
+	flagSet.Parse(os.Args)
+}
+
+func LoadConfig() (*Values, error) {
+	defaults()
 	// TODO also load from env
 	viper.AddConfigPath(".")
 	viper.SetConfigName("gluatest")
@@ -38,16 +65,15 @@ func LoadConfig() (*Config, error) {
 		log.Printf("could not read in config file: %v", err)
 	}
 
-	cfg := struct {
-		Config Config `mapstructure:"config"`
-	}{}
+	getFlags()
+
+	var cfg Values
 
 	err = viper.Unmarshal(&cfg)
 	if err != nil {
 		return nil, err
 	}
-
-	return setAbsolutePaths(&cfg.Config), err
+	return setAbsolutePaths(&cfg), err
 }
 
 func mustAbs(path string) string {
@@ -62,9 +88,10 @@ func mustAbs(path string) string {
 	return abs
 }
 
-func setAbsolutePaths(cfg *Config) *Config {
-	cfg.ServerConfigPath = mustAbs(cfg.ServerConfigPath)
-	cfg.RequirementsPath = mustAbs(cfg.RequirementsPath)
-	cfg.ProjectsDir = mustAbs(cfg.ProjectsDir)
-	return cfg
+func setAbsolutePaths(values *Values) *Values {
+	values.Config.ServerConfigPath = mustAbs(values.Config.ServerConfigPath)
+	values.Config.RequirementsPath = mustAbs(values.Config.RequirementsPath)
+	values.Config.ProjectsDir = mustAbs(values.Config.ProjectsDir)
+
+	return values
 }
