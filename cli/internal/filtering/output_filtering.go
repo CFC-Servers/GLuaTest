@@ -21,8 +21,8 @@ func (f *GLuaTestFilter) Close() error {
 	return f.in.Close()
 }
 
-var startMessage = "Running project_name"
-var endMessage = "Test failures"
+var startMessage = "[GLuaTest]: Test run starting..."
+var endMessage = "[GLuaTest]: Test run complete!"
 
 func (f *GLuaTestFilter) Read(p []byte) (int, error) {
 	for {
@@ -31,13 +31,11 @@ func (f *GLuaTestFilter) Read(p []byte) (int, error) {
 		if len(lineBytes) == 0 {
 			return 0, io.EOF
 		}
-		if len(lineBytes) >= len(startMessage) && strings.Contains(string(lineBytes), startMessage) {
+		if !f.showOutput && len(lineBytes) >= len(startMessage) && strings.HasSuffix(string(lineBytes), startMessage) {
 			f.showOutput = true
-		}
-		if len(lineBytes) >= len(endMessage) && strings.Contains(string(lineBytes), endMessage) {
+		} else if f.showOutput && len(lineBytes) >= len(endMessage) && strings.HasSuffix(string(lineBytes), endMessage) {
 			f.showOutput = false
-		}
-		if f.showOutput {
+		} else if f.showOutput {
 			lineBytes = append(lineBytes, '\n')
 			copy(p, lineBytes)
 			return len(lineBytes), nil

@@ -6,10 +6,10 @@ import (
 	"io"
 	"log"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/cfc-servers/gluatest/cli/internal/config"
+	"github.com/cfc-servers/gluatest/cli/internal/filtering"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
@@ -33,12 +33,13 @@ func main() {
 	}
 
 	containerID, err := findExistingContainer(ctx, cfg, client)
+	if err == nil {
+		client.ContainerRemove(ctx, containerID, types.ContainerRemoveOptions{})
+	}
+
+	containerID, err = createContainer(ctx, cfg, client)
 	if err != nil {
-		log.Println("No container found, creating container")
-		containerID, err = createContainer(ctx, cfg, client)
-		if err != nil {
-			log.Fatalf("Failed to create container: %v", err)
-		}
+		log.Fatalf("Failed to create container: %v", err)
 	}
 
 	runContainer(ctx, *cfg, client, containerID)
@@ -51,29 +52,29 @@ func runContainer(ctx context.Context, cfg config.Config, client *client.Client,
 		log.Fatalf("Failed to start container: %v", err)
 	}
 
+	var statusCode int64
 	statusCh, errCh := client.ContainerWait(ctx, containerID, container.WaitConditionNotRunning)
+
+	done := make(chan struct{})
+	go func() {
+		out, err := client.ContainerLogs(ctx, containerID, types.ContainerLogsOptions{Follow: true, Since: start.Format(time.RFC3339), ShowStdout: true})
+		if err != nil {
+			log.Fatalf("Failed to get container logs: %v", err)
+		}
+		stdcopy.StdCopy(os.Stderr, os.Stdout, filtering.FilterGLuaTestOutput(out))
+		close(done)
+	}()
+
 	select {
 	case err := <-errCh:
 		if err != nil {
 			log.Fatalf("Failed to wait for container: %v", err)
 		}
-	case <-statusCh:
+	case resp := <-statusCh:
+		statusCode = resp.StatusCode
 	}
-
-	out, err := client.ContainerLogs(ctx, containerID, types.ContainerLogsOptions{Since: start.Format(time.RFC3339), ShowStdout: true})
-	if err != nil {
-		log.Fatalf("Failed to get container logs: %v", err)
-	}
-
-	stdcopy.StdCopy(os.Stdout, os.Stderr, out)
-}
-
-func resolveDesiredContainerName() (string, error) {
-	path, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-	return filepath.Base(path), nil
+	<-done
+	os.Exit(int(statusCode))
 }
 
 const (
@@ -109,17 +110,16 @@ func findExistingContainer(ctx context.Context, cfg *config.Config, client *clie
 }
 
 func createContainer(ctx context.Context, cfg *config.Config, client *client.Client) (string, error) {
+	fmt.Println("TEST")
 	reader, err := client.ImagePull(ctx, dockerImage, types.ImagePullOptions{})
 	if err != nil {
 		log.Fatalf("Failed to pull docker image: %v", err)
 	}
 	defer reader.Close()
-	io.Copy(os.Stdout, reader)
+	io.Copy(io.Discard, reader)
 
-	log.Println("No container found, creating container with Name: gluatest")
-	start := time.Now()
 	resp, err := client.ContainerCreate(ctx, &container.Config{
-		Env: []string{"GAMEMODE=sandbox"},
+		Env: getEnv(cfg),
 		Cmd: []string{},
 		Labels: map[string]string{
 			workingDirLabelKey: cfg.ProjectsDir,
@@ -129,15 +129,35 @@ func createContainer(ctx context.Context, cfg *config.Config, client *client.Cli
 	}, &container.HostConfig{
 		Mounts: getMounts(cfg),
 	}, nil, nil, "")
+
 	if err != nil {
 		log.Fatalf("Failed to create container: %v", err)
 	}
-	log.Printf("Created container %s in %s", resp.ID, time.Since(start))
 	return resp.ID, nil
 }
 
+func getEnv(cfg *config.Config) []string {
+	var out []string
+
+	if cfg.Gamemode != "" {
+		out = append(out, "GAMEMODE="+cfg.Gamemode)
+	}
+
+	if cfg.CollectionID != "" {
+		out = append(out, "COLLECTION_ID="+cfg.CollectionID)
+	}
+
+	if cfg.SSHPrivateKey != "" {
+		out = append(out, "SSH_PRIVATE_KEY="+cfg.SSHPrivateKey)
+	}
+
+	if cfg.GithubToken != "" {
+		out = append(out, "GITHUB_TOKEN="+cfg.GithubToken)
+	}
+
+	return out
+}
 func getMounts(cfg *config.Config) []mount.Mount {
-	fmt.Println(cfg.ServerConfigPath)
 	mounts := []mount.Mount{
 
 		{

@@ -1,6 +1,4 @@
 config:
-  gamemode: terrortown
-    # server_config_path: "server.cfg"
-    # requirements_path: "custom_requirementstxt"
+  gamemode: sandbox
   projects_dir: "./"
   max_container_age: "1h"

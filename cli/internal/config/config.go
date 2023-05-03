@@ -10,18 +10,24 @@ import (
 
 type Config struct {
 	MaxContainerAge  time.Duration `mapstructure:"max_container_age"`
-	Gamemode         string        `mapstructure:"gamemode"`
 	ServerConfigPath string        `mapstructure:"server_config_path"`
 	RequirementsPath string        `mapstructure:"requirements_path"`
 	ProjectsDir      string        `mapstructure:"projects_dir"`
+	Gamemode         string        `mapstructure:"gamemode"`
+	CollectionID     string        `mapstructure:"collection_id"`
+	GithubToken      string        `mapstructure:"github_token"`
+	SSHPrivateKey    string        `mapstructure:"ssh_private_key"`
 }
 
 func defaults() {
-	viper.SetDefault("max_container_age", time.Hour*24)
-	viper.SetDefault("gamemode", "sandbox")
+	viper.SetDefault("config.max_container_age", time.Hour*24)
+	viper.SetDefault("config.projects_dir", "./")
+	viper.SetDefault("config.gamemode", "sandbox")
 }
 
 func LoadConfig() (*Config, error) {
+	defaults()
+
 	// TODO also load from env
 	viper.AddConfigPath(".")
 	viper.SetConfigName("gluatest")
@@ -29,18 +35,18 @@ func LoadConfig() (*Config, error) {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		return nil, err
+		log.Printf("could not read in config file: %v", err)
 	}
 
 	cfg := struct {
-		Config Config
+		Config Config `mapstructure:"config"`
 	}{}
 
 	err = viper.Unmarshal(&cfg)
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Loaded config: %+v", cfg)
+
 	return setAbsolutePaths(&cfg.Config), err
 }
 
