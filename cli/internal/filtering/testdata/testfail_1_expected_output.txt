@@ -1,0 +1,34 @@
+
+[GLuaTest] === Running project_name/MyProject... ===
+[GLuaTest] FAIL [Should create project tables]
+    File:
+       addons/project/lua/tests/project_name/main.lua
+
+    Context:
+      ________________________________________________________________________________________________________
+     |
+   2 | groupName = "MyProject",
+   3 | cases = {
+   4 |     {
+   5 |         name = "Should create project tables",
+   6 |         func = function()
+   7 |             expect(engine.ActiveGamemode()).to.equal("terrortown")
+     |             ^ Expected sandbox to equal 'terrortown'
+     |________________________________________________________________________________________________________
+::error file=lua/tests/project_name/main.lua,line=7::Expected sandbox to equal 'terrortown'
+
+1 test failures detected, writing to log..
+Got GLuaTest TestComplete callback, exiting
+
+
+[GLuaTest] Test run complete! 🎉
+[GLuaTest] Ran 1 tests from 1 test groups in 0.001 seconds
+[GLuaTest] | PASS: 0
+[GLuaTest] | FAIL: 1
+[GLuaTest] | EMPT: 0
+
+Test failures:
+=== project_name/MyProject ===
+FAIL [Should create project tables]
+
+

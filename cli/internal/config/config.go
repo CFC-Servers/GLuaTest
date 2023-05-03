@@ -1,7 +1,6 @@
 package config
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -60,16 +59,13 @@ func LoadConfig() (*Values, error) {
 	viper.SetConfigName("gluatest")
 	viper.SetConfigType("yaml")
 
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Printf("could not read in config file: %v", err)
-	}
-
+	viper.ReadInConfig()
+	
 	getFlags()
 
 	var cfg Values
 
-	err = viper.Unmarshal(&cfg)
+	err := viper.Unmarshal(&cfg)
 	if err != nil {
 		return nil, err
 	}
