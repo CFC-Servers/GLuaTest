@@ -35,11 +35,7 @@ func main() {
 	select {
 	case <-done:
 		return
-	case sig := <-c:
-		r.Log.Warnf("Got %s signal. Aborting...", sig)
-		err := r.Kill(ctx)
-		if err != nil {
-			r.Log.Fatalf("Failed to kill docker container: %v", err)
-		}
+	case <-c:
+		r.Kill(ctx)
 	}
 }

@@ -15,18 +15,24 @@ type Values struct {
 }
 
 type Config struct {
-	MaxContainerAge  time.Duration `mapstructure:"max_container_age"`
-	ServerConfigPath string        `mapstructure:"server_config_path"`
-	RequirementsPath string        `mapstructure:"requirements_path"`
-	ProjectsDir      string        `mapstructure:"projects_dir"`
-	Gamemode         string        `mapstructure:"gamemode"`
-	CollectionID     string        `mapstructure:"collection_id"`
-	GithubToken      string        `mapstructure:"github_token"`
-	SSHPrivateKey    string        `mapstructure:"ssh_private_key"`
-	Timeout          time.Duration `mapstructure:"timeout"`
+	Gamemode     string `mapstructure:"gamemode"`
+	CollectionID string `mapstructure:"collection_id"`
+
+	// TODO support another way to pass these in such as env
+	// if gluatest.yaml is source controlled they cannot be in that file
+	GithubToken   string `mapstructure:"github_token"`
+	SSHPrivateKey string `mapstructure:"ssh_private_key"`
+
+	Mounts MountConfig `mapstructure:"mounts"`
+
+	MaxContainerAge time.Duration `mapstructure:"max_container_age"`
 }
 
-// TODO merge config and flags, flags should always overwrite config values
+type MountConfig struct {
+	Project      string `mapstructure:"project"`
+	ServerConfig string `mapstructure:"server_config"`
+	Requirements string `mapstructure:"requirements_path"`
+}
 
 type Flags struct {
 	NoFilter bool   `mapstructure:"nofilter"`
@@ -34,8 +40,8 @@ type Flags struct {
 }
 
 func defaults() {
-	viper.SetDefault("config.max_container_age", time.Hour*24)
-	viper.SetDefault("config.projects_dir", "./")
+	viper.SetDefault("config.max_container_age", time.Hour*1)
+	viper.SetDefault("config.mounts.project", "./")
 	viper.SetDefault("config.gamemode", "sandbox")
 	viper.SetDefault("config.timeout", time.Minute*5)
 }
@@ -58,9 +64,8 @@ func LoadConfig() (*Values, error) {
 	viper.AddConfigPath(".")
 	viper.SetConfigName("gluatest")
 	viper.SetConfigType("yaml")
-
 	viper.ReadInConfig()
-	
+
 	getFlags()
 
 	var cfg Values
@@ -85,9 +90,11 @@ func mustAbs(path string) string {
 }
 
 func setAbsolutePaths(values *Values) *Values {
-	values.Config.ServerConfigPath = mustAbs(values.Config.ServerConfigPath)
-	values.Config.RequirementsPath = mustAbs(values.Config.RequirementsPath)
-	values.Config.ProjectsDir = mustAbs(values.Config.ProjectsDir)
+	mounts := &values.Config.Mounts
+
+	mounts.ServerConfig = mustAbs(mounts.ServerConfig)
+	mounts.Requirements = mustAbs(mounts.Requirements)
+	mounts.Project = mustAbs(mounts.Project)
 
 	return values
 }

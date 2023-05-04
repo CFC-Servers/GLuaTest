@@ -52,13 +52,13 @@ func (r *TestRun) ExitCode() int {
 }
 
 func (r *TestRun) Kill(ctx context.Context) error {
-	r.Log.WithField("containerID", r.runningContainerID).Info("Killing container")
+	log := r.Log.WithField("containerID", r.runningContainerID)
 	timeout := 5
 	err := r.Client.ContainerStop(ctx, r.runningContainerID, container.StopOptions{Timeout: &timeout})
 	if err != nil {
 		return err
 	}
-	r.Log.Infof("Killed container %s", r.runningContainerID)
+	log.Infof("Killed container")
 	return nil
 }
 
@@ -96,7 +96,7 @@ func (r *TestRun) pruneExistingContainers(ctx context.Context) error {
 			continue
 		}
 
-		if containerWorkingDir == r.Config.Config.ProjectsDir {
+		if containerWorkingDir == r.Config.Config.Mounts.Project {
 			r.Log.Debugf("Removing old container %s", c.ID)
 			r.Client.ContainerRemove(ctx, c.ID, types.ContainerRemoveOptions{})
 		}
@@ -121,7 +121,7 @@ func (r *TestRun) createContainer(ctx context.Context) (string, error) {
 		Env: getEnv(r.Config),
 		Cmd: []string{},
 		Labels: map[string]string{
-			workingDirLabelKey: r.Config.Config.ProjectsDir,
+			workingDirLabelKey: r.Config.Config.Mounts.Project,
 		},
 		Tty:   false,
 		Image: dockerImage,
@@ -185,51 +185,49 @@ func (r *TestRun) handleContainerLogs(ctx context.Context, containerID string, s
 }
 
 func getEnv(cfg *config.Values) []string {
-	var out []string
-
-	if cfg.Config.Gamemode != "" {
-		out = append(out, "GAMEMODE="+cfg.Config.Gamemode)
+	potentialnEnv := map[string]string{
+		"GAMEMODE":        cfg.Config.Gamemode,
+		"COLLECTION_ID":   cfg.Config.CollectionID,
+		"SSH_PRIVATE_KEY": cfg.Config.SSHPrivateKey,
+		"GITHUB_TOKEN":    cfg.Config.GithubToken,
 	}
 
-	if cfg.Config.CollectionID != "" {
-		out = append(out, "COLLECTION_ID="+cfg.Config.CollectionID)
-	}
-
-	if cfg.Config.SSHPrivateKey != "" {
-		out = append(out, "SSH_PRIVATE_KEY="+cfg.Config.SSHPrivateKey)
-	}
-
-	if cfg.Config.GithubToken != "" {
-		out = append(out, "GITHUB_TOKEN="+cfg.Config.GithubToken)
+	out := make([]string, 0, len(potentialnEnv))
+	for k, v := range potentialnEnv {
+		if v != "" {
+			out = append(out, k+"="+v)
+		}
 	}
 
 	return out
 }
 
 func getMounts(cfg *config.Values) []mount.Mount {
+	mountCfg := &cfg.Config.Mounts
+
 	mounts := []mount.Mount{
 
 		{
 			Type:     mount.TypeBind,
-			Source:   cfg.Config.ProjectsDir,
+			Source:   mountCfg.Project,
 			Target:   "/home/steam/gmodserver/garrysmod/addons/project",
 			ReadOnly: true,
 		},
 	}
 
-	if cfg.Config.ServerConfigPath != "" {
+	if mountCfg.ServerConfig != "" {
 		mounts = append(mounts, mount.Mount{
 			Type:     mount.TypeBind,
-			Source:   cfg.Config.ServerConfigPath,
+			Source:   mountCfg.ServerConfig,
 			Target:   "/home/steam/gmodserver/garrysmod/cfg/server.cfg",
 			ReadOnly: true,
 		})
 	}
 
-	if cfg.Config.RequirementsPath != "" {
+	if mountCfg.Requirements != "" {
 		mounts = append(mounts, mount.Mount{
 			Type:     mount.TypeBind,
-			Source:   cfg.Config.RequirementsPath,
+			Source:   mountCfg.Requirements,
 			Target:   "/home/steam/gmodserver/custom_requirements.txt",
 			ReadOnly: true,
 		})
