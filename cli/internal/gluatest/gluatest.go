@@ -232,5 +232,13 @@ func getMounts(cfg *config.Values) []mount.Mount {
 			ReadOnly: true,
 		})
 	}
+	if mountCfg.BinaryModules != "" {
+		mounts = append(mounts, mount.Mount{
+			Type:     mount.TypeBind,
+			Source:   mountCfg.BinaryModules,
+			Target:   "/home/steam/gmodserver/garrysmod/lua/bin",
+			ReadOnly: true,
+		})
+	}
 	return mounts
 }

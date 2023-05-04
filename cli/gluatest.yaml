@@ -1,0 +1,4 @@
+config:
+  gamemode: sandbox
+  mounts:
+    binary_modules: "gmbin"

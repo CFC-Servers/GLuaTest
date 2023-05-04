@@ -1,5 +1,6 @@
 ### Running
-simply rung `gluatest` in the root of your project
+- Install docker and make sure its running
+- Run `gluatest` in the root of your project
 
 ##### Flags
 - `--nofilter` dont filter non gluatest output out of printed server logs
@@ -26,6 +27,9 @@ config:
 
     # path to your server cfg file
     server_config: "myserver.cfg"
+    
+    # path to mount to lua/bin
+    binary_modules: "gmod_bin"
 ```
 
   

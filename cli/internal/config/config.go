@@ -29,9 +29,10 @@ type Config struct {
 }
 
 type MountConfig struct {
-	Project      string `mapstructure:"project"`
-	ServerConfig string `mapstructure:"server_config"`
-	Requirements string `mapstructure:"requirements_path"`
+	Project       string `mapstructure:"project"`
+	ServerConfig  string `mapstructure:"server_config"`
+	Requirements  string `mapstructure:"requirements_path"`
+	BinaryModules string `mapstructure:"binary_modules"`
 }
 
 type Flags struct {
@@ -95,6 +96,7 @@ func setAbsolutePaths(values *Values) *Values {
 	mounts.ServerConfig = mustAbs(mounts.ServerConfig)
 	mounts.Requirements = mustAbs(mounts.Requirements)
 	mounts.Project = mustAbs(mounts.Project)
+	mounts.BinaryModules = mustAbs(mounts.BinaryModules)
 
 	return values
 }
