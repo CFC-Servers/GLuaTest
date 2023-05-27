@@ -104,7 +104,7 @@ srcds_args=(
     +mat_dxlevel 1
 )
 
-stdbuf -oL -eL timeout 2m "$gmodroot"/srcds_run_x64 "${srcds_args[@]}"
+stdbuf -oL -eL timeout 2m "$gmodroot"/srcds_run "${srcds_args[@]}"
 status=$?
 
 if [ "$(cat $server/data/gluatest_clean_exit.txt)" = "false" ]; then
