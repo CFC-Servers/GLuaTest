@@ -1,4 +1,5 @@
 local type = type
+local TypeID = TypeID
 local IsValid = IsValid
 local string_format = string.format
 
@@ -75,7 +76,7 @@ return function( subject, ... )
     end
 
     function expectations.beA( comparison )
-        local class = type( subject )
+        local class = isnumber( comparison ) and TypeID( subject ) or type( subject )
 
         if class ~= comparison then
             i.expected( "to be a '%s'", comparison )
