@@ -51,8 +51,6 @@ GLuaTest.runAllTests = function()
     loadAllProjectsFrom( "tests", testFiles )
     loadAllProjectsFrom( GAMEMODE.FolderName .. "/gamemode/tests", testFiles )
 
-    PrintTable( testFiles )
-
     hook.Run( "GLuaTest_RunTestFiles", testFiles )
 
     GLuaTest.runner( testFiles )
