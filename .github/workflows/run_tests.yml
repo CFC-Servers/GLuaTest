@@ -76,80 +76,38 @@ jobs:
 
       - name: Prepare the override directory
         run: |
-          # The goal is for project_override directory to mirror the base garry's mod repo in terms of file structure
-          #
-          # Examples:
-          #
-          # - An addon with the following repo structure:
-          #   - lua/
-          #   -   autorun/
-          #   -     init.lua
-          #   -   example/
-          #   -     my_addon.lua
-          #   - entities/
-          #   - sounds/
-          #   - README.md
-          # Should move its entire repo contents to:
-          # - project_override/garrysmod/addons/project/
-          #
-          #
-          # - A gamemode repo that includes non-gamemode files like:
-          #   - data_static/
-          #     - jazztronauts/
-          #   - gamemodes/
-          #     - jazztronauts/
-          #       - gamemode/
-          #         - sv_jazztronauts.lua
-          #       - entities/
-          #       - jazztronauts.txt
-          #   - maps/
-          #   - materials/
-          #   - models/
-          #   - resource/
-          #   - sound/
-          #   - README.md
-          # Should move its entire repo contents to:
-          # - project_override/garrysmod/
-          #
-          #
-          # - A gamemode repo that contains only gamemode code, like:
-          #   - content/
-          #   - entities/
-          #   - gamemode/
-          #   - darkrp.txt
-          #   - icon24.png
-          #   - logo.png
-          #   - README.md
-          # Should move its entire repo contents to:
-          # - project_override/garrysmod/gamemodes/darkrp/
-          #
-          #
-          # - A repo that contains garrysmod/ at the top level, like:
-          #   - garrysmod/
-          #   - README.md
-          # Should move its entire repo contents to:
-          # - project_override/
-          
           cd $GITHUB_WORKSPACE
 
+          get_gamemode_name () {
+            gamemode_file=$(grep --recursive --word-regexp --files-with-matches '"base"')
+            gamemode_name=$(head --quiet --lines 1 "$gamemode_file" | tr --delete '"')
+
+            echo "$gamemode_name"
+          }
+
+          source=""
+
           if [ -d "garrysmod" ]; then
+            # The repo contains a full server
+            source="garrysmod"
             dest=""
           elif [ -d "gamemodes" ]; then
-            dest="garrysmod/"
+            # The repo is the contents of a garrysmod/ dir
+            dest="garrysmod"
           elif [ -d "gamemode" ]; then
-            gamemode_file=$(grep --recursive --word-regexp --files-with-matches '"base"')
-            echo "Found gamemode definition file: $gamemode_file"
-
-            gamemode_name=$(head --quiet --lines 1 "$gamemode_file" | tr --delete '"')
-            echo "Determined gamemode name: $gamemode_name"
-
-            dest="garrysmod/gamemodes/$gamemode_name/"
+            # The repo is the contents of a gamemode
+            gamemode_name=$(get_gamemode_name)
+            dest="garrysmod/gamemodes/$gamemode_name"
           elif [ -d "lua" ]; then
-            dest="garrysmod/addons/project/"
+            # The repo is likely an addon
+            dest="garrysmod/addons/project"
           else
             echo "::error title=Unknown project structure!::Please report this: https://github.com/CFC-Servers/GLuaTest/issues"
             exit 1
           fi
+
+          full_source="$GITHUB_WORKSPACE/project/$source"
+          echo "Final source for proejct repo contents: $full_source"
 
           full_destination="$GITHUB_WORKSPACE/project_override/$dest"
           echo "Final destination for project repo contents: $full_destination"
