@@ -71,9 +71,6 @@ jobs:
 
           cd $GITHUB_WORKSPACE
 
-      - name: Pull
-        run: docker compose pull
-
       - name: Prepare the override directory
         run: |
           cd $GITHUB_WORKSPACE/project
