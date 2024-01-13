@@ -76,10 +76,7 @@ jobs:
 
       - name: Prepare the override directory
         run: |
-          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           cd $GITHUB_WORKSPACE/project
-          pwd
-          ls -alh
 
           get_gamemode_name () {
             gamemode_file=$(grep --recursive --word-regexp --files-with-matches '"base"')
@@ -110,13 +107,13 @@ jobs:
           fi
 
           full_source="$GITHUB_WORKSPACE/project/$source"
-          echo "Final source for proejct repo contents: $full_source"
+          echo "Final source for project repo contents: $full_source"
 
           full_destination="$GITHUB_WORKSPACE/project_override/$dest"
           echo "Final destination for project repo contents: $full_destination"
           mkdir --verbose --parents "$full_destination"
 
-          cp --recursive --verbose "$GITHUB_WORKSPACE/project/*" "$full_destination/"
+          cp --recursive --verbose $GITHUB_WORKSPACE/project/* "$full_destination/"
             
 
       - name: Run GLuaTest
