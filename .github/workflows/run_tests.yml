@@ -71,6 +71,9 @@ jobs:
 
           cd $GITHUB_WORKSPACE
 
+      - name: Pull
+        run: docker compose build
+
       - name: Prepare the override directory
         run: |
           cd $GITHUB_WORKSPACE/project
@@ -82,32 +85,30 @@ jobs:
             echo "$gamemode_name"
           }
 
-          source=""
+
+          source="$GITHUB_WORKSPACE/project"
+          dest="$GITHUB_WORKSPACE/garrysmod_override/"
 
           if [ -d "garrysmod" ]; then
             # The repo contains a full server
-            source="garrysmod"
-            dest=""
+            source="$GITHUB_WORKSPACE/project/garrysmod"
           elif [ -d "gamemodes" ]; then
-            # The repo is the contents of a garrysmod/ dir
-            dest="garrysmod"
+            # The repo is the contents of a garrysmod/ dir - we can copy its contents directly
+            :
           elif [ -d "gamemode" ]; then
             # The repo is the contents of a gamemode
             gamemode_name=$(get_gamemode_name)
-            dest="garrysmod/gamemodes/$gamemode_name"
+            dest="$GITHUB_WORKSPACE/garrysmod_override/gamemodes/$gamemode_name/"
           elif [ -d "lua" ]; then
             # The repo is likely an addon
-            dest="garrysmod/addons/project"
+            dest="$GITHUB_WORKSPACE/garrysmod_override/addons/project/"
           else
             echo "::error title=Unknown project structure!::Please report this: https://github.com/CFC-Servers/GLuaTest/issues"
             exit 1
           fi
 
-          full_source="$GITHUB_WORKSPACE/project/$source"
-          full_destination="$GITHUB_WORKSPACE/project_override/$dest"
-
-          mkdir --verbose --parents "$full_destination"
-          cp --recursive --verbose $GITHUB_WORKSPACE/project/* "$full_destination/"
+          mkdir --verbose --parents "$dest"
+          cp --recursive --verbose $source/* "$dest/"
             
 
       - name: Run GLuaTest
