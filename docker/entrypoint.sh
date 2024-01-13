@@ -117,10 +117,10 @@ srcds_args=(
 )
 if [ "$GMOD_BRANCH" = "x86-64" ]; then
     echo "Starting 64-bit server"
-    unbuffer timeout 2m "$gmodroot"/srcds_run_x64 "${srcds_args[@]}"
+    unbuffer timeout 5m "$gmodroot"/srcds_run_x64 "${srcds_args[@]}"
 else
     echo "Starting 32-bit server"
-    unbuffer timeout 2m "$gmodroot"/srcds_run "${srcds_args[@]}"
+    unbuffer timeout 5m "$gmodroot"/srcds_run "${srcds_args[@]}"
 fi
 
 status=$?
