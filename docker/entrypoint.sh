@@ -5,7 +5,11 @@ gmodroot=$home/gmodserver
 server=$home/gmodserver/garrysmod
 pat=$GITHUB_TOKEN@
 
+# Make sure docker-slim doesn't remove bins we'll eventually need
 echo $(date)
+cp --version 1> /dev/null
+
+# Copy the overrides overtop the server files
 find $home/garrysmod_override -mindepth 1 -maxdepth 1 -exec cp --recursive --verbose {} $server/ \;
 
 if [ -f "$gmodroot/custom_requirements.txt" ]; then
