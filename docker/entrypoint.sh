@@ -10,7 +10,7 @@ echo $(date)
 cp --version 1> /dev/null
 
 # Copy the overrides overtop the server files
-find $home/garrysmod_override -mindepth 1 -maxdepth 1 -exec cp --recursive --verbose {} $server/ \;
+rsync --archive --verbose $home/garrysmod_override/ $server/
 
 if [ -f "$gmodroot/custom_requirements.txt" ]; then
     cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
