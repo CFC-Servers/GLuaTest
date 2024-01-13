@@ -112,7 +112,7 @@ jobs:
         env:
           REQUIREMENTS: "${{ github.workspace }}/project/${{ inputs.requirements }}"
           CUSTOM_SERVER_CONFIG: "${{ github.workspace }}/project/${{ inputs.server-cfg }}"
-          PROJECT_DIR: "${{ github.workspace }}/project_override"
+          PROJECT_DIR: "${{ github.workspace }}/garrysmod_override"
           GAMEMODE: "${{ inputs.gamemode }}"
           COLLECTION_ID: "${{ inputs.collection }}"
           SSH_PRIVATE_KEY: "${{ inputs.ssh-private-key }}"
