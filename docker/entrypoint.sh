@@ -5,10 +5,16 @@ gmodroot=$home/gmodserver
 server=$home/gmodserver/garrysmod
 pat=$GITHUB_TOKEN@
 
-mv --force --verbose $home/garrysmod_override/* $server/
+echo $(date)
+cp --recursive --verbose $home/garrysmod_override/. $server/
 
-cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
-cat "$gmodroot/custom_server.cfg" >> "$server/cfg/test.cfg"
+if [ -f "$gmodroot/custom_requirements.txt" ]; then
+    cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
+fi
+
+if [ -f "$gmodroot/custom_server.cfg" ]; then
+    cat "$gmodroot/custom_server.cfg" >> "$server/cfg/test.cfg"
+fi
 
 echo "false" > "$server/data/gluatest_clean_exit.txt"
 touch "$server/data/gluatest_failures.json"
@@ -91,7 +97,6 @@ srcds_args=(
     # Optimizations
     -collate          # "Skips everything, just merges the reslist from temp folders to the final folder again"
     -high             # Sets "high" process affinity
-    -reuse            # Don't create new network sockets, reuse existing
     -threads 6        # Double the allocated threads to the threadpool
 
     # Game setup
@@ -108,9 +113,11 @@ srcds_args=(
     +mat_dxlevel 1
 )
 if [ "$GMOD_BRANCH" = "x86-64" ]; then
-    stdbuf -oL -eL timeout 5m "$gmodroot"/srcds_run_x64 "${srcds_args[@]}"
+    echo "Starting 64-bit server"
+    unbuffer timeout 2m "$gmodroot"/srcds_run_x64 "${srcds_args[@]}"
 else
-    stdbuf -oL -eL timeout 5m "$gmodroot"/srcds_run "${srcds_args[@]}"
+    echo "Starting 32-bit server"
+    unbuffer timeout 2m "$gmodroot"/srcds_run "${srcds_args[@]}"
 fi
 
 status=$?
