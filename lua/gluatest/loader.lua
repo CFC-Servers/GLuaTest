@@ -14,7 +14,7 @@ end
 
 local getProjectName = function( dir )
     print( "Getting project name for ", dir )
-    return string.match( dir, "[^/]tests/(.+)/.*$" )
+    return string.match( dir, "[/^]tests/(.+)/.*$" )
 end
 
 local function processFile( dir, fileName, tests )
