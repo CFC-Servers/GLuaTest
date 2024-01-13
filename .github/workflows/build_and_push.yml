@@ -57,4 +57,4 @@ jobs:
       - name: Tag and push slim images
         run: |
           docker push ghcr.io/cfc-servers/gluatest --all-tags
-          docker push ghcr.io/cfc-servers/gluatest_x86-64 --all-tags
+          docker push ghcr.io/cfc-servers/gluatest/x86-64 --all-tags
