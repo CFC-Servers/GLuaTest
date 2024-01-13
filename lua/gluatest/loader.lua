@@ -13,6 +13,7 @@ local checkSendToClients = function( filePath, cases )
 end
 
 local getProjectName = function( dir )
+    print( "Getting project name for ", dir )
     return string.match( dir, "[^/]tests/(.+)/.*$" )
 end
 
