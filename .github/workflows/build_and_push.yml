@@ -24,8 +24,8 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/docker
 
-          docker build -t --build-arg="GMOD_BRANCH=live" gluatest_fat_live:latest .
-          docker build -t --build-arg="GMOD_BRANCH=x86-64" gluatest_fat_x86-64:latest .
+          docker build --build-arg="GMOD_BRANCH=live" --tag gluatest_fat_live:latest .
+          docker build --build-arg="GMOD_BRANCH=x86-64" --tag gluatest_fat_x86-64:latest .
 
       - name: Make slim images
         run: |
