@@ -11,14 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.GH_TOKEN }}
+      - uses: actions/checkout@v4
 
       - name: Get docker-slim
         run: |
@@ -27,23 +20,41 @@ jobs:
           mv dist_linux/* $GITHUB_WORKSPACE
           rm -rfv ds.tar.gz dist_linux/
 
-      - name: Build starter image
+      - name: Build starter images
         run: |
           cd $GITHUB_WORKSPACE/docker
-          docker build -t gluatest_fat:latest .
 
-      - name: Make slim image
+          docker build -t --build-arg="GMOD_BRANCH=live" gluatest_fat_live:latest .
+          docker build -t --build-arg="GMOD_BRANCH=x86-64" gluatest_fat_x86-64:latest .
+
+      - name: Make slim images
         run: |
           cd $GITHUB_WORKSPACE/docker
-          TAGS="--tag ghcr.io/cfc-servers/gluatest:${{ inputs.tag_name }}"
 
           $GITHUB_WORKSPACE/docker-slim build \
-            --target gluatest_fat:latest \
+            --target gluatest_fat_live:latest \
             --http-probe-off \
             --dockerfile Dockerfile \
             --dockerfile-context . \
             --continue-after 15 \
-            $TAGS
+            --tag ghcr.io/cfc-servers/gluatest:live
+            --tag ghcr.io/cfc-servers/gluatest:${{ inputs.tag_name }}
+
+          $GITHUB_WORKSPACE/docker-slim build \
+            --target gluatest_fat_x86-64:latest \
+            --http-probe-off \
+            --dockerfile Dockerfile \
+            --dockerfile-context . \
+            --continue-after 15 \
+            --tag ghcr.io/cfc-servers/gluatest:x86-64
+            --tag ghcr.io/cfc-servers/gluatest:${{ inputs.tag_name }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.GH_TOKEN }}
 
       - name: Tag and push slim images
         run: |

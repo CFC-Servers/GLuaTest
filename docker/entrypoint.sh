@@ -107,8 +107,12 @@ srcds_args=(
     -disableluarefresh
     +mat_dxlevel 1
 )
+if [ "$GMOD_BRANCH" = "x86-64" ]; then
+    stdbuf -oL -eL timeout 5m "$gmodroot"/srcds_run_x64 "${srcds_args[@]}"
+else
+    stdbuf -oL -eL timeout 5m "$gmodroot"/srcds_run "${srcds_args[@]}"
+fi
 
-stdbuf -oL -eL timeout 5m "$gmodroot"/srcds_run_x64 "${srcds_args[@]}"
 status=$?
 
 if [ "$(cat $server/data/gluatest_clean_exit.txt)" = "false" ]; then

@@ -1,5 +1,7 @@
 FROM cm2network/steamcmd
 
+ARG GMOD_BRANCH=live
+
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && apt install -y git python3-minimal && apt autoremove
@@ -9,7 +11,11 @@ ARG gmodroot=$home/gmodserver
 ARG server=$home/gmodserver/garrysmod
 
 USER steam
-RUN ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta x86-64 validate +quit
+RUN if [ "$GMOD_BRANCH" = "x86-64" ]; then \
+    ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta x86-64 validate +quit; \
+else \
+    ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 validate +quit; \
+fi
 
 # Initial server config
 RUN touch $gmodroot/custom_server.cfg && \
@@ -41,4 +47,5 @@ RUN chown --recursive steam:steam \
     "$home/github_known_hosts"
 
 USER steam
+ENV GMOD_BRANCH=${GMOD_BRANCH}
 ENTRYPOINT ["/home/steam/gmodserver/entrypoint.sh"]
