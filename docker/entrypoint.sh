@@ -9,7 +9,7 @@ pat=$GITHUB_TOKEN@
 echo $(date)
 
 # Copy the overrides overtop the server files
-rsync --archive --verbose $home/garrysmod_override/ $server/
+rsync --archive $home/garrysmod_override/ $server/
 
 if [ -f "$gmodroot/custom_requirements.txt" ]; then
     cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
@@ -62,7 +62,7 @@ EOF
 }
 
 # Make sure we get the latest version of gluatest
-rm -rfv "$server"/addons/gluatest
+rm -rf "$server"/addons/gluatest
 
 while read p; do
     echo "$p"
