@@ -49,7 +49,7 @@ GLuaTest.runAllTests = function()
 
     local testFiles = {}
     loadAllProjectsFrom( "tests", testFiles )
-    loadAllProjectsFrom( GAMEMODE.FolderName .. "/tests", testFiles )
+    loadAllProjectsFrom( GAMEMODE.FolderName .. "/gamemode/tests", testFiles )
 
     hook.Run( "GLuaTest_RunTestFiles", testFiles )
 
