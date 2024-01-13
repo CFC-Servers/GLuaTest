@@ -5,7 +5,7 @@ gmodroot=$home/gmodserver
 server=$home/gmodserver/garrysmod
 pat=$GITHUB_TOKEN@
 
-mv --force --verbose "$home/garrysmod_override" "$gmodroot/"
+mv --force --verbose $home/garrysmod_override/* $server/
 
 cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
 cat "$gmodroot/custom_server.cfg" >> "$server/cfg/test.cfg"
@@ -108,7 +108,7 @@ srcds_args=(
     +mat_dxlevel 1
 )
 
-stdbuf -oL -eL timeout 2m "$gmodroot"/srcds_run_x64 "${srcds_args[@]}"
+stdbuf -oL -eL timeout 5m "$gmodroot"/srcds_run_x64 "${srcds_args[@]}"
 status=$?
 
 if [ "$(cat $server/data/gluatest_clean_exit.txt)" = "false" ]; then
