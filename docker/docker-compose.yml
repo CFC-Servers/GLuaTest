@@ -19,7 +19,7 @@ services:
 
       - type: bind
         source: $PROJECT_DIR
-        target: /home/steam/gmodserver/garrysmod/addons/project
+        target: /home/steam/garrysmod_override
         read_only: true
 
     environment:

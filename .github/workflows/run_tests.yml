@@ -20,7 +20,7 @@ on:
       gamemode:
         type: string
         required: false
-        description: "The name of the gamemode for the test server to run. (You must list the gamemode as a requirement)"
+        description: "The name of the gamemode for the test server to run. (Be sure to list it as a requirement or include it in the test collection, if necessary)"
         default: "sandbox"
 
       collection:
@@ -74,11 +74,95 @@ jobs:
       - name: Pull latest test runner
         run: docker-compose pull
 
+      - name: Prepare the override directory
+        run: |
+          # The goal is for project_override directory to mirror the base garry's mod repo in terms of file structure
+          #
+          # Examples:
+          #
+          # - An addon with the following repo structure:
+          #   - lua/
+          #   -   autorun/
+          #   -     init.lua
+          #   -   example/
+          #   -     my_addon.lua
+          #   - entities/
+          #   - sounds/
+          #   - README.md
+          # Should move its entire repo contents to:
+          # - project_override/garrysmod/addons/project/
+          #
+          #
+          # - A gamemode repo that includes non-gamemode files like:
+          #   - data_static/
+          #     - jazztronauts/
+          #   - gamemodes/
+          #     - jazztronauts/
+          #       - gamemode/
+          #         - sv_jazztronauts.lua
+          #       - entities/
+          #       - jazztronauts.txt
+          #   - maps/
+          #   - materials/
+          #   - models/
+          #   - resource/
+          #   - sound/
+          #   - README.md
+          # Should move its entire repo contents to:
+          # - project_override/garrysmod/
+          #
+          #
+          # - A gamemode repo that contains only gamemode code, like:
+          #   - content/
+          #   - entities/
+          #   - gamemode/
+          #   - darkrp.txt
+          #   - icon24.png
+          #   - logo.png
+          #   - README.md
+          # Should move its entire repo contents to:
+          # - project_override/garrysmod/gamemodes/darkrp/
+          #
+          #
+          # - A repo that contains garrysmod/ at the top level, like:
+          #   - garrysmod/
+          #   - README.md
+          # Should move its entire repo contents to:
+          # - project_override/
+          
+          cd $GITHUB_WORKSPACE
+
+          if [ -d "garrysmod" ]; then
+            dest=""
+          elif [ -d "gamemodes" ]; then
+            dest="garrysmod/"
+          elif [ -d "gamemode" ]; then
+            gamemode_file=$(grep --recursive --word-regexp --files-with-matches '"base"')
+            echo "Found gamemode definition file: $gamemode_file"
+
+            gamemode_name=$(head --quiet --lines 1 "$gamemode_file" | tr --delete '"')
+            echo "Determined gamemode name: $gamemode_name"
+
+            dest="garrysmod/gamemodes/$gamemode_name/"
+          elif [ -d "lua" ]; then
+            dest="garrysmod/addons/project/"
+          else
+            echo "::error title=Unknown project structure!::Please report this: https://github.com/CFC-Servers/GLuaTest/issues"
+            exit 1
+          fi
+
+          full_destination="$GITHUB_WORKSPACE/project_override/$dest"
+          echo "Final destination for project repo contents: $full_destination"
+          mkdir --verbose --parents "$full_destination"
+
+          cp --recursive --verbose "$GITHUB_WORKSPACE/project/*" "$full_destination/"
+            
+
       - name: Run GLuaTest
         env:
           REQUIREMENTS: "${{ github.workspace }}/project/${{ inputs.requirements }}"
           CUSTOM_SERVER_CONFIG: "${{ github.workspace }}/project/${{ inputs.server-cfg }}"
-          PROJECT_DIR: "${{ github.workspace }}/project"
+          PROJECT_DIR: "${{ github.workspace }}/project_override"
           GAMEMODE: "${{ inputs.gamemode }}"
           COLLECTION_ID: "${{ inputs.collection }}"
           SSH_PRIVATE_KEY: "${{ inputs.ssh-private-key }}"

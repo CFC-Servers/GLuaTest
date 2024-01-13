@@ -1,11 +1,15 @@
 #!/bin/bash
 
-gmodroot=/home/steam/gmodserver
-server=/home/steam/gmodserver/garrysmod
+home=/home/steam
+gmodroot=$home/gmodserver
+server=$home/gmodserver/garrysmod
 pat=$GITHUB_TOKEN@
+
+mv --force --verbose "$home/garrysmod_override" "$gmodroot/"
 
 cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
 cat "$gmodroot/custom_server.cfg" >> "$server/cfg/test.cfg"
+
 echo "false" > "$server/data/gluatest_clean_exit.txt"
 touch "$server/data/gluatest_failures.json"
 
