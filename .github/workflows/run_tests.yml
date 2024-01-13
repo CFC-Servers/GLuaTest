@@ -76,7 +76,10 @@ jobs:
 
       - name: Prepare the override directory
         run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           cd $GITHUB_WORKSPACE/project
+          pwd
+          ls -alh
 
           get_gamemode_name () {
             gamemode_file=$(grep --recursive --word-regexp --files-with-matches '"base"')
