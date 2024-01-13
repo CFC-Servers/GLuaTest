@@ -6,7 +6,7 @@ server=$home/gmodserver/garrysmod
 pat=$GITHUB_TOKEN@
 
 echo $(date)
-cp --recursive --verbose $home/garrysmod_override/. $server/
+find $home/garrysmod_override -mindepth 1 -maxdepth 1 -exec cp --recursive --verbose {} $server/ \;
 
 if [ -f "$gmodroot/custom_requirements.txt" ]; then
     cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
