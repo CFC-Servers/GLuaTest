@@ -45,7 +45,7 @@ jobs:
             --dockerfile Dockerfile \
             --dockerfile-context . \
             --continue-after 15 \
-            --tag ghcr.io/cfc-servers/gluatest/x86-64:${{ inputs.tag_name }}
+            --tag ghcr.io/cfc-servers/gluatest/64bit:${{ inputs.tag_name }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -57,4 +57,4 @@ jobs:
       - name: Tag and push slim images
         run: |
           docker push ghcr.io/cfc-servers/gluatest --all-tags
-          docker push ghcr.io/cfc-servers/gluatest/x86-64 --all-tags
+          docker push ghcr.io/cfc-servers/gluatest/64bit --all-tags
