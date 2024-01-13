@@ -1,9 +1,11 @@
 name: Build and Push
 
 on:
-  push:
-    tags:
-      - '*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name for the Docker image (or version tag)'
+        required: true
 
 jobs:
   build:
@@ -17,12 +19,6 @@ jobs:
           registry: ghcr.io
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.GH_TOKEN }}
-
-      - name: Get the version
-        id: get_version
-        run: |
-          cd $GITHUB_WORKSPACE
-          echo ::set-output name=VERSION::$(git describe --abbrev=0 --tags `git rev-list --tags --max-count=1`)
 
       - name: Get docker-slim
         run: |
@@ -39,8 +35,7 @@ jobs:
       - name: Make slim image
         run: |
           cd $GITHUB_WORKSPACE/docker
-          touch fail.json
-          touch custom.cfg
+          TAGS="--tag ghcr.io/cfc-servers/gluatest:${{ inputs.tag_name }}"
 
           $GITHUB_WORKSPACE/docker-slim build \
             --target gluatest_fat:latest \
@@ -48,8 +43,7 @@ jobs:
             --dockerfile Dockerfile \
             --dockerfile-context . \
             --continue-after 15 \
-            --tag ghcr.io/cfc-servers/gluatest:latest \
-            --tag ghcr.io/cfc-servers/gluatest:${{ steps.get_version.outputs.VERSION }}
+            $TAGS
 
       - name: Tag and push slim images
         run: |

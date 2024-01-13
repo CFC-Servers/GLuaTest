@@ -71,8 +71,8 @@ jobs:
 
           cd $GITHUB_WORKSPACE
 
-      - name: Pull latest test runner
-        run: docker-compose pull
+      - name: Build
+        run: docker compose build
 
       - name: Prepare the override directory
         run: |
@@ -107,12 +107,9 @@ jobs:
           fi
 
           full_source="$GITHUB_WORKSPACE/project/$source"
-          echo "Final source for project repo contents: $full_source"
-
           full_destination="$GITHUB_WORKSPACE/project_override/$dest"
-          echo "Final destination for project repo contents: $full_destination"
-          mkdir --verbose --parents "$full_destination"
 
+          mkdir --verbose --parents "$full_destination"
           cp --recursive --verbose $GITHUB_WORKSPACE/project/* "$full_destination/"
             
 
@@ -127,7 +124,7 @@ jobs:
           GITHUB_TOKEN: "${{ inputs.github-token }}"
 
         run: |
-          docker-compose up --no-log-prefix --exit-code-from runner
+          docker compose up --no-log-prefix --exit-code-from runner
           exitstatus=$?
 
           if [ $exitstatus -ne 0 ]; then
