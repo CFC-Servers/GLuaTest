@@ -41,6 +41,7 @@ function LogHelpers.getFileLines( filePath )
 
     local cleanPath = LogHelpers.cleanPathForRead( filePath )
     local testFile = file.Open( cleanPath, "r", "LUA" )
+    print( "Opening file", cleanPath, testFile )
     local fileContents = testFile:Read( testFile:Size() )
     testFile:Close()
 
