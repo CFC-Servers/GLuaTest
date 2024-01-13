@@ -7,7 +7,6 @@ pat=$GITHUB_TOKEN@
 
 # Make sure docker-slim doesn't remove bins we'll eventually need
 echo $(date)
-cp --version 1> /dev/null
 
 # Copy the overrides overtop the server files
 rsync --archive --verbose $home/garrysmod_override/ $server/

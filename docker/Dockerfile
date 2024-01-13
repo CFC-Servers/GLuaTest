@@ -4,7 +4,7 @@ ARG GMOD_BRANCH=live
 
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt update && apt install -y git python3-minimal expect && apt autoremove
+RUN apt update && apt install -y git python3-minimal expect rsync && apt autoremove
 
 ARG home=/home/steam
 ARG gmodroot=$home/gmodserver
