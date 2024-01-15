@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   runner:
-    image: ghcr.io/cfc-servers/gluatest:0.27-pre10
+    image: ghcr.io/cfc-servers/gluatest:0.27-pre11
     build: .
     container_name: gluatest_runner
     stop_grace_period: 2s
@@ -27,3 +27,4 @@ services:
       - COLLECTION_ID=$COLLECTION_ID
       - SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
       - GITHUB_TOKEN=$GITHUB_TOKEN
+      - TIMEOUT=${TIMEOUT-5}

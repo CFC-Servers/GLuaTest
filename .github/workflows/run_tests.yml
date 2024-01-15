@@ -38,6 +38,12 @@ on:
         required: false
         description: "A GitHub Personal Access Token"
 
+      timeout:
+        type: string
+        required: false
+        description: "How many minutes to let the job run before killing the server (small projects shouldn't need more than 2 minutes)"
+        default: "2"
+
 jobs:
   test:
     name: "Run tests"
@@ -125,6 +131,7 @@ jobs:
           COLLECTION_ID: "${{ inputs.collection }}"
           SSH_PRIVATE_KEY: "${{ inputs.ssh-private-key }}"
           GITHUB_TOKEN: "${{ inputs.github-token }}"
+          TIMEOUT: "${{ inputs.timeout }}"
 
         run: |
           docker compose up --no-log-prefix --exit-code-from runner
