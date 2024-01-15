@@ -47,9 +47,17 @@ end
 GLuaTest.runAllTests = function()
     if not shouldRun:GetBool() then return end
 
+    local testPaths = {
+        "tests",
+        GAMEMODE.FolderName .. "/gamemode/tests"
+    }
+    hook.Run( "GLuaTest_AddTestPaths", testPaths )
+
     local testFiles = {}
-    loadAllProjectsFrom( "tests", testFiles )
-    loadAllProjectsFrom( GAMEMODE.FolderName .. "/gamemode/tests", testFiles )
+    for i = 1, #testPaths do
+        local path = testPaths[i]
+        loadAllProjectsFrom( path, testFiles )
+    end
 
     hook.Run( "GLuaTest_RunTestFiles", testFiles )
 
