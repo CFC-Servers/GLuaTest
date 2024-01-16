@@ -12,11 +12,9 @@ local checkSendToClients = function( filePath, cases )
     end
 end
 
+-- TODO: How to prevent this from matching: `customtests/blah/blah.lua`?
 local getProjectName = function( dir )
-    local match = string.match( dir, "[/^]tests/(.+)/.*$" )
-    print( "Getting project name for ", dir, match )
-
-    return match
+    return string.match( dir, "tests/(.+)/.*$" )
 end
 
 local function processFile( dir, fileName, tests )

@@ -188,7 +188,6 @@ function ResultLogger.LogFileStart( testGroup )
     local groupName = testGroup.groupName
     local project = testGroup.project
 
-    PrintTable( testGroup )
     local identifier = project .. "/" .. ( groupName or fileName )
 
     MsgC( "\n" )
