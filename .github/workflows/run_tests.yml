@@ -44,6 +44,12 @@ on:
         description: "How many minutes to let the job run before killing the server (small projects shouldn't need more than 2 minutes)"
         default: "2"
 
+      branch:
+        type: string
+        required: false
+        description: "Which GMod branch to run your tests on. Must be: 'live' or 'x86-64'"
+        default: "live"
+
 jobs:
   test:
     name: "Run tests"
@@ -88,7 +94,6 @@ jobs:
             echo "$gamemode_name"
           }
 
-
           source="$GITHUB_WORKSPACE/project"
           dest="$GITHUB_WORKSPACE/garrysmod_override/"
 
@@ -120,6 +125,12 @@ jobs:
           PROJECT_DIR: "${{ github.workspace }}/garrysmod_override"
 
         run: |
+          if [ ${{ inputs.branch }} = "x86-64" ];
+            echo "Updating compose file to use x86-64 image"
+            # Replace 'cfc-servers/gluatest' with 'cfc-servers/gluatest/64bit'
+            sed 's/cfc-servers\/gluatest/cfc-servers\/gluatest\/64bit/g' docker-compose.yml > docker-compose.yml
+          fi
+
           docker compose pull
 
       - name: Run GLuaTest

@@ -202,7 +202,7 @@ And that's it!
 </summary>
 </details>
 
----
+<br>
 
 ### Gamemodes
 <details>
@@ -227,7 +227,7 @@ jobs:
 </summary>
 </details>
 
----
+<br>
 
 ### Workshop Collection
 <details>
@@ -253,7 +253,52 @@ jobs:
 </summary>
 </details>
 
----
+<br>
+
+### GMod Branch
+<details>
+ <summary><strong>You can run your tests on the live branch of the `x86-64` branch</strong></summary>
+<br>
+
+
+Just set the `branch` input in your workflow:
+
+```yml
+name: GLuaTest Runner
+
+on:
+  pull_request:
+
+jobs:
+  run-tests:
+    uses: CFC-Servers/GLuaTest/.github/workflows/run_tests.yml@main
+    with:
+      branch: x86-64
+```
+
+</summary>
+</details>
+
+<br>
+
+### All options
+<details>
+ <summary><strong>Here are all of the options you can pass to the workflow</strong></summary>
+<br>
+
+| **Name**          | **Description**                                                                             | **Example**                                |
+|-------------------|---------------------------------------------------------------------------------------------|--------------------------------------------|
+| `server-cfg`      | A path (relative to project directory) with extra server config options                     | `data_static/my_addon.cfg`                 |
+| `requirements`    | A path (relative to project directory) with a list of all requirements to test this project | `data_static/my_addon.txt`                 |
+| `gamemode`        | The name of the gamemode for the test server to run                                         | `darkrp`                                   |
+| `collection`      | The workshop ID of the collection for the test server to use                                | `1629732176`                               |
+| `ssh-private-key` | The Private SSH key to use when cloning the dependencies                                    | `-----BEGIN OPENSSH PRIVATE KEY-----\n...` |
+| `github-token`    | A GitHub Personal Access Token, used when cloning dependencies                              |                                            |
+| `timeout`         | How many minutes to let the job run before killing the server                               | `10`                                       |
+| `branch`          | Which GMod branch to run your tests on                                                      | `x86-64`                                   |
+
+</summary>
+</details>
 
 
 ### Speed 🏃
