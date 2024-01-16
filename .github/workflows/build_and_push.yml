@@ -19,7 +19,9 @@ jobs:
 
       - name: Get docker-slim
         run: |
-          curl -L -o ds.tar.gz https://downloads.dockerslim.com/releases/1.40.8/dist_linux.tar.gz
+          SLIM_VERSION=1.40.9
+
+          curl -L -o ds.tar.gz https://downloads.dockerslim.com/releases/$SLIM_VERSION/dist_linux.tar.gz
           tar -xvzf ds.tar.gz
           mv dist_linux/* $GITHUB_WORKSPACE
           rm -rfv ds.tar.gz dist_linux/
@@ -35,32 +37,26 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/docker
 
+          BASE=ghcr.io/cfc-servers/gluatest
+
           $GITHUB_WORKSPACE/docker-slim build \
             --target gluatest_fat_live:latest \
             --http-probe-off \
-            --show-plogs \
-            --show-clogs \
-            --show-blogs \
-            --dockerfile Dockerfile \
-            --dockerfile-context . \
-            --continue-after 15 \
-            --tag ghcr.io/cfc-servers/gluatest:${{ inputs.tag_name }}
+            --continue-after 30 \
+            --show-clogs --show-blogs \
+            --tag "$BASE":${{ inputs.tag_name }}
 
           $GITHUB_WORKSPACE/docker-slim build \
            --target gluatest_fat_x86-64:latest \
            --http-probe-off \
-            --show-plogs \
-            --show-clogs \
-            --show-blogs \
-           --dockerfile Dockerfile \
-           --dockerfile-context . \
-           --continue-after 15 \
-           --tag ghcr.io/cfc-servers/gluatest/64bit:${{ inputs.tag_name }}
+           --continue-after 30 \
+           --show-clogs --show-blogs \
+           --tag "$BASE"/64bit:${{ inputs.tag_name }}
 
            if [ "${{ inputs.release }}" = "true" ]; then
             echo "::warning:: Tagging this release as the latest!"
-            docker tag ghcr.io/cfc-servers/gluatest:${{ inputs.tag_name }} ghcr.io/cfc-servers/gluatest:latest
-            docker tag ghcr.io/cfc-servers/gluatest/64bit:${{ inputs.tag_name }} ghcr.io/cfc-servers/gluatest/64bit:latest
+            docker tag "$BASE":${{ inputs.tag_name }} "$BASE":latest
+            docker tag "$BASE"/64bit:${{ inputs.tag_name }} "$BASE"/64bit:latest
            fi
 
       - name: Login to GitHub Container Registry

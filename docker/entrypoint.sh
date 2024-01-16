@@ -4,7 +4,7 @@ home=/home/steam
 gmodroot=$home/gmodserver
 server=$home/gmodserver/garrysmod
 pat=$GITHUB_TOKEN@
-timeout="$TIMEOUT"m
+timeout="${TIMEOUT:-2}"m
 
 # Make sure docker-slim doesn't remove bins we'll eventually need
 echo $(date)
