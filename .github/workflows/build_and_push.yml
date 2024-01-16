@@ -51,7 +51,7 @@ jobs:
            --continue-after 15 \
            --tag ghcr.io/cfc-servers/gluatest/64bit:${{ inputs.tag_name }}
 
-           if [ ${{ inputs.release }} = true ]; then
+           if [ "${{ inputs.release }}" = "true" ]; then
             echo "::warning:: Tagging this release as the latest!"
             docker tag ghcr.io/cfc-servers/gluatest:${{ inputs.tag_name }} ghcr.io/cfc-servers/gluatest:latest
             docker tag ghcr.io/cfc-servers/gluatest/64bit:${{ inputs.tag_name }} ghcr.io/cfc-servers/gluatest/64bit:latest
