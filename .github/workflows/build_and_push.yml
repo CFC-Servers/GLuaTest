@@ -38,6 +38,9 @@ jobs:
           $GITHUB_WORKSPACE/docker-slim build \
             --target gluatest_fat_live:latest \
             --http-probe-off \
+            --show-plogs \
+            --show-clogs \
+            --show-blogs \
             --dockerfile Dockerfile \
             --dockerfile-context . \
             --continue-after 15 \
@@ -46,6 +49,9 @@ jobs:
           $GITHUB_WORKSPACE/docker-slim build \
            --target gluatest_fat_x86-64:latest \
            --http-probe-off \
+            --show-plogs \
+            --show-clogs \
+            --show-blogs \
            --dockerfile Dockerfile \
            --dockerfile-context . \
            --continue-after 15 \
