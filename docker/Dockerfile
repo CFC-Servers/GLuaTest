@@ -1,4 +1,4 @@
-FROM cm2network/steamcmd
+FROM ghcr.io/cfc-servers/steamcmd:latest
 
 ARG GMOD_BRANCH=live
 
