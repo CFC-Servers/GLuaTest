@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   runner:
-    image: ghcr.io/cfc-servers/gluatest:0.27-pre18
+    image: ghcr.io/cfc-servers/gluatest:0.27-pre19
     build: .
     container_name: gluatest_runner
     stop_grace_period: 2s
