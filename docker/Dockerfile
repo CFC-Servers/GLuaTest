@@ -55,6 +55,6 @@ ENV GMOD_BRANCH=${GMOD_BRANCH}
 
 RUN git clone --depth 1 --branch $GLUATEST_REF $GLUATEST_REPO $server/addons/gluatest
 RUN mkdir --parents --verbose $server/addons/gluatest/data_static
-RUN echo "$GLUATEST_REF" > $server/addons/gluatest/data_static/VERSION
+RUN echo "$GLUATEST_REF" > $server/addons/gluatest/data_static/gluatest_version.txt
 
 ENTRYPOINT ["/home/steam/gmodserver/entrypoint.sh"]
