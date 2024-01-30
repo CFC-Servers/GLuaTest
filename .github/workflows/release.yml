@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Tag name for the Docker image (or version tag)"
+        required: true
+      release:
+        type: boolean
+        description: "Is this a full release?"
+        required: true
+
+jobs:
+  build_public:
+    runs-on: ubuntu-latest
+    name: Builds the image for the public gmod branch
+    steps:
+      - name: Checkout actions
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/actions
+          path: actions
+
+      - uses: ./actions/.github/actions/build_and_push
+        with:
+          gmod_branch: public
+          tag_name: ${{ inputs.tag_name }}
+          release: ${{ inputs.release }}
+
+  build_x86:
+    runs-on: ubuntu-latest
+    name: Builds the image for the x86-64 branch
+    steps:
+      - name: Checkout actions
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/actions
+          path: actions
+
+      - uses: ./actions/.github/actions/build_and_push
+        with:
+          gmod_branch: x86-64
+          tag_name: ${{ inputs.tag_name }}
+          release: ${{ inputs.release }}

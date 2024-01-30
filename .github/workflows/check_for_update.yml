@@ -1,0 +1,100 @@
+name: Check for Update
+
+on:
+  schedule:
+    - cron: "18 */12 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get Latest Tag
+        id: latest_tag
+        run: |
+          latest_tag=$(git \
+            describe \
+            --tags \
+            --abbrev=0 \
+            --match='[0-9]*.[0-9]*.[0-9]*' \
+            --match='[0-9]*.[0-9]*' \
+            --exclude='*[^0-9.]*' \
+          )
+
+          echo "tag_name=$latest_tag" >> $GITHUB_OUTPUT
+
+      - name: Pull the steamcmd image
+        run: |
+          # TODO: Change this to latest when we have it
+          docker pull ghcr.io/cfc-servers/steamcmd-slim:steam
+
+      - name: Lookup latest build IDs
+        id: latest_versions
+        run: |
+          docker run \
+            --rm \
+            --name version_checker \
+            ghcr.io/cfc-servers/steamcmd-slim:steam \
+            /home/steam/steamcmd/steamcmd.sh +login anonymous +app_info_print 4020 +quit \
+            > raw_output.txt
+
+          # Extract just the part we care about
+          struct=struct.txt
+          cat raw_output.txt | sed -e '1,/"4020"$/ d' > $struct;
+
+          # Get the latest build IDs
+          public=$(grep -A 2 '"public"' $struct | grep '"buildid"' | awk '{print $2}' | sed 's/"//g')
+          sixtyfour=$(grep -A 2 '"x86-64"' $file | grep '"buildid"' | awk '{print $2}' | sed 's/"//g')
+
+          # Set the output
+          echo "public=$public" >> $GITHUB_OUTPUT
+          echo "sixtyfour=$sixtyfour" >> $GITHUB_OUTPUT
+
+      - name: Read last build IDs
+        id: last_versions
+        run: |
+          public=$(cat ./docker/last_public_build.txt)
+          sixtyfour=$(cat ./docker/last_64bit_build.txt)
+
+          echo "public=$public" >> $GITHUB_OUTPUT
+          echo "sixtyfour=$sixtyfour" >> $GITHUB_OUTPUT
+
+      - name: Identify pending updates
+        id: needs_update
+        run: |
+          public=${{ steps.latest_versions.public != steps.last_versions.public }}
+          sixtyfour=${{ steps.latest_versions.sixtyfour != steps.last_versions.sixtyfour }}
+
+          echo "public=$public" >> $GITHUB_OUTPUT
+          echo "sixtyfour=$sixtyfour" >> $GITHUB_OUTPUT
+
+      - name: Update Public Build
+        if: ${{ steps.needs_update.public == "true" }}
+        uses: ./.github/actions/build_and_push
+        with:
+          gmod_branch: public
+          tag_name: ${{ steps.latest_tag.tag_name }}
+          release: true
+
+      - name: Update 64bit Build
+        if: ${{ steps.needs_update.sixtyfour == "true" }}
+        uses: ./.github/actions/build_and_push
+        with:
+          gmod_branch: x86-64
+          tag_name: ${{ steps.latest_tag.tag_name }}
+          release: true
+
+      - name: Update last versions
+        if: ${{ steps.needs_update.public == "true" || steps.needs_update.sixtyfour == "true" }}
+        run: |
+          echo ${{ steps.latest_versions.public }} > ./docker/last_public_build.txt
+          echo ${{ steps.latest_versions.sixtyfour }} > ./docker/last_64bit_build.txt
+
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add ./docker/last_public_build.txt
+          git add ./docker/last_64bit_build.txt
+          git commit -m "Update last build ID(s)"
+          git push
+
