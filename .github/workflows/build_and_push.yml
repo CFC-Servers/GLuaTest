@@ -40,9 +40,16 @@ jobs:
           publicID=$(docker create gluatest_fat_live:latest)
           x86ID=$(docker create gluatest_fat_x86-64:latest)
 
+          echo "Public Container ID: $publicID"
+          echo "x86-64 Container ID: $x86ID"
+
+          docker ps -a
+
           # Copy their manifest files
           docker cp $publicID:/home/steam/gmodserver/steamapps/appmanifest_4020.acf $GITHUB_WORKSPACE/appmanifest_public.acf
           docker cp $x86ID:/home/steam/gmodserver/steamapps/appmanifest_4020.acf $GITHUB_WORKSPACE/appmanifest_x86.acf
+
+          ls -alh $GITHUB_WORKSPACE/appmanifest_*
 
           # Remove temporary containers
           docker rm $publicID $x86ID
@@ -50,6 +57,11 @@ jobs:
           # Extract the version
           cat $GITHUB_WORKSPACE/appmanifest_public.acf | grep "buildid\"" | awk -F '"' '/"buildid"/ {print $4}' > $GITHUB_WORKSPACE/gmod_buildid_public.txt
           cat $GITHUB_WORKSPACE/appmanifest_x86.acf | grep "buildid\"" | awk -F '"' '/"buildid"/ {print $4}' > $GITHUB_WORKSPACE/gmod_buildid_x86.txt
+
+          ls -alh $GITHUB_WORKSPACE/gmod_*
+
+          cat $GITHUB_WORKSPACE/gmod_buildid_public.txt
+          cat $GITHUB_WORKSPACE/gmod_buildid_x86.txt
 
           rm $GIHUB_WORKSPACE/appmanifest_public.acf $GITHUB_WORKSPACE/appmanifest_x86.acf
 
