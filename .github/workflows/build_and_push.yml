@@ -87,7 +87,7 @@ jobs:
           if [[ $parentMinorVersion != "0" ]]; then
             echo "::warning:: Tagging with parent minor version: $parentMinorVersion"
             docker tag $BASE:$rawVersionTag $BASE:$parentMinorVersion
-            docker tag $BASE/64bit:$rawVersionTag $BASE:$parentMinorVersion
+            docker tag $BASE/64bit:$rawVersionTag $BASE/64bit:$parentMinorVersion
           fi
 
           if [ "${{ inputs.release }}" = "true" ]; then
