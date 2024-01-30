@@ -1,0 +1,274 @@
+{
+  "version": "1.1",
+  "engine": "linux/amd64|Transformer|1.40.8|317dfc2eef8c47fc974080eeb7a2a74caab3c878|2024-01-07_07:29:28PM",
+  "containerized": false,
+  "host_distro": {
+    "name": "Ubuntu",
+    "version": "20.04",
+    "display_name": "Ubuntu 20.04.6 LTS"
+  },
+  "type": "build",
+  "state": "done",
+  "target_reference": "ghcr.io/cfc-servers/steamcmd:latest",
+  "system": {
+    "type": "",
+    "release": "",
+    "distro": {
+      "name": "",
+      "version": "",
+      "display_name": ""
+    }
+  },
+  "source_image": {
+    "identity": {
+      "id": "sha256:3e6d6b0c46b5a149a6498f41b89fb9408d0119ce628b79ab7ffd26b43f03b266",
+      "tags": [
+        "latest"
+      ],
+      "names": [
+        "ghcr.io/cfc-servers/steamcmd:latest"
+      ],
+      "digests": [
+        "sha256:fcda0939608b5ddb88dfa1c251a258b59bec91ba106404719a5a23df801d97bb"
+      ],
+      "full_digests": [
+        "ghcr.io/cfc-servers/steamcmd@sha256:fcda0939608b5ddb88dfa1c251a258b59bec91ba106404719a5a23df801d97bb"
+      ]
+    },
+    "size": 436250429,
+    "size_human": "436 MB",
+    "create_time": "2024-01-16T22:33:14Z",
+    "docker_version": "",
+    "architecture": "amd64",
+    "user": "steam",
+    "os": "linux",
+    "labels": {
+      "maintainer": "walentinlamonos@gmail.com"
+    },
+    "env_vars": [
+      "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "USER=steam",
+      "HOMEDIR=/home/steam",
+      "STEAMCMDDIR=/home/steam/steamcmd"
+    ],
+    "container_entry": {
+      "exe_path": ""
+    }
+  },
+  "minified_image_size": 79922729,
+  "minified_image_size_human": "80 MB",
+  "minified_image": "steamcmd_slim:latest",
+  "minified_image_has_data": true,
+  "minified_by": 5.458402565307798,
+  "artifact_location": "/home/brandon/Code/scratch/slim/dist_linux/.slim-state/images/3e6d6b0c46b5a149a6498f41b89fb9408d0119ce628b79ab7ffd26b43f03b266/artifacts",
+  "container_report_name": "creport.json",
+  "seccomp_profile_name": "ghcr.io-cfc-servers-steamcmd-seccomp.json",
+  "apparmor_profile_name": "ghcr.io-cfc-servers-steamcmd-apparmor-profile",
+  "image_stack": [
+    {
+      "is_top_image": true,
+      "id": "sha256:3e6d6b0c46b5a149a6498f41b89fb9408d0119ce628b79ab7ffd26b43f03b266",
+      "full_name": "ghcr.io/cfc-servers/steamcmd:latest",
+      "repo_name": "ghcr.io/cfc-servers/steamcmd",
+      "version_tag": "latest",
+      "raw_tags": [
+        "ghcr.io/cfc-servers/steamcmd:latest"
+      ],
+      "create_time": "2024-01-16T22:33:14Z",
+      "new_size": 436250429,
+      "new_size_human": "436 MB",
+      "instructions": [
+        {
+          "type": "ADD",
+          "time": "2024-01-11T02:38:16Z",
+          "is_nop": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 80551769,
+          "size_human": "81 MB",
+          "params": "file:bd961ef3fd78ceb8ce13f43a6b265e2bef640dfff887462b8ceb73a1d4637401 in /",
+          "command_snippet": "ADD file:bd961ef3fd78ceb8ce13f43a6b265e2bef6...",
+          "command_all": "ADD file:bd961ef3fd78ceb8ce13f43a6b265e2bef640dfff887462b8ceb73a1d4637401 /",
+          "target": "/",
+          "source_type": "file",
+          "inst_set_time_bucket": "2024-01-10T18:30:00-08:00",
+          "inst_set_time_index": 0,
+          "inst_set_time_reverse_index": 1
+        },
+        {
+          "type": "CMD",
+          "time": "2024-01-11T02:38:17Z",
+          "is_nop": true,
+          "is_exec_form": true,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "params": "[\"bash\"]\n",
+          "command_snippet": "CMD [\"bash\"]\n",
+          "command_all": "CMD [\"bash\"]\n",
+          "inst_set_time_bucket": "2024-01-10T18:30:00-08:00",
+          "inst_set_time_index": 0,
+          "inst_set_time_reverse_index": 1
+        },
+        {
+          "type": "LABEL",
+          "time": "2024-01-16T22:33:14Z",
+          "is_nop": false,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "params": "maintainer=walentinlamonos@gmail.com",
+          "command_snippet": "LABEL maintainer=walentinlamonos@gmail.com",
+          "command_all": "LABEL maintainer=walentinlamonos@gmail.com",
+          "comment": "buildkit.dockerfile.v0",
+          "is_buildkit_instruction": true,
+          "inst_set_time_bucket": "2024-01-16T14:30:00-08:00",
+          "inst_set_time_index": 1,
+          "inst_set_time_reverse_index": 0
+        },
+        {
+          "type": "ARG",
+          "time": "2024-01-16T22:33:14Z",
+          "is_nop": false,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "params": "PUID=1000",
+          "command_snippet": "ARG PUID=1000",
+          "command_all": "ARG PUID=1000",
+          "comment": "buildkit.dockerfile.v0",
+          "is_buildkit_instruction": true,
+          "inst_set_time_bucket": "2024-01-16T14:30:00-08:00",
+          "inst_set_time_index": 1,
+          "inst_set_time_reverse_index": 0
+        },
+        {
+          "type": "ENV",
+          "time": "2024-01-16T22:33:14Z",
+          "is_nop": false,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "params": "USER=steam",
+          "command_snippet": "ENV USER=steam",
+          "command_all": "ENV USER=steam",
+          "comment": "buildkit.dockerfile.v0",
+          "is_buildkit_instruction": true,
+          "inst_set_time_bucket": "2024-01-16T14:30:00-08:00",
+          "inst_set_time_index": 1,
+          "inst_set_time_reverse_index": 0
+        },
+        {
+          "type": "ENV",
+          "time": "2024-01-16T22:33:14Z",
+          "is_nop": false,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "params": "HOMEDIR=/home/steam",
+          "command_snippet": "ENV HOMEDIR=/home/steam",
+          "command_all": "ENV HOMEDIR=/home/steam",
+          "comment": "buildkit.dockerfile.v0",
+          "is_buildkit_instruction": true,
+          "inst_set_time_bucket": "2024-01-16T14:30:00-08:00",
+          "inst_set_time_index": 1,
+          "inst_set_time_reverse_index": 0
+        },
+        {
+          "type": "ENV",
+          "time": "2024-01-16T22:33:14Z",
+          "is_nop": false,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "params": "STEAMCMDDIR=/home/steam/steamcmd",
+          "command_snippet": "ENV STEAMCMDDIR=/home/steam/steamcmd",
+          "command_all": "ENV STEAMCMDDIR=/home/steam/steamcmd",
+          "comment": "buildkit.dockerfile.v0",
+          "is_buildkit_instruction": true,
+          "inst_set_time_bucket": "2024-01-16T14:30:00-08:00",
+          "inst_set_time_index": 1,
+          "inst_set_time_reverse_index": 0
+        },
+        {
+          "type": "RUN",
+          "time": "2024-01-16T22:33:14Z",
+          "is_nop": false,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 355698660,
+          "size_human": "356 MB",
+          "command_snippet": "RUN set -x && apt-get update && apt-get inst...",
+          "command_all": "RUN set -x && apt-get update && apt-get install -y --no-install-recommends --no-install-suggests lib32stdc++6=10.2.1-6 lib32gcc-s1=10.2.1-6 ca-certificates=20210119 nano=5.4-2+deb11u2 curl=7.74.0-1.3+deb11u11 locales=2.31-13+deb11u7 && sed -i -e s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/ /etc/locale.gen && dpkg-reconfigure --frontend=noninteractive locales && useradd -u ${PUID} -m ${USER} && su ${USER} -c mkdir -p \"${STEAMCMDDIR}\"                 && curl -fsSL 'https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz' | tar xvzf - -C \"${STEAMCMDDIR}\"                 && \"./${STEAMCMDDIR}/steamcmd.sh\" +quit                 && ln -s \"${STEAMCMDDIR}/linux32/steamclient.so\" \"${STEAMCMDDIR}/steamservice.so\"                 && mkdir -p \"${HOMEDIR}/.steam/sdk32\"                 && ln -s \"${STEAMCMDDIR}/linux32/steamclient.so\" \"${HOMEDIR}/.steam/sdk32/steamclient.so\"                 && ln -s \"${STEAMCMDDIR}/linux32/steamcmd\" \"${STEAMCMDDIR}/linux32/steam\"                 && mkdir -p \"${HOMEDIR}/.steam/sdk64\"                 && ln -s \"${STEAMCMDDIR}/linux64/steamclient.so\" \"${HOMEDIR}/.steam/sdk64/steamclient.so\"                 && ln -s \"${STEAMCMDDIR}/linux64/steamcmd\" \"${STEAMCMDDIR}/linux64/steam\"                 && ln -s \"${STEAMCMDDIR}/steamcmd.sh\" \"${STEAMCMDDIR}/steam.sh\" && ln -s ${STEAMCMDDIR}/linux64/steamclient.so /usr/lib/x86_64-linux-gnu/steamclient.so && rm -rf /var/lib/apt/lists/*",
+          "system_commands": [
+            "set -x",
+            "apt-get update",
+            "apt-get install -y --no-install-recommends --no-install-suggests lib32stdc++6=10.2.1-6 lib32gcc-s1=10.2.1-6 ca-certificates=20210119 nano=5.4-2+deb11u2 curl=7.74.0-1.3+deb11u11 locales=2.31-13+deb11u7",
+            "sed -i -e s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/ /etc/locale.gen",
+            "dpkg-reconfigure --frontend=noninteractive locales",
+            "useradd -u ${PUID} -m ${USER}",
+            "su ${USER} -c mkdir -p \"${STEAMCMDDIR}\"",
+            "curl -fsSL 'https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz' | tar xvzf - -C \"${STEAMCMDDIR}\"",
+            "\"./${STEAMCMDDIR}/steamcmd.sh\" +quit",
+            "ln -s \"${STEAMCMDDIR}/linux32/steamclient.so\" \"${STEAMCMDDIR}/steamservice.so\"",
+            "mkdir -p \"${HOMEDIR}/.steam/sdk32\"",
+            "ln -s \"${STEAMCMDDIR}/linux32/steamclient.so\" \"${HOMEDIR}/.steam/sdk32/steamclient.so\"",
+            "ln -s \"${STEAMCMDDIR}/linux32/steamcmd\" \"${STEAMCMDDIR}/linux32/steam\"",
+            "mkdir -p \"${HOMEDIR}/.steam/sdk64\"",
+            "ln -s \"${STEAMCMDDIR}/linux64/steamclient.so\" \"${HOMEDIR}/.steam/sdk64/steamclient.so\"",
+            "ln -s \"${STEAMCMDDIR}/linux64/steamcmd\" \"${STEAMCMDDIR}/linux64/steam\"",
+            "ln -s \"${STEAMCMDDIR}/steamcmd.sh\" \"${STEAMCMDDIR}/steam.sh\"",
+            "ln -s ${STEAMCMDDIR}/linux64/steamclient.so /usr/lib/x86_64-linux-gnu/steamclient.so",
+            "rm -rf /var/lib/apt/lists/*"
+          ],
+          "comment": "buildkit.dockerfile.v0",
+          "is_buildkit_instruction": true,
+          "inst_set_time_bucket": "2024-01-16T14:30:00-08:00",
+          "inst_set_time_index": 1,
+          "inst_set_time_reverse_index": 0
+        },
+        {
+          "type": "WORKDIR",
+          "time": "2024-01-16T22:33:14Z",
+          "is_nop": false,
+          "local_image_exists": false,
+          "layer_index": 0,
+          "size": 0,
+          "params": "/home/steam/steamcmd",
+          "command_snippet": "WORKDIR /home/steam/steamcmd",
+          "command_all": "WORKDIR /home/steam/steamcmd",
+          "system_commands": [
+            "mkdir -p /home/steam/steamcmd"
+          ],
+          "comment": "buildkit.dockerfile.v0",
+          "is_buildkit_instruction": true,
+          "inst_set_time_bucket": "2024-01-16T14:30:00-08:00",
+          "inst_set_time_index": 1,
+          "inst_set_time_reverse_index": 0
+        },
+        {
+          "type": "USER",
+          "time": "2024-01-16T22:33:14Z",
+          "is_last_instruction": true,
+          "is_nop": false,
+          "local_image_exists": true,
+          "layer_index": 0,
+          "size": 0,
+          "params": "steam",
+          "command_snippet": "USER steam",
+          "command_all": "USER steam",
+          "comment": "buildkit.dockerfile.v0",
+          "raw_tags": [
+            "ghcr.io/cfc-servers/steamcmd:latest"
+          ],
+          "is_buildkit_instruction": true,
+          "inst_set_time_bucket": "2024-01-16T14:30:00-08:00",
+          "inst_set_time_index": 1,
+          "inst_set_time_reverse_index": 0
+        }
+      ]
+    }
+  ],
+  "image_created": true,
+  "image_build_engine": "internal"
+}

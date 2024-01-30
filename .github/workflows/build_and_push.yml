@@ -90,11 +90,11 @@ jobs:
             docker tag $BASE/64bit:$rawVersionTag $BASE:$parentMinorVersion
           fi
 
-           if [ "${{ inputs.release }}" = "true" ]; then
+          if [ "${{ inputs.release }}" = "true" ]; then
             echo "::warning:: Tagging this release as the latest!"
             docker tag $BASE:$rawVersionTag $BASE:latest
             docker tag $BASE/64bit:$rawVersionTag $BASE/64bit:latest
-           fi
+          fi
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
