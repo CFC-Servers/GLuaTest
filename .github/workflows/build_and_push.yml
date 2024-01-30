@@ -68,7 +68,7 @@ jobs:
             --continue-after 30 \
             --show-clogs --show-blogs \
             --tag "$BASE":${{ inputs.tag_name }} \
-            --tag "$BASE":$publicID
+            --tag "$BASE":gameversion-$publicID
 
           x86ID=$(cat $GITHUB_WORKSPACE/gmod_buildid_x86.txt)
           $GITHUB_WORKSPACE/docker-slim build \
@@ -77,7 +77,7 @@ jobs:
            --continue-after 30 \
            --show-clogs --show-blogs \
            --tag "$BASE"/64bit:${{ inputs.tag_name }} \
-           --tag "$BASE"/64bit:$x86ID
+           --tag "$BASE"/64bit:gameversion-$x86ID
 
            if [ "${{ inputs.release }}" = "true" ]; then
             echo "::warning:: Tagging this release as the latest!"
