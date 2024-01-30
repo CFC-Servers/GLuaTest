@@ -67,7 +67,7 @@ jobs:
             --http-probe-off \
             --continue-after 30 \
             --show-clogs --show-blogs \
-            --tag "$BASE":${{ inputs.tag_name }}
+            --tag "$BASE":${{ inputs.tag_name }} \
             --tag "$BASE":$publicID
 
           x86ID=$(cat $GITHUB_WORKSPACE/gmod_buildid_x86.txt)
@@ -76,7 +76,7 @@ jobs:
            --http-probe-off \
            --continue-after 30 \
            --show-clogs --show-blogs \
-           --tag "$BASE"/64bit:${{ inputs.tag_name }}
+           --tag "$BASE"/64bit:${{ inputs.tag_name }} \
            --tag "$BASE"/64bit:$x86ID
 
            if [ "${{ inputs.release }}" = "true" ]; then
