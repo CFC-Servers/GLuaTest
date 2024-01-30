@@ -1,6 +1,8 @@
 FROM ghcr.io/cfc-servers/steamcmd:latest
 
 ARG GMOD_BRANCH=live
+ARG GLUATEST_REF=main
+ARG GLUATEST_REPO=https://github.com/CFC-Servers/GLuaTest.git
 
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
@@ -32,8 +34,8 @@ COPY base_server.cfg $server/cfg/test.cfg
 # Base fixture addon
 COPY testfixture $server/addons/testfixture
 
-# Base requirements
-COPY base_requirements.txt $gmodroot/requirements.txt
+# Make requirements file
+RUN touch $gmodroot/requirements.txt
 
 # GitHub Server Keys
 RUN ssh-keyscan github.com >> $home/github_known_hosts
@@ -50,4 +52,9 @@ RUN chown --recursive steam:steam \
 
 USER steam
 ENV GMOD_BRANCH=${GMOD_BRANCH}
+
+RUN git clone --depth 1 --branch $GLUATEST_REF $GLUATEST_REPO $server/addons/gluatest
+RUN mkdir --parents --verbose $server/addons/gluatest/data_static
+RUN echo "$GLUATEST_REF" > $server/addons/gluatest/data_static/VERSION
+
 ENTRYPOINT ["/home/steam/gmodserver/entrypoint.sh"]

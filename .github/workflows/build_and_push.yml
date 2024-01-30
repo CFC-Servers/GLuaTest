@@ -30,28 +30,54 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/docker
 
-          docker build --build-arg="GMOD_BRANCH=live" --tag gluatest_fat_live:latest .
-          docker build --build-arg="GMOD_BRANCH=x86-64" --tag gluatest_fat_x86-64:latest .
+          GLUATEST_REF=${{ inputs.tag_name }}
+          docker build --build-arg="GMOD_BRANCH=live" --build-arg="GLUATEST_REF=$GLUATEST_REF" --tag gluatest_fat_live:latest .
+          docker build --build-arg="GMOD_BRANCH=x86-64" --build-arg="GLUATEST_REF=$GLUATEST_REF" --tag gluatest_fat_x86-64:latest .
+
+      - name: Discern Game Versions
+        run: |
+          # Create temporary containers
+          publicID=$(docker create gluatest_fat_live:latest)
+          x86ID=$(docker create gluatest_fat_x86-64:latest)
+
+          # Copy their manifest files
+          docker cp $publicID:/home/steam/gmodserver/steamapps/appmanifest_4020.acf $GITHUB_WORKSPACE/appmanifest_public.acf
+          docker cp $x86ID:/home/steam/gmodserver/steamapps/appmanifest_4020.acf $GITHUB_WORKSPACE/appmanifest_x86.acf
+
+          # Remove temporary containers
+          docker rm $publicID $x86ID
+
+          # Extract the version
+          cat $GITHUB_WORKSPACE/appmanifest_public.acf | grep "buildid\"" | awk -F '"' '/"buildid"/ {print $4}' > $GITHUB_WORKSPACE/gmod_buildid_public.txt
+          cat $GITHUB_WORKSPACE/appmanifest_x86.acf | grep "buildid\"" | awk -F '"' '/"buildid"/ {print $4}' > $GITHUB_WORKSPACE/gmod_buildid_x86.txt
+
+          rm $GIHUB_WORKSPACE/appmanifest_public.acf $GITHUB_WORKSPACE/appmanifest_x86.acf
+
+          echo "Public BuildID: $(cat $GITHUB_WORKSPACE/gmod_buildid_public.txt)"
+          echo "x86-64 BuildID: $(cat $GITHUB_WORKSPACE/gmod_buildid_x86.txt)"
 
       - name: Make slim images
         run: |
           cd $GITHUB_WORKSPACE/docker
-
           BASE=ghcr.io/cfc-servers/gluatest
 
+          publicID=$(cat $GITHUB_WORKSPACE/gmod_buildid_public.txt)
           $GITHUB_WORKSPACE/docker-slim build \
             --target gluatest_fat_live:latest \
             --http-probe-off \
             --continue-after 30 \
             --show-clogs --show-blogs \
             --tag "$BASE":${{ inputs.tag_name }}
+            --tag "$BASE":$publicID
 
+          x86ID=$(cat $GITHUB_WORKSPACE/gmod_buildid_x86.txt)
           $GITHUB_WORKSPACE/docker-slim build \
            --target gluatest_fat_x86-64:latest \
            --http-probe-off \
            --continue-after 30 \
            --show-clogs --show-blogs \
            --tag "$BASE"/64bit:${{ inputs.tag_name }}
+           --tag "$BASE"/64bit:$x86ID
 
            if [ "${{ inputs.release }}" = "true" ]; then
             echo "::warning:: Tagging this release as the latest!"

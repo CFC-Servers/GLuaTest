@@ -62,9 +62,6 @@ print("git clone -v " + url + branch + " --single-branch " + name)
 EOF
 }
 
-# Make sure we get the latest version of gluatest
-rm -rf "$server"/addons/gluatest
-
 while read p; do
     echo "$p"
     if [[ -z "$SSH_PRIVATE_KEY" ]]; then
