@@ -70,7 +70,7 @@ jobs:
             --continue-after 30 \
             --show-clogs --show-blogs \
             --tag $BASE:$rawVersionTag \
-            --tag $BASE:gameversion-$publicID
+            --tag $BASE:gamebuild-$publicID
 
           x86ID=$(cat $GITHUB_WORKSPACE/gmod_buildid_x86.txt)
           $GITHUB_WORKSPACE/docker-slim build \
@@ -79,7 +79,7 @@ jobs:
            --continue-after 30 \
            --show-clogs --show-blogs \
            --tag $BASE/64bit:$rawVersionTag \
-           --tag $BASE/64bit:gameversion-$x86ID
+           --tag $BASE/64bit:gamebuild-$x86ID
 
           # Tag image with "0.27" if we push tag "0.27.5"
           # but not if we push tag "0.27-pre5"
