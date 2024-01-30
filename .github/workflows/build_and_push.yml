@@ -61,14 +61,16 @@ jobs:
           cd $GITHUB_WORKSPACE/docker
           BASE=ghcr.io/cfc-servers/gluatest
 
+          rawVersionTag=${{ inputs.tag_name }}
+
           publicID=$(cat $GITHUB_WORKSPACE/gmod_buildid_public.txt)
           $GITHUB_WORKSPACE/docker-slim build \
             --target gluatest_fat_live:latest \
             --http-probe-off \
             --continue-after 30 \
             --show-clogs --show-blogs \
-            --tag "$BASE":${{ inputs.tag_name }} \
-            --tag "$BASE":gameversion-$publicID
+            --tag $BASE:$rawVersionTag \
+            --tag $BASE:gameversion-$publicID
 
           x86ID=$(cat $GITHUB_WORKSPACE/gmod_buildid_x86.txt)
           $GITHUB_WORKSPACE/docker-slim build \
@@ -76,13 +78,22 @@ jobs:
            --http-probe-off \
            --continue-after 30 \
            --show-clogs --show-blogs \
-           --tag "$BASE"/64bit:${{ inputs.tag_name }} \
-           --tag "$BASE"/64bit:gameversion-$x86ID
+           --tag $BASE/64bit:$rawVersionTag \
+           --tag $BASE/64bit:gameversion-$x86ID
+
+          # Tag image with "0.27" if we push tag "0.27.5"
+          # but not if we push tag "0.27-pre5"
+          parentMinorVersion=${rawVersionTag%.*}
+          if [[ parentMinorVersion != "0" ]]; then
+            echo "::warning:: Tagging with parent minor version: $parentMinorVersion"
+            docker tag $BASE:$rawVersionTag $BASE:$parentMinorVersion
+            docker tag $BASE/64bit:$rawVersionTag $BASE:$parentMinorVersion
+          fi
 
            if [ "${{ inputs.release }}" = "true" ]; then
             echo "::warning:: Tagging this release as the latest!"
-            docker tag "$BASE":${{ inputs.tag_name }} "$BASE":latest
-            docker tag "$BASE"/64bit:${{ inputs.tag_name }} "$BASE"/64bit:latest
+            docker tag $BASE:$rawVersionTag $BASE:latest
+            docker tag $BASE/64bit:$rawVersionTag $BASE/64bit:latest
            fi
 
       - name: Login to GitHub Container Registry
