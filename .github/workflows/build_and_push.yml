@@ -66,6 +66,7 @@ jobs:
           publicID=$(cat $GITHUB_WORKSPACE/gmod_buildid_public.txt)
           $GITHUB_WORKSPACE/docker-slim build \
             --target gluatest_fat_live:latest \
+            --remove-file-artifacts \
             --http-probe-off \
             --continue-after 30 \
             --show-clogs --show-blogs \
@@ -75,6 +76,7 @@ jobs:
           x86ID=$(cat $GITHUB_WORKSPACE/gmod_buildid_x86.txt)
           $GITHUB_WORKSPACE/docker-slim build \
            --target gluatest_fat_x86-64:latest \
+           --remove-file-artifacts \
            --http-probe-off \
            --continue-after 30 \
            --show-clogs --show-blogs \
