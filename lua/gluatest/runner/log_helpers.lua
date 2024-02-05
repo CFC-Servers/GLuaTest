@@ -7,20 +7,19 @@ function LogHelpers.GetLeadingWhitespace( line )
     return string.match( line, "^%s+" ) or ""
 end
 
+--- Given an absolute path, returns the path required to read the file in Lua
+--- @param path string
+--- @return string
 function LogHelpers.cleanPathForRead( path )
-    --
-    -- Given an absolute path, returns the path required to read
-    -- the file in Lua
-    --
-
     -- { "addons", "addon_name", "lua", "tests", "addon_name", "test.lua" }
+    -- { "gamemodes", "darkrp", "gamemode", "tests", "darkrp", "main.lua" }
     local expl = string_Explode( "/", path )
 
     local startCopy
     for i = 1, #expl do
         local step = expl[i]
 
-        if step == "lua" then
+        if step == "lua" or step == "gamemodes" then
             startCopy = i + 1
             assert( startCopy < #expl )
             break
@@ -31,6 +30,11 @@ function LogHelpers.cleanPathForRead( path )
 end
 
 LogHelpers.fileCache = {}
+
+--- Reads a given file path and returns the contents split by newline
+--- Cached for future calls
+--- @param filePath string
+--- @return string[]
 function LogHelpers.getFileLines( filePath )
     --
     -- Reads a given file path and returns the contents split by newline.

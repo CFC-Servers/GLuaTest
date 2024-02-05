@@ -35,15 +35,28 @@ GLuaTest.runner = include( "gluatest/runner/runner.lua" )
 
 local shouldRun = CreateConVar( "gluatest_enable", 0, FCVAR_ARCHIVE + FCVAR_PROTECTED )
 
-GLuaTest.runAllTests = function()
-    if not shouldRun:GetBool() then return end
-
-    local _, projects = file.Find( "tests/*", "LUA" )
-    local testFiles = {}
+local function loadAllProjectsFrom( path, testFiles )
+    local _, projects = file.Find( path .. "/*", "LUA" )
 
     for i = 1, #projects do
         local project = projects[i]
-        table.Add( testFiles, GLuaTest.loader( "tests/" .. project ) )
+        table.Add( testFiles, GLuaTest.loader( path .. "/" .. project ) )
+    end
+end
+
+GLuaTest.runAllTests = function()
+    if not shouldRun:GetBool() then return end
+
+    local testPaths = {
+        "tests",
+        GAMEMODE.FolderName .. "/gamemode/tests"
+    }
+    hook.Run( "GLuaTest_AddTestPaths", testPaths )
+
+    local testFiles = {}
+    for i = 1, #testPaths do
+        local path = testPaths[i]
+        loadAllProjectsFrom( path, testFiles )
     end
 
     hook.Run( "GLuaTest_RunTestFiles", testFiles )

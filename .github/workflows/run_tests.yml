@@ -20,7 +20,7 @@ on:
       gamemode:
         type: string
         required: false
-        description: "The name of the gamemode for the test server to run. (You must list the gamemode as a requirement)"
+        description: "The name of the gamemode for the test server to run. (Be sure to list it as a requirement or include it in the test collection, if necessary)"
         default: "sandbox"
 
       collection:
@@ -37,6 +37,18 @@ on:
         type: string
         required: false
         description: "A GitHub Personal Access Token"
+
+      timeout:
+        type: string
+        required: false
+        description: "How many minutes to let the job run before killing the server (small projects shouldn't need more than 2 minutes)"
+        default: "2"
+
+      branch:
+        type: string
+        required: false
+        description: "Which GMod branch to run your tests on. Must be: 'live' or 'x86-64'"
+        default: "live"
 
 jobs:
   test:
@@ -60,7 +72,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
 
-          git clone --depth 1 https://github.com/CFC-Servers/GLuaTest.git gluatest
+          git clone --single-branch --branch feature/better-mounting --depth 1 https://github.com/CFC-Servers/GLuaTest.git gluatest
           cd ./gluatest
           cp docker/docker-compose.yml $GITHUB_WORKSPACE/docker-compose.yml
 
@@ -71,21 +83,69 @@ jobs:
 
           cd $GITHUB_WORKSPACE
 
-      - name: Pull latest test runner
-        run: docker-compose pull
+      - name: Prepare the override directory
+        run: |
+          cd $GITHUB_WORKSPACE/project
+
+          get_gamemode_name () {
+            gamemode_file=$(grep --recursive --word-regexp --files-with-matches '"base"')
+            gamemode_name=$(head --quiet --lines 1 "$gamemode_file" | tr --delete '"')
+
+            echo "$gamemode_name"
+          }
+
+          source="$GITHUB_WORKSPACE/project"
+          dest="$GITHUB_WORKSPACE/garrysmod_override/"
+
+          if [ -d "garrysmod" ]; then
+            # The repo contains a full server
+            source="$GITHUB_WORKSPACE/project/garrysmod"
+          elif [ -d "gamemodes" ]; then
+            # The repo is the contents of a garrysmod/ dir - we can copy its contents directly
+            :
+          elif [ -d "gamemode" ]; then
+            # The repo is the contents of a gamemode
+            gamemode_name=$(get_gamemode_name)
+            dest="$GITHUB_WORKSPACE/garrysmod_override/gamemodes/$gamemode_name/"
+          elif [ -d "lua" ]; then
+            # The repo is likely an addon
+            dest="$GITHUB_WORKSPACE/garrysmod_override/addons/project/"
+          else
+            echo "::error title=Unknown project structure!::Please report this: https://github.com/CFC-Servers/GLuaTest/issues"
+            exit 1
+          fi
+
+          mkdir --verbose --parents "$dest"
+          cp --recursive --verbose $source/* "$dest/"
+
+      - name: Pull GLuaTest Runner
+        env:
+          REQUIREMENTS: "${{ github.workspace }}/project/${{ inputs.requirements }}"
+          CUSTOM_SERVER_CONFIG: "${{ github.workspace }}/project/${{ inputs.server-cfg }}"
+          PROJECT_DIR: "${{ github.workspace }}/garrysmod_override"
+
+        run: |
+          if [ ${{ inputs.branch }} = "x86-64" ]; then
+            echo "Updating compose file to use x86-64 image"
+            # Replace 'cfc-servers/gluatest' with 'cfc-servers/gluatest/64bit'
+            sed 's/cfc-servers\/gluatest/cfc-servers\/gluatest\/64bit/g' docker-compose.yml > docker-compose.yml
+          fi
+
+          docker compose pull
 
       - name: Run GLuaTest
         env:
           REQUIREMENTS: "${{ github.workspace }}/project/${{ inputs.requirements }}"
           CUSTOM_SERVER_CONFIG: "${{ github.workspace }}/project/${{ inputs.server-cfg }}"
-          PROJECT_DIR: "${{ github.workspace }}/project"
+          PROJECT_DIR: "${{ github.workspace }}/garrysmod_override"
           GAMEMODE: "${{ inputs.gamemode }}"
           COLLECTION_ID: "${{ inputs.collection }}"
           SSH_PRIVATE_KEY: "${{ inputs.ssh-private-key }}"
           GITHUB_TOKEN: "${{ inputs.github-token }}"
+          TIMEOUT: "${{ inputs.timeout }}"
 
         run: |
-          docker-compose up --no-log-prefix --exit-code-from runner
+          docker compose up --no-log-prefix --exit-code-from runner
           exitstatus=$?
 
           if [ $exitstatus -ne 0 ]; then

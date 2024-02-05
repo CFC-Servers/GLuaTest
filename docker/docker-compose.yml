@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   runner:
-    image: ghcr.io/cfc-servers/gluatest
+    image: ghcr.io/cfc-servers/gluatest:0.27-pre25
     build: .
     container_name: gluatest_runner
     stop_grace_period: 2s
@@ -19,7 +19,7 @@ services:
 
       - type: bind
         source: $PROJECT_DIR
-        target: /home/steam/gmodserver/garrysmod/addons/project
+        target: /home/steam/garrysmod_override
         read_only: true
 
     environment:
@@ -27,3 +27,4 @@ services:
       - COLLECTION_ID=$COLLECTION_ID
       - SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
       - GITHUB_TOKEN=$GITHUB_TOKEN
+      - TIMEOUT=${TIMEOUT-5}

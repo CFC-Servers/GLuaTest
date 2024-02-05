@@ -1,11 +1,25 @@
 #!/bin/bash
 
-gmodroot=/home/steam/gmodserver
-server=/home/steam/gmodserver/garrysmod
+home=/home/steam
+gmodroot=$home/gmodserver
+server=$home/gmodserver/garrysmod
 pat=$GITHUB_TOKEN@
+timeout="${TIMEOUT:-2}"m
 
-cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
-cat "$gmodroot/custom_server.cfg" >> "$server/cfg/test.cfg"
+# Make sure docker-slim doesn't remove bins we'll eventually need
+echo $(date)
+
+# Copy the overrides overtop the server files
+rsync --archive $home/garrysmod_override/ $server/
+
+if [ -f "$gmodroot/custom_requirements.txt" ]; then
+    cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
+fi
+
+if [ -f "$gmodroot/custom_server.cfg" ]; then
+    cat "$gmodroot/custom_server.cfg" >> "$server/cfg/test.cfg"
+fi
+
 echo "false" > "$server/data/gluatest_clean_exit.txt"
 touch "$server/data/gluatest_failures.json"
 
@@ -48,9 +62,6 @@ print("git clone -v " + url + branch + " --single-branch " + name)
 EOF
 }
 
-# Make sure we get the latest version of gluatest
-rm -rfv "$server"/addons/gluatest
-
 while read p; do
     echo "$p"
     if [[ -z "$SSH_PRIVATE_KEY" ]]; then
@@ -87,7 +98,6 @@ srcds_args=(
     # Optimizations
     -collate          # "Skips everything, just merges the reslist from temp folders to the final folder again"
     -high             # Sets "high" process affinity
-    -reuse            # Don't create new network sockets, reuse existing
     -threads 6        # Double the allocated threads to the threadpool
 
     # Game setup
@@ -104,7 +114,16 @@ srcds_args=(
     +mat_dxlevel 1
 )
 
-stdbuf -oL -eL timeout 2m "$gmodroot"/srcds_run_x64 "${srcds_args[@]}"
+echo "GMOD_BRANCH: $GMOD_BRANCH"
+
+if [ "$GMOD_BRANCH" = "x86-64" ]; then
+    echo "Starting 64-bit server"
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run_x64 "${srcds_args[@]}"
+else
+    echo "Starting 32-bit server"
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run "${srcds_args[@]}"
+fi
+
 status=$?
 
 if [ "$(cat $server/data/gluatest_clean_exit.txt)" = "false" ]; then

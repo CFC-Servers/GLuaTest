@@ -94,7 +94,6 @@ local function makeTestTools()
     local stub, stubCleanup = stubMaker()
 
     local tools = {
-        _R = _R,
         stub = stub,
         expect = expect,
     }
@@ -115,14 +114,18 @@ local function makeTestEnv()
         toolsCleanup()
     end
 
-    return setmetatable(
+    local env = setmetatable(
         testTools,
         {
             __index = function( _, idx )
                 return testEnv[idx] or _G[idx]
             end,
         }
-    ), cleanup
+    )
+
+    hook.Run( "GLuaTest_EnvCreated", env )
+
+    return env, cleanup
 end
 
 local function getLocals( level )
@@ -201,7 +204,7 @@ function Helpers.MakeAsyncEnv( onDone, onFailedExpectation )
         stubCleanup()
     end
 
-    return setmetatable(
+    local env = setmetatable(
         {
             -- We manually catch expectation errors here in case
             -- they're called in an async function
@@ -226,14 +229,17 @@ function Helpers.MakeAsyncEnv( onDone, onFailedExpectation )
 
             done = onDone,
             stub = stub,
-            _R = _R
         },
         {
             __index = function( _, idx )
                 return testEnv[idx] or _G[idx]
             end
         }
-    ), cleanup
+    )
+
+    hook.Run( "GLuaTest_AsyncEnvCreated", env )
+
+    return env, cleanup
 end
 
 function Helpers.SafeRunWithEnv( defaultEnv, before, func, state )
