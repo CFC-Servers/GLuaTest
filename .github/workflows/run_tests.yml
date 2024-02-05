@@ -72,7 +72,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
 
-          git clone --single-branch --depth 1 https://github.com/CFC-Servers/GLuaTest.git gluatest
+          git clone --single-branch --branch main --depth 1 https://github.com/CFC-Servers/GLuaTest.git gluatest
           cd ./gluatest
           cp docker/docker-compose.yml $GITHUB_WORKSPACE/docker-compose.yml
 
