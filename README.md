@@ -1,5 +1,7 @@
 # GLuaTest
-
+<p align="left">
+    <a href="https://discord.gg/5JUqZjzmYJ" alt="Discord Invite"><img src="https://img.shields.io/discord/981394195812085770?label=Support&logo=discord&logoColor=white" /></a>
+</p>
 🎉 **The missing test framework for GMod** 🎉
 
 **GLuaTest is a testing framework built for Garry's Mod.**
