@@ -8,6 +8,8 @@ timeout="${TIMEOUT:-2}"m
 
 # Make sure docker-slim doesn't remove bins we'll eventually need
 echo $(date)
+git clone &> /dev/null
+python3 -c "print()" &> /dev/null
 
 # Copy the overrides overtop the server files
 rsync --archive $home/garrysmod_override/ $server/
