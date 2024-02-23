@@ -8,8 +8,10 @@ timeout="${TIMEOUT:-2}"m
 
 # Make sure docker-slim doesn't remove bins we'll eventually need
 echo $(date)
-git clone &> /dev/null
 python3 -c "print()" &> /dev/null
+git clone --depth 1 git@github.com:CFC-Servers/GLuaTest.git _tmp_ssh &> /dev/null
+git clone --depth 1 https://github.com/CFC-Servers/GLuaTest.git _tmp_https &> /dev/null
+rm -rf _tmp_ssh _tmp_https
 
 # Copy the overrides overtop the server files
 rsync --archive $home/garrysmod_override/ $server/
@@ -46,7 +48,7 @@ url = "https://${pat}github.com/" + spl[0] + ".git"
 
 branch = " --branch " + spl[1] if len(spl) > 1 else ""
 
-print("git clone -vv " + url + branch + " --single-branch " + name)
+print("git clone -vv --depth 1 " + url + branch + " --single-branch " + name)
 EOF
 }
 
@@ -60,7 +62,7 @@ url = "git@github.com:" + spl[0] + ".git"
 
 branch = " --branch " + spl[1] if len(spl) > 1 else ""
 
-print("git clone -v " + url + branch + " --single-branch " + name)
+print("git clone -v --depth 1 " + url + branch + " --single-branch " + name)
 EOF
 }
 
