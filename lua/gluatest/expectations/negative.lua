@@ -24,6 +24,27 @@ return function( subject, ... )
     end
     expectations.equal = expectations.eq
 
+    local function findKeyByValue( tbl, value_to_find )
+        for key, value in pairs( tbl ) do
+            if value == value_to_find then
+                return key
+            end
+        end
+    end
+
+    function expectations.haveValuesMatch( comparison )
+        local values_to_find = table.Copy( subject )
+        for key, value in pairs( comparison ) do
+            local key = findKeyByValue(values_to_find, value)
+            if key then
+                values_to_find[key] = nil
+            end
+        end
+        if table.Count( values_to_find ) == 0 then
+            i.expected( "to not match '%s'", comparison )
+        end
+    end
+
     function expectations.beLessThan( comparison )
         if subject < comparison then
             i.expected( "to not be less than '%s'", comparison )
