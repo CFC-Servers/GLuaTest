@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: "Tag name for the Docker image (or version tag)"
+        description: "Tag name - used to pull the correct addon version, and also to tag the Docker image"
         required: true
       release:
         type: boolean
@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag_name }}
 
       - name: Get docker-slim
         run: |
