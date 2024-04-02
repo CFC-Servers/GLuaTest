@@ -19,9 +19,9 @@ jobs:
 
       - name: Get docker-slim
         run: |
-          SLIM_VERSION=1.40.10
+          SLIM_VERSION=1.40.11
 
-          curl -L -o ds.tar.gz https://downloads.dockerslim.com/releases/$SLIM_VERSION/dist_linux.tar.gz
+          curl -L -o ds.tar.gz https://github.com/slimtoolkit/slim/releases/download/$SLIM_VERSION/dist_linux.tar.gz
           tar -xvzf ds.tar.gz
           mv dist_linux/* $GITHUB_WORKSPACE
           rm -rfv ds.tar.gz dist_linux/
