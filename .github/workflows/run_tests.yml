@@ -128,7 +128,7 @@ jobs:
           if [ ${{ inputs.branch }} = "x86-64" ]; then
             echo "Updating compose file to use x86-64 image"
             # Replace 'cfc-servers/gluatest' with 'cfc-servers/gluatest/64bit'
-            sed 's/cfc-servers\/gluatest/cfc-servers\/gluatest\/64bit/g' docker-compose.yml > docker-compose.yml
+            sed -i 's/cfc-servers\/gluatest/cfc-servers\/gluatest\/64bit/g' docker-compose.yml
           fi
 
           docker compose pull
