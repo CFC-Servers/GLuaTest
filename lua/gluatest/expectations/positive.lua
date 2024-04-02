@@ -38,6 +38,12 @@ return function( subject, ... )
         end
     end
 
+    function expectations.beBetween( lower, upper )
+        if subject < lower or subject > upper then
+            i.expected( "to be between '%s' and '%s'", lower, upper )
+        end
+    end
+
     function expectations.beTrue()
         if subject ~= true then
             i.expected( "to be true" )
