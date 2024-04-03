@@ -152,18 +152,21 @@ function ResultLogger.getResultCounts( allResults )
     local passed = 0
     local failed = 0
     local empty = 0
+    local skipped = 0
 
     for _, result in ipairs( allResults ) do
         if result.success == true then
             passed = passed + 1
         elseif result.success == false then
             failed = failed + 1
-        else
+        elseif result.empty then
             empty = empty + 1
+        elseif result.skipped then
+            skipped = skipped + 1
         end
     end
 
-    return passed, failed, empty
+    return passed, failed, empty, skipped
 end
 
 
@@ -207,8 +210,10 @@ function ResultLogger.LogTestResult( result, usePrefix )
         plog( colors.green, "PASS " )
     elseif success == false then
         plog( colors.red, "FAIL " )
-    elseif success == nil then
+    elseif result.empty then
         plog( colors.darkgrey, "EMPT " )
+    elseif result.skipped then
+        plog( colors.darkgrey, "SKIP " )
     else
         ErrorNoHaltWithStack( "Improper success type" )
         PrintTable( result )
@@ -267,10 +272,11 @@ function ResultLogger.logSummaryCounts( allResults )
     local green = colors.green
     local darkgrey = colors.darkgrey
 
-    local passed, failed, empty = ResultLogger.getResultCounts( allResults )
+    local passed, failed, empty, skipped = ResultLogger.getResultCounts( allResults )
     ResultLogger.prefixLog( white, "| ", green,    "PASS: ", blue, passed, "\n" )
     ResultLogger.prefixLog( white, "| ", red,      "FAIL: ", blue, failed, "\n" )
     ResultLogger.prefixLog( white, "| ", darkgrey, "EMPT: ", blue, empty,  "\n" )
+    ResultLogger.prefixLog( white, "| ", darkgrey, "SKIP: ", blue, skipped,  "\n" )
 end
 
 
