@@ -540,7 +540,7 @@ For example, to run your test case only on the `x86-64` branch:
 }
 ```
 
-Skipping is also hando if you just want to disable a test but keep the code:
+Skipping is also handy if you want to disable a test but keep the code:
 ```lua
 {
     name = "Broken test (but I'll definitely fix it some day 100%),
