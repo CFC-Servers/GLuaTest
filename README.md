@@ -462,8 +462,8 @@ Each Test Case is a table with the following keys:
 | **`async`**      | `bool`            | If your test relies on timers, hooks, or callbacks, it must run asynchronously |  ❌      | `false` |
 | **`timeout`**    | `int`             | How long to wait for your async test before marking it as having timed out     |  ❌      | 60      |
 | **`cleanup`**    | `function`        | The function to run after running your test. Takes a `state` table             |  ❌      |         |
-| **`when`**       | `bool | function` | Only run this test case "when" this field is _(or evaluates to)_ `true`          |  ❌      |         |
-| **`skip`**       | `bool | function` | Skip this test case if this field is _(or evaluates to)_ `true`                  |  ❌      |         |
+| **`when`**       | `bool / function` | Only run this test case "when" this field is _(or evaluates to)_ `true`          |  ❌      |         |
+| **`skip`**       | `bool / function` | Skip this test case if this field is _(or evaluates to)_ `true`                  |  ❌      |         |
 
 <br>
 
