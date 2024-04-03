@@ -455,13 +455,15 @@ The Test Group (that is, the table you return from your Test File) can have the 
 ### The Test Case
 Each Test Case is a table with the following keys:
 
-| Key              | Type       | Description                                                                    | Required | Default |
-|------------------|:----------:|--------------------------------------------------------------------------------|:--------:|:-------:|
-| **`name`**       | `string`   | Name of the Test Case (for reference later)                                    |  ✔️     |         |
-| **`func`**       | `function` | The actual test function. Takes a `state` table                                |  ✔️     |         |
-| **`async`**      | `bool`     | If your test relies on timers, hooks, or callbacks, it must run asynchronously |  ❌     | `false` |
-| **`timeout`**    | `int`      | How long to wait for your async test before marking it as having timed out     |  ❌     | 60      |
-| **`cleanup`**    | `function` | The function to run after running your test. Takes a `state` table             |  ❌     |         |
+| Key          | Type              | Description                                                                    | Required | Default |
+|--------------|:-----------------:|--------------------------------------------------------------------------------|:--------:|:-------:|
+| **`name`**       | `string`          | Name of the Test Case (for reference later)                                    |  ✔️       |         |
+| **`func`**       | `function`        | The actual test function. Takes a `state` table                                |  ✔️       |         |
+| **`async`**      | `bool`            | If your test relies on timers, hooks, or callbacks, it must run asynchronously |  ❌      | `false` |
+| **`timeout`**    | `int`             | How long to wait for your async test before marking it as having timed out     |  ❌      | 60      |
+| **`cleanup`**    | `function`        | The function to run after running your test. Takes a `state` table             |  ❌      |         |
+| **`when`**       | `bool | function` | Only run this test case "when" this field is _(or evaluates to)_ `true`          |  ❌      |         |
+| **`skip`**       | `bool | function` | Skip this test case if this field is _(or evaluates to)_ `true`                  |  ❌      |         |
 
 <br>
 
@@ -508,15 +510,46 @@ There are a number of different expectations you can use.
 #### Expectation Negation
 You can invert an Expectation by using `.toNot` or `.notTo` in place of your `.to`
 
-#### Was
-You may replace `.to` with `.was` in any expectation.
-`.wasNot` is also valid.
-
 i.e.:
 ```lua
 expect( ply ).toNot.beInvalid()
 expect( "test" ).notTo.beA( "table" )
 ```
+
+#### Was
+You may replace `.to` with `.was` in any expectation.
+`.wasNot` is also valid.
+
+Primarily this is syntax sugar for the `called` expectation. Technically these two calls are equivalent:
+```lua
+expect( func ).to.called()
+expect( func ).was.called()
+```
+
+#### `when` and `skip`
+These fields can be used to control your test invocation.
+
+For example, to run your test case only on the `x86-64` branch:
+```lua
+{
+    name = "Is valid on x86-64",
+    when = BRANCH == "x86-64",
+    func = function()
+        -- x86-64 specific stuff here
+    end
+}
+```
+
+Skipping is also hando if you just want to disable a test but keep the code:
+```lua
+{
+    name = "Broken test (but I'll definitely fix it some day 100%),
+    skip = true,
+    func = function() error() end
+}
+```
+
+**Note:** `skip` takes precedence over `when`
 
 <br>
 

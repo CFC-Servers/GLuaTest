@@ -27,22 +27,36 @@ return function( allTestGroups )
     -- Sequential table of Result structures
     local allResults = {}
 
-    -- success and errInfo can be nil if the test case
-    -- didn't error or call an expectation
-    local function _addResult( testGroup, success, case, errInfo )
-        local result = {
-            success = success,
-            testGroup = testGroup,
-            case = case,
-            errInfo = errInfo
-        }
-
+    local function addResult( result )
         hook.Run( "GLuaTest_LogTestResult", result )
 
         table.insert( allResults, result )
 
         LogTestResult( result )
-        if success == false then LogTestFailureDetails( result ) end
+        if result.success == false then LogTestFailureDetails( result ) end
+    end
+
+    -- case.when should evaluate to `true` if the test should run
+    -- case.skip should evaluate to `true` if the test should be skipped
+    -- (case.skip takes precedence over case.when)
+    local function checkShouldSkip( case )
+        -- skip
+        local skip = case.skip
+        if skip == true then return true end
+        if isfunction( skip ) then
+            return skip() == true
+        end
+
+        -- when
+        local condition = case.when
+        if condition == nil then return false end
+        if condition == false then return true end
+
+        if isfunction( condition ) then
+            return condition() ~= true
+        end
+
+        return condition ~= true
     end
 
     PlainLogStart()
@@ -67,8 +81,41 @@ return function( allTestGroups )
             return
         end
 
-        local function addResult( ... )
-            return _addResult( testGroup, ... )
+        local function setSucceeded( case )
+            return addResult( {
+                case = case,
+                testGroup = testGroup,
+                success = true,
+            } )
+        end
+
+        local function setFailed( case, errInfo )
+            return addResult( {
+                case = case,
+                testGroup = testGroup,
+                success = false,
+                errInfo = errInfo
+            } )
+        end
+
+        local function setTimedOut( case )
+            return setFailed( case, { reason = "Timeout" } )
+        end
+
+        local function setSkipped( case )
+            return addResult( {
+                case = case,
+                testGroup = testGroup,
+                skipped = true,
+            } )
+        end
+
+        local function setEmpty( case )
+            return addResult( {
+                case = case,
+                testGroup = testGroup,
+                empty = true,
+            } )
         end
 
         local cases = testGroup.cases
@@ -79,33 +126,51 @@ return function( allTestGroups )
 
         local asyncCases = {}
 
+        local function processCase( case )
+            local shouldSkip = checkShouldSkip( case )
+            if shouldSkip then
+                setSkipped( case )
+                return
+            end
+
+            -- Returning false from this hook will hide it from the output
+            local canRun = hook.Run( "GLuaTest_CanRunTestCase", testGroup, case )
+            if canRun == nil then canRun = true end
+            if not canRun then return end
+
+            -- Tests in the wrong realm will be hidden from output
+            local shared = case.shared
+            local clientside = case.clientside
+            local serverside = not case.clientside
+            local correctRealm = shared or ( clientside and CLIENT ) or ( serverside and SERVER )
+            if not correctRealm then return end
+
+            if case.async then
+                asyncCases[case.id] = case
+            else
+                local beforeFunc = testGroup.beforeEach
+                local success, errInfo = SafeRunWithEnv( defaultEnv, beforeFunc, case.func, case.state )
+
+                case.cleanup( case.state )
+                testGroup.afterEach( case.state )
+
+                if success then
+                    setSucceeded( case )
+                elseif success == nil then
+                    setEmpty( case )
+                else
+                    setFailed( case, errInfo )
+                end
+            end
+        end
+
         for c = 1, caseCount do
             local case = cases[c]
             case.id = getCaseID()
             case.state = case.state or CreateCaseState( testGroupState )
             case.cleanup = case.cleanup or noop
 
-            local shared = case.shared
-            local clientside = case.clientside
-            local serverside = not case.clientside
-            local shouldRun = shared or ( clientside and CLIENT ) or ( serverside and SERVER )
-
-            local canRun = hook.Run( "GLuaTest_CanRunTestCase", testGroup, case )
-            if canRun == nil then canRun = true end
-
-            if canRun and shouldRun then
-                if case.async then
-                    asyncCases[case.id] = case
-                else
-                    local beforeFunc = testGroup.beforeEach
-                    local success, errInfo = SafeRunWithEnv( defaultEnv, beforeFunc, case.func, case.state )
-
-                    case.cleanup( case.state )
-                    testGroup.afterEach( case.state )
-
-                    addResult( success, case, errInfo )
-                end
-            end
+            processCase( case )
         end
 
         local asyncCount = table.Count( asyncCases )
@@ -149,7 +214,7 @@ return function( allTestGroups )
                 if callbacks[case.id] ~= nil then return end
 
                 if not expectationFailure then
-                    addResult( true, case )
+                    setSucceeded( case )
                 end
 
                 callbacks[case.id] = not expectationFailure
@@ -165,7 +230,7 @@ return function( allTestGroups )
             local onFailedExpectation = function( errInfo )
                 if callbacks[case.id] ~= nil then return end
 
-                addResult( false, case, errInfo )
+                setFailed( case, errInfo )
                 expectationFailure = true
             end
 
@@ -183,7 +248,7 @@ return function( allTestGroups )
             -- (Async expectation failures handled in asyncEnv.expect)
             -- (Async unhandled failures handled with timeouts)
             if not success then
-                addResult( success, case, errInfo )
+                setFailed( case, errInfo )
                 callbacks[case.id] = false
                 case.testComplete()
             else
@@ -191,9 +256,7 @@ return function( allTestGroups )
                 -- (If it's configured)
                 if case.timeout then
                     timer.Create( "GLuaTest_AsyncTimeout_" .. case.id, case.timeout, 1, function()
-                        local timeoutInfo = { reason = "Timeout" }
-
-                        addResult( false, case, timeoutInfo )
+                        setTimedOut( case )
                         callbacks[case.id] = false
 
                         case.testComplete()
@@ -206,7 +269,7 @@ return function( allTestGroups )
         timer.Create( "GLuaTest_AsyncWaiter", 60, 1, function()
             for id, case in pairs( asyncCases ) do
                 if callbacks[id] == nil then
-                    addResult( false, case, { reason = "Timeout" } )
+                    setTimedOut( case )
 
                     local shouldCheckComplete = false
                     case.testComplete( shouldCheckComplete )
