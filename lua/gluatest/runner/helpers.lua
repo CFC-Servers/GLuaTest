@@ -194,7 +194,7 @@ function Helpers.FailCallback( reason )
     }
 end
 
-function Helpers.MakeAsyncEnv( onDone, onFailedExpectation )
+function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
     -- TODO: How can we make Stubs safer in Async environments?
     local stub, stubCleanup = stubMaker()
     local testEnv, envCleanup = makeTestLibStubs()
@@ -227,7 +227,8 @@ function Helpers.MakeAsyncEnv( onDone, onFailedExpectation )
                 return built
             end,
 
-            done = onDone,
+            done = done,
+            fail = fail,
             stub = stub,
         },
         {

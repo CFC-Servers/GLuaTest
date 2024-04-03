@@ -210,7 +210,7 @@ return function( allTestGroups )
                 checkComplete()
             end
 
-            local onDone = function()
+            local done = function()
                 if callbacks[case.id] ~= nil then return end
 
                 if not expectationFailure then
@@ -218,6 +218,14 @@ return function( allTestGroups )
                 end
 
                 callbacks[case.id] = not expectationFailure
+                case.testComplete()
+            end
+
+            local fail = function( reason )
+                if callbacks[case.id] ~= nil then return end
+
+                setFailed( case, { reason = reason or "fail() called" } )
+                callbacks[case.id] = false
                 case.testComplete()
             end
 
@@ -234,7 +242,7 @@ return function( allTestGroups )
                 expectationFailure = true
             end
 
-            local asyncEnv, asyncCleanupFunc = MakeAsyncEnv( onDone, onFailedExpectation )
+            local asyncEnv, asyncCleanupFunc = MakeAsyncEnv( done, fail, onFailedExpectation )
             asyncCleanup = asyncCleanupFunc
 
             setfenv( testGroup.beforeEach, asyncEnv )
@@ -270,6 +278,7 @@ return function( allTestGroups )
             for id, case in pairs( asyncCases ) do
                 if callbacks[id] == nil then
                     setTimedOut( case )
+                    callbacks[case.id] = false
 
                     local shouldCheckComplete = false
                     case.testComplete( shouldCheckComplete )
