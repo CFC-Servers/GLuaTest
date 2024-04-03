@@ -225,7 +225,7 @@ return function( allTestGroups )
                 if callbacks[case.id] ~= nil then return end
 
                 setFailed( case, { reason = reason or "fail() called" } )
-                callbacks[case.id] = not expectationFailure
+                callbacks[case.id] = false
                 case.testComplete()
             end
 
