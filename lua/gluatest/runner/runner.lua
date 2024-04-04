@@ -184,7 +184,6 @@ return function( allTestGroups )
             local cbCount = table.Count( callbacks )
             if cbCount ~= asyncCount then return end
 
-            timer.Remove( "GLuaTest_AsyncWaiter" )
             runNextTestGroup( testGroups )
         end
 
