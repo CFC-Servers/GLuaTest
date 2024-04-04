@@ -680,13 +680,14 @@ This would make `net.ReadString` return `""` for the first 5 calls, `"hello"` fo
 
 <br>
 
-### Async tests and the `done` function
+### Async tests and the `done`/`fail` functions
 <details>
  <summary><strong>If your test relies on timers, hooks, callbacks, etc., then you need to run your test Asynchronously.</strong></summary>
 
-The test is otherwise completely normal, but it's your job to tell GLuaTest when the test is done by calling `done()` anywhere in your test.
+The test is otherwise completely normal, but it's your job to tell GLuaTest when the test is done by calling `done()` or `fail()` anywhere in your test.
 
 
+#### `done()` and timeout functionality
 If your test fails for some reason before it can call `done()`, it'll be marked as having failed after timing out.
 
 If you know the maximum amount of time your test will take, you can include the `timeout` key on the test with the number of seconds to wait until failing the test.
@@ -717,7 +718,7 @@ return {
     groupName = "StartRun",
     cases = {
         {
-            name = "Should run within two seconds of being called",
+            name = "Runs within two seconds of being called",
             async = true,
             timeout = 3, -- If it hasn't finished in 3 seconds, something went wrong and it can be marked as failed
             func = function()
@@ -727,6 +728,43 @@ return {
                     expect( MyProject.didRun ).to.beTrue()
                     done()
                 end )
+            end
+        }
+    }
+}
+```
+
+#### The `fail()` function
+In the event that you want to fail a test manually, you can call `fail( "with a reason if you want to" )` anywhere in your test case.
+
+This is useful if you have a callback/timer/etc that _should never run_, and indeed, fail your test if it does.
+
+Here's an example:
+```lua
+-- lua/tests/my_project/async_failure.lua
+
+return {
+    groupName = "Async Failure Examples",
+    cases = {
+        {
+            name = "HTTP Request succeeds",
+            async = true,
+            timeout = 5,
+            func = function()
+                local success = function( body )
+                    -- Expect exactly 1024 bytes in the body (for example)
+                    expect( #body ).to.equal( 1024 )
+                    done()
+                end
+
+                local failure = function( reason )
+                    -- This shouldn't ever happen! If it does, we need to fail the test instead of letting it time out.
+                    fail( "HTTP Request failed with reason: " .. reason )
+
+                    -- We don't need to call done() here because we already called fail() :)
+                end
+
+                http.Fetch( "my url", success, failure )
             end
         }
     }
