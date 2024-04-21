@@ -2,6 +2,8 @@
 local MsgC = _G["MsgC"]
 
 if SERVER then
+    if system.IsWindows() and BRANCH ~= "x86-64" then return MsgC end
+
     local shouldWrap = GetConVar( "gluatest_use_ansi" )
 
     _G["_MsgC"] = _G["MsgC"]
