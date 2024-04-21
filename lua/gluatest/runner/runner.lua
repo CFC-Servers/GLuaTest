@@ -184,7 +184,6 @@ return function( allTestGroups )
             local cbCount = table.Count( callbacks )
             if cbCount ~= asyncCount then return end
 
-            timer.Remove( "GLuaTest_AsyncWaiter" )
             runNextTestGroup( testGroups )
         end
 
@@ -194,9 +193,7 @@ return function( allTestGroups )
                 ErrorNoHaltWithStack( "Running an empty Async Cleanup func" )
             end
 
-            -- TODO: Find a better way to handle this function
-            -- It shouldn't take a param like this to modify its behavior
-            case.testComplete = function( shouldCheckComplete )
+            case.testComplete = function()
                 timer.Remove( "GLuaTest_AsyncTimeout_" .. case.id )
                 setfenv( case.func, defaultEnv )
 
@@ -204,9 +201,6 @@ return function( allTestGroups )
                 testGroup.afterEach( case.state )
 
                 asyncCleanup()
-
-                if shouldCheckComplete == false then return end
-
                 checkComplete()
             end
 
@@ -261,33 +255,16 @@ return function( allTestGroups )
                 case.testComplete()
             else
                 -- If the test ran successfully, start the case-specific timeout timer
-                -- (If it's configured)
-                if case.timeout then
-                    timer.Create( "GLuaTest_AsyncTimeout_" .. case.id, case.timeout, 1, function()
-                        setTimedOut( case )
-                        callbacks[case.id] = false
+                local timeout = case.timeout or 60
 
-                        case.testComplete()
-                    end )
-                end
-            end
-
-        end
-
-        timer.Create( "GLuaTest_AsyncWaiter", 60, 1, function()
-            for id, case in pairs( asyncCases ) do
-                if callbacks[id] == nil then
+                timer.Create( "GLuaTest_AsyncTimeout_" .. case.id, timeout, 1, function()
                     setTimedOut( case )
                     callbacks[case.id] = false
 
-                    local shouldCheckComplete = false
-                    case.testComplete( shouldCheckComplete )
-                end
+                    case.testComplete()
+                end )
             end
-
-            -- Should always run the next testGroup
-            checkComplete()
-        end )
+        end
     end
 
     runNextTestGroup( allTestGroups )
