@@ -10,25 +10,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: full_repo
 
       - name: Get Latest Tag
         id: latest_tag
         run: |
-          latest_tag=$(git \
-            describe \
-            --tags \
-            --abbrev=0 \
-            --match='[0-9]*.[0-9]*.[0-9]*' \
-            --match='[0-9]*.[0-9]*' \
-            --exclude='*[^0-9.]*' \
-          )
+          cd "$GITHUB_WORKSPACE/full_repo"
+          latest_tag=$(git describe --tags --abbrev=0 --match='[0-9]*.[0-9]*.[0-9]*' --match='[0-9]*.[0-9]*' --exclude='*[^0-9.]*')
+
           echo "Latest tag: $latest_tag"
           echo "tag_name=$latest_tag" >> $GITHUB_OUTPUT
 
       - name: Pull the steamcmd image
         run: |
-          # TODO: Change this to latest when we have it
-          docker pull ghcr.io/cfc-servers/steamcmd-slim:steam
+          docker pull ghcr.io/cfc-servers/steamcmd-slim:latest
 
       - name: Lookup latest build IDs
         id: latest_versions
@@ -36,30 +33,43 @@ jobs:
           docker run \
             --rm \
             --name version_checker \
-            ghcr.io/cfc-servers/steamcmd-slim:steam \
+            ghcr.io/cfc-servers/steamcmd-slim:latest \
             /home/steam/steamcmd/steamcmd.sh +login anonymous +app_info_print 4020 +quit \
-            > raw_output.txt
+            > "$GITHUB_WORKSPACE/raw_output.txt"
 
           # Extract just the part we care about
           struct=struct.txt
-          cat raw_output.txt | sed -e '1,/"4020"$/ d' > $struct;
+          cat "$GITHUB_WORKSPACE/raw_output.txt" | sed -e '1,/"4020"$/ d' > $struct;
 
           # Get the latest build IDs
           public=$(grep -A 2 '"public"' $struct | grep '"buildid"' | awk '{print $2}' | sed 's/"//g')
-          sixtyfour=$(grep -A 2 '"x86-64"' $file | grep '"buildid"' | awk '{print $2}' | sed 's/"//g')
+          sixtyfour=$(grep -A 2 '"x86-64"' $struct | grep '"buildid"' | awk '{print $2}' | sed 's/"//g')
 
           echo "Latest Public ID: '$public'"
           echo "Latest 64bit ID: '$sixtyfour'"
+
+          if [ -z "$public" ] || [ -z "$sixtyfour" ]; then
+            echo "Failed to get the latest build IDs"
+            echo "Raw Output from SteamCMD:"
+            cat "$GITHUB_WORKSPACE/raw_output.txt"
+            exit 1
+          fi
 
           # Set the output
           echo "public=$public" >> $GITHUB_OUTPUT
           echo "sixtyfour=$sixtyfour" >> $GITHUB_OUTPUT
 
+      - name: Checkout last build branch
+        uses: actions/checkout@v4
+        with:
+          ref: build/last-build-versions
+          path: build_versions
+
       - name: Read last build IDs
         id: last_versions
         run: |
-          public=$(cat ./docker/last_public_build.txt)
-          sixtyfour=$(cat ./docker/last_64bit_build.txt)
+          public=$(cat $GITHUB_WORKSPACE/build_versions/last_public_build.txt)
+          sixtyfour=$(cat $GITHUB_WORKSPACE/build_versions/last_64bit_build.txt)
 
           echo "Last Public ID built: '$public'"
           echo "Last 64bit ID built: '$sixtyfour'"
@@ -70,8 +80,15 @@ jobs:
       - name: Identify pending updates
         id: needs_update
         run: |
-          public=${{ steps.latest_versions.public != steps.last_versions.public }}
-          sixtyfour=${{ steps.latest_versions.sixtyfour != steps.last_versions.sixtyfour }}
+          latest_public=${{ steps.latest_versions.outputs.public }}
+          last_public=${{ steps.last_versions.outputs.public }}
+          latest_sixtyfour=${{ steps.latest_versions.outputs.sixtyfour }}
+          last_sixtyfour=${{ steps.last_versions.outputs.sixtyfour }}
+          echo "Comparing Public: $latest_public != $last_public"
+          echo "Comparing 64bit: $latest_sixtyfour != $last_sixtyfour"
+
+          public=${{ steps.latest_versions.outputs.public != steps.last_versions.outputs.public }}
+          sixtyfour=${{ steps.latest_versions.outputs.sixtyfour != steps.last_versions.outputs.sixtyfour }}
 
           echo "Should build Public: '$public'"
           echo "Should build 64bit: '$sixtyfour'"
@@ -80,30 +97,44 @@ jobs:
           echo "sixtyfour=$sixtyfour" >> $GITHUB_OUTPUT
 
       - name: Update Public Build
-        if: ${{ steps.needs_update.public == "true" }}
-        uses: ./.github/actions/build_and_push
+        if: ${{ steps.needs_update.outputs.public == 'true' }}
+        uses: ./full_repo/.github/actions/build_and_push
         with:
           gmod_branch: public
-          tag_name: ${{ steps.latest_tag.tag_name }}
+          game_version: ${{ steps.latest_versions.outputs.public }}
+          tag_name: ${{ steps.latest_tag.outputs.tag_name }}
           release: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          path: $GITHUB_WORKSPACE/full_repo
 
       - name: Update 64bit Build
-        if: ${{ steps.needs_update.sixtyfour == "true" }}
-        uses: ./.github/actions/build_and_push
+        if: ${{ steps.needs_update.outputs.sixtyfour == 'true' }}
+        uses: ./full_repo/.github/actions/build_and_push
         with:
           gmod_branch: x86-64
-          tag_name: ${{ steps.latest_tag.tag_name }}
+          game_version: ${{ steps.latest_versions.outputs.sixtyfour }}
+          tag_name: ${{ steps.latest_tag.outputs.tag_name }}
           release: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          path: $GITHUB_WORKSPACE/full_repo
 
       - name: Update last versions
-        if: ${{ steps.needs_update.public == "true" || steps.needs_update.sixtyfour == "true" }}
+        if: ${{ steps.needs_update.outputs.public == 'true' || steps.needs_update.outputs.sixtyfour == 'true' }}
         run: |
-          echo ${{ steps.latest_versions.public }} > ./docker/last_public_build.txt
-          echo ${{ steps.latest_versions.sixtyfour }} > ./docker/last_64bit_build.txt
+          cd $GITHUB_WORKSPACE/build_versions
+
+          echo ${{ steps.latest_versions.outputs.public }} > ./last_public_build.txt
+          echo ${{ steps.latest_versions.outputs.sixtyfour }} > ./last_64bit_build.txt
 
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add ./docker/last_public_build.txt
-          git add ./docker/last_64bit_build.txt
-          git commit -m "Update last build ID(s)"
-          git push
+
+          if [[ -z $(git status --porcelain) ]]; then
+            echo "No changes to commit"
+            exit 0
+          else
+            git add ./last_public_build.txt
+            git add ./last_64bit_build.txt
+            git commit -m "Update last build ID(s)"
+            git push
+          fi

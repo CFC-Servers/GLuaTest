@@ -13,15 +13,23 @@ inputs:
     type: boolean
     description: "Is this a full release?"
     required: true
+  github_token:
+    description: "GitHub Token"
+    required: true
+  game_version:
+    description: "The version ID for this build of gmod"
+    required: true
+  path:
+    description: "The path to the gluatest project"
+    required: true
 
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
-
     - name: Get docker-slim
+      shell: bash
       run: |
-        SLIM_VERSION=1.40.10
+        SLIM_VERSION=1.40.11
 
         curl --location --output ds.tar.gz https://github.com/slimtoolkit/slim/releases/download/$SLIM_VERSION/dist_linux.tar.gz
         tar -xvzf ds.tar.gz
@@ -29,32 +37,18 @@ runs:
         rm -rfv ds.tar.gz dist_linux/
 
     - name: Build starter image
+      shell: bash
       run: |
-        cd $GITHUB_WORKSPACE/docker
+        cd ${{ inputs.path }}/docker
+
         GLUATEST_REF=${{ inputs.tag_name }}
         docker build --build-arg="GMOD_BRANCH=${{ inputs.gmod_branch }}" --build-arg="GLUATEST_REF=$GLUATEST_REF" --tag gluatest_fat:latest .
 
-    - name: Discern Game Version
-      run: |
-        # Create temporary container
-        id=$(docker create gluatest_fat:latest)
-
-        # Copy its manifest file
-        docker cp $id:/home/steam/gmodserver/steamapps/appmanifest_4020.acf $GITHUB_WORKSPACE/appmanifest_4020.acf
-
-        # Remove temporary container
-        docker rm $id
-
-        # Extract the version
-        cat $GITHUB_WORKSPACE/appmanifest_4020.acf | grep "buildid\"" | awk -F '"' '/"buildid"/ {print $4}' > $GITHUB_WORKSPACE/gmod_buildid.txt
-
-        # Cleanup
-        rm $GITHUB_WORKSPACE/appmanifest_4020.acf
-        echo "Game BuildID: $(cat $GITHUB_WORKSPACE/gmod_buildid.txt)"
-
     - name: Make slim image
+      shell: bash
       run: |
-        cd $GITHUB_WORKSPACE/docker
+        cd ${{ inputs.path }}/docker
+
         if [ "${{ inputs.gmod_branch }}" = "x86-64" ]; then
           BASE=ghcr.io/cfc-servers/gluatest/64bit
         else
@@ -62,14 +56,14 @@ runs:
         fi
 
         rawVersionTag=${{ inputs.tag_name }}
-        id=$(cat $GITHUB_WORKSPACE/gmod_buildid.txt)
+        id=${{ inputs.game_version }}
         $GITHUB_WORKSPACE/docker-slim build \
           --target gluatest_fat:latest \
           --http-probe-off \
           --continue-after 30 \
           --show-clogs --show-blogs \
           --tag $BASE:$rawVersionTag \
-          --tag $BASE:gamebuild-$publicID
+          --tag $BASE:gamebuild-$id
 
         # Tag image with "0.27" if we push tag "0.27.5"
         # but not if we push tag "0.27-pre5"
@@ -89,9 +83,10 @@ runs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ inputs.github_token }}
 
     - name: Tag and push slim image
+      shell: bash
       run: |
         if [ "${{ inputs.gmod_branch }}" = "x86-64" ]; then
           BASE=ghcr.io/cfc-servers/gluatest/64bit
