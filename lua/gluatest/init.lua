@@ -69,7 +69,6 @@ hook.Add( "Tick", "GLuaTest_Runner", function()
     GLuaTest.runAllTests()
 end )
 
-concommand.Add( "gluatest_run_tests", function( ply )
-    if ply and IsValid( ply ) then return end
+concommand.Add( "gluatest_run_tests", function()
     GLuaTest.runAllTests()
 end, nil, "Run all tests in the tests/ directory", FCVAR_PROTECTED )
