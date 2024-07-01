@@ -24,6 +24,15 @@ return function( subject, ... )
     end
     expectations.equal = expectations.eq
 
+    function expectations.aboutEqual( comparison )
+        local tolerance = args[1] or 0.00001
+        local difference = math.abs( subject - comparison )
+
+        if difference > tolerance then
+            i.expected( "to be within '%s' of '%s' - found a difference of '%s'", tolerance, comparison, difference )
+        end
+    end
+
     function expectations.beLessThan( comparison )
 
         if subject >= comparison then
