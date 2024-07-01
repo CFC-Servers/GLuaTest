@@ -490,6 +490,7 @@ There are a number of different expectations you can use.
 | Expectation          | Description                                               | Example                                                         |
 |----------------------|-----------------------------------------------------------|-----------------------------------------------------------------|
 | **`equal`**/**`eq`**     | Basic `==` equality check                                     | `expect( a ).to.equal( b )`                                     |
+| **`aboutEqual`**     | Basic `==` equality check, with a tolerance                   | `expect( 0.999 ).to.aboutEqual( 1 )`                            |
 | **`beLessThan`**     | Basic `<` comparison                                          | `expect( 5 ).to.beLessThan( 6 )`                                |
 | **`beGreaterThan`**  | Basic `>` comparison                                          | `expect( 10 ).to.beGreaterThan( 1 )`                            |
 | **`beBetween`**      | Expects the subject to be less than min, and greater than max | `expect( 5 ).to.beBetween( 3, 7 )`                              |

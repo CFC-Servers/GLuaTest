@@ -17,12 +17,25 @@ return function( subject, ... )
 
     local i = expectations
 
-    function expectations.eq( comparison )
+    function expectations.equal( comparison )
         if subject ~= comparison then
             i.expected( "to equal '%s'", comparison )
         end
     end
-    expectations.equal = expectations.eq
+
+    function expectations.eq( comparison )
+        GLuaTest.DeprecatedNotice( "to.eq( value )", "to.equal( value )" )
+        return expectations.equal( comparison )
+    end
+
+    function expectations.aboutEqual( comparison )
+        local tolerance = args[1] or 0.00001
+        local difference = math.abs( subject - comparison )
+
+        if difference > tolerance then
+            i.expected( "to be within '%s' of '%s' - found a difference of '%s'", tolerance, comparison, difference )
+        end
+    end
 
     function expectations.beLessThan( comparison )
 
