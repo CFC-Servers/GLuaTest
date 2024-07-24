@@ -34,7 +34,7 @@ jobs:
             --rm \
             --name version_checker \
             ghcr.io/cfc-servers/steamcmd-slim:latest \
-            /home/steam/steamcmd/steamcmd.sh +login anonymous +app_info_print 4020 +quit \
+            /home/steam/steamcmd/steamcmd.sh +login anonymous +app_info_update +app_info_print 4020 +logoff +quit \
             > "$GITHUB_WORKSPACE/raw_output.txt"
 
           # Extract just the part we care about
