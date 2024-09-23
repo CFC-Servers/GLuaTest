@@ -47,8 +47,8 @@ local makeHookTable = function()
     return newHookTable, cleanup
 end
 
+local timerCount = 0
 local function makeTimerTable()
-    local timerCount = 0
     local timerNames = {}
 
     local timer_Create = function( identifier, delay, reps, func, ... )
