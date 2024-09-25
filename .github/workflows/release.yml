@@ -1,0 +1,78 @@
+name: Release (manual)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: full_repo
+
+      - name: Get Latest Tag
+        id: latest_tag
+        run: |
+          cd "$GITHUB_WORKSPACE/full_repo"
+          latest_tag=$(git describe --tags --abbrev=0 --match='[0-9]*.[0-9]*.[0-9]*' --match='[0-9]*.[0-9]*' --exclude='*[^0-9.]*')
+
+          echo "Latest tag: $latest_tag"
+          echo "tag_name=$latest_tag" >> $GITHUB_OUTPUT
+
+      - name: Pull the steamcmd image
+        run: |
+          docker pull ghcr.io/cfc-servers/steamcmd-slim:latest
+
+      - name: Lookup latest build IDs
+        id: latest_versions
+        run: |
+          docker run \
+            --rm \
+            --name version_checker \
+            ghcr.io/cfc-servers/steamcmd-slim:latest \
+            /home/steam/steamcmd/steamcmd.sh +login anonymous +app_info_update +app_info_print 4020 +logoff +quit \
+            > "$GITHUB_WORKSPACE/raw_output.txt"
+
+          # Extract just the part we care about
+          struct=struct.txt
+          cat "$GITHUB_WORKSPACE/raw_output.txt" | sed -e '1,/"4020"$/ d' > $struct;
+
+          # Get the latest build IDs
+          public=$(grep -A 2 '"public"' $struct | grep '"buildid"' | awk '{print $2}' | sed 's/"//g')
+          sixtyfour=$(grep -A 2 '"x86-64"' $struct | grep '"buildid"' | awk '{print $2}' | sed 's/"//g')
+
+          echo "Latest Public ID: '$public'"
+          echo "Latest 64bit ID: '$sixtyfour'"
+
+          if [ -z "$public" ] || [ -z "$sixtyfour" ]; then
+            echo "Failed to get the latest build IDs"
+            echo "Raw Output from SteamCMD:"
+            cat "$GITHUB_WORKSPACE/raw_output.txt"
+            exit 1
+          fi
+
+          # Set the output
+          echo "public=$public" >> $GITHUB_OUTPUT
+          echo "sixtyfour=$sixtyfour" >> $GITHUB_OUTPUT
+
+      - name: Update Public Build
+        uses: ./full_repo/.github/actions/build_and_push
+        with:
+          gmod_branch: public
+          game_version: ${{ steps.latest_versions.outputs.public }}
+          tag_name: ${{ steps.latest_tag.outputs.tag_name }}
+          release: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          path: $GITHUB_WORKSPACE/full_repo
+
+      - name: Update 64bit Build
+        uses: ./full_repo/.github/actions/build_and_push
+        with:
+          gmod_branch: x86-64
+          game_version: ${{ steps.latest_versions.outputs.sixtyfour }}
+          tag_name: ${{ steps.latest_tag.outputs.tag_name }}
+          release: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          path: $GITHUB_WORKSPACE/full_repo
