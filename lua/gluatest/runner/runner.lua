@@ -12,10 +12,10 @@ local LogTestFailureDetails = ResultLogger.LogTestFailureDetails
 local PlainLogStart = ResultLogger.PlainLogStart
 local noop = function() end
 
-local caseID = 0
+GLuaTest_CaseID = GLuaTest_CaseID or 0
 local function getCaseID()
-    caseID = caseID + 1
-    return "case" .. caseID
+    GLuaTest_CaseID = GLuaTest_CaseID + 1
+    return "case" .. GLuaTest_CaseID
 end
 
 return function( allTestGroups )
@@ -255,14 +255,18 @@ return function( allTestGroups )
                 case.testComplete()
             else
                 -- If the test ran successfully, start the case-specific timeout timer
-                local timeout = case.timeout or 60
 
-                timer.Create( "GLuaTest_AsyncTimeout_" .. case.id, timeout, 1, function()
-                    setTimedOut( case )
-                    callbacks[case.id] = false
+                if callbacks[case.id] == nil then
+                    -- If the async case actually operated synchronously (i.e. called done() or fail() before we got here) then we don't need to set a timeout
+                    local timeout = case.timeout or 60
 
-                    case.testComplete()
-                end )
+                    timer.Create( "GLuaTest_AsyncTimeout_" .. case.id, timeout, 1, function()
+                        setTimedOut( case )
+                        callbacks[case.id] = false
+
+                        case.testComplete()
+                    end )
+                end
             end
         end
     end
