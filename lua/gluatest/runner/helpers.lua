@@ -152,7 +152,7 @@ local function findStackInfo( thread, caseFunc, reason )
     local lastInfoLevel, lastInfo
     for level = 0, 20 do
         local info = debug.getinfo( thread, level, "nSl" )
-        if info and info.short_src ~= "[C]" then
+        if info and info.short_src ~= "[C]" and not string.match( info.short_src, "/lua/gluatest/" ) then
             lastInfoLevel, lastInfo = level, info
             break
         end
