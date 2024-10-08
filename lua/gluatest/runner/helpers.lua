@@ -278,7 +278,7 @@ function Helpers.SafeRunWithEnv( defaultEnv, before, func, state )
     setfenv( before, defaultEnv )
 
     setfenv( func, testEnv )
-    local success, errInfo = Helpers.SafeRunFunction( func )
+    local success, errInfo = Helpers.SafeRunFunction( func, state )
     setfenv( func, defaultEnv )
 
     cleanup()
