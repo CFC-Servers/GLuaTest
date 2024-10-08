@@ -146,33 +146,31 @@ end
 
 -- OLD: FIXME: There has to be a better way to do this
 -- NEW: Fixed by srlion :)
-local function findStackInfo( thread )
-    -- Step up through the stacks to find the error we care about
-    local stack, lastInfo
-    for i = 1, 20 do
-        local info = debug.traceback( thread, "", i )
-        info, line = string.match( info, "(.+):(.+): in function" )
-        if line then
-            stack = i
-            lastInfo = {
-                short_src = info:sub( 20 ), -- Removes "stack traceback:" from the start
-                currentline = tonumber( line ) or line
-            }
-        else
+local function findStackInfo( thread, caseFunc )
+    -- Step through the stack to find the first non-C function call. If no stack is found for the called function, it will point to
+    -- the wrapper function instead. This is because we wrap the function inside another one to ensure there is always at least one Lua stack trace.
+    local lastInfoLevel, lastInfo
+    for level = 0, 20 do
+        local info = debug.getinfo( thread, level, "nSl" )
+        if info and info.short_src ~= "[C]" then
+            lastInfoLevel, lastInfo = level, info
             break
         end
     end
 
-    -- This should never happen!!
-    if not stack then
-        ErrorNoHaltWithStack( "Could not find stack info! This should never happen - please report this!" )
-        return 2, debug.getinfo( 2, "lnS" )
+    if not lastInfoLevel then
+        ErrorNoHalt(
+            "Failed to get a stack, probably returning a function that errored! " ..
+            "For example, 'return error('!')'\n"
+        )
+        lastInfoLevel, lastInfo = 1, debug.getinfo( caseFunc, "nSl" )
+        lastInfo.currentline = lastInfo.linedefined -- currentline will be -1, so we will point it to the line where the function was defined
     end
 
-    return stack, lastInfo
+    return lastInfoLevel, lastInfo
 end
 
-function Helpers.FailCallback( thread, reason )
+function Helpers.FailCallback( thread, caseFunc, reason )
     if reason == "" then
         ErrorNoHaltWithStack( "Received empty error reason in failCallback- ignoring " )
         return
@@ -190,7 +188,7 @@ function Helpers.FailCallback( thread, reason )
 
     local cleanReason = table.concat( reasonSpl, ": ", 2, #reasonSpl )
 
-    local level, info = findStackInfo( thread )
+    local level, info = findStackInfo( thread, caseFunc )
     local locals = getLocals( thread, level )
 
     return {
@@ -286,7 +284,7 @@ function Helpers.SafeRunFunction( func, ... )
 
     local errInfo
     if not success then
-        errInfo = Helpers.FailCallback( co, err )
+        errInfo = Helpers.FailCallback( co, func, err )
     end
 
     return success, errInfo
