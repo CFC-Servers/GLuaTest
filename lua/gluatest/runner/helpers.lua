@@ -147,8 +147,8 @@ end
 -- OLD: FIXME: There has to be a better way to do this
 -- NEW: Fixed by srlion :)
 local function findStackInfo( thread, caseFunc )
-    -- Step through the stack to find the first non-C function call. If no stack is found for the called function, it will point to
-    -- the wrapper function instead. This is because we wrap the function inside another one to ensure there is always at least one Lua stack trace.
+    -- Step through the stack to find the first non-C function call. If no stack is found for the called function, it will point to case function. This case will only happen
+    -- when the function is tail called, and the error is thrown from the tail called function.
     local lastInfoLevel, lastInfo
     for level = 0, 20 do
         local info = debug.getinfo( thread, level, "nSl" )
@@ -158,16 +158,21 @@ local function findStackInfo( thread, caseFunc )
         end
     end
 
+    local locals
     if not lastInfoLevel then
         ErrorNoHalt(
             "Failed to get a stack, probably returning a function that errored! " ..
             "For example, 'return error('!')'\n"
         )
-        lastInfoLevel, lastInfo = 1, debug.getinfo( caseFunc, "nSl" )
+        lastInfo = debug.getinfo( caseFunc, "nSl" )
         lastInfo.currentline = lastInfo.linedefined -- currentline will be -1, so we will point it to the line where the function was defined
+
+        locals = {} -- We can't get locals from a function that has tail call returns
+    else
+        locals = getLocals( thread, lastInfoLevel )
     end
 
-    return lastInfoLevel, lastInfo
+    return lastInfo, locals
 end
 
 function Helpers.FailCallback( thread, caseFunc, reason )
@@ -188,8 +193,7 @@ function Helpers.FailCallback( thread, caseFunc, reason )
 
     local cleanReason = table.concat( reasonSpl, ": ", 2, #reasonSpl )
 
-    local level, info = findStackInfo( thread, caseFunc )
-    local locals = getLocals( thread, level )
+    local info, locals = findStackInfo( thread, caseFunc )
 
     return {
         reason = cleanReason,
