@@ -146,7 +146,7 @@ end
 
 -- OLD: FIXME: There has to be a better way to do this
 -- NEW: Fixed by srlion :)
-local function findStackInfo( thread, caseFunc )
+local function findStackInfo( thread, caseFunc, reason )
     -- Step through the stack to find the first non-C function call. If no stack is found for the called function, it will point to case function. This case will only happen
     -- when the function is tail called, and the error is thrown from the tail called function.
     local lastInfoLevel, lastInfo
@@ -169,6 +169,15 @@ local function findStackInfo( thread, caseFunc )
 
         locals = {} -- We can't get locals from a function that has tail call returns
     else
+        -- We got info about the error, but if the error was thrown from calling a nil value 'thisdoesntexist()', we can't get the currentline (executing line) as it was a nil value!
+        -- Thankfully, the error message will contain the line number, so we can extract it from there.
+        if lastInfo.currentline == -1 then
+            local line = string.match( reason, ":(%d+):" )
+            if line then
+                lastInfo.currentline = tonumber( line )
+            end
+        end
+
         locals = getLocals( thread, lastInfoLevel )
     end
 
@@ -193,7 +202,7 @@ function Helpers.FailCallback( thread, caseFunc, reason )
 
     local cleanReason = table.concat( reasonSpl, ": ", 2, #reasonSpl )
 
-    local info, locals = findStackInfo( thread, caseFunc )
+    local info, locals = findStackInfo( thread, caseFunc, reason )
 
     return {
         reason = cleanReason,
