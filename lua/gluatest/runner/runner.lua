@@ -1,5 +1,5 @@
 local Helpers = include( "gluatest/runner/helpers.lua" )
-local FailCallback = Helpers.FailCallback
+local SafeRunFunction = Helpers.SafeRunFunction
 local MakeAsyncEnv = Helpers.MakeAsyncEnv
 local SafeRunWithEnv = Helpers.SafeRunWithEnv
 local CreateCaseState = Helpers.CreateCaseState
@@ -244,7 +244,7 @@ return function( allTestGroups )
             setfenv( testGroup.beforeEach, defaultEnv )
 
             setfenv( case.func, asyncEnv )
-            local success, errInfo = xpcall( case.func, FailCallback, case.state )
+            local success, errInfo = SafeRunFunction( case.func, case.state )
 
             -- If the test failed while calling it
             -- (Async expectation failures handled in asyncEnv.expect)
