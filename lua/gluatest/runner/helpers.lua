@@ -128,12 +128,12 @@ local function makeTestEnv()
     return env, cleanup
 end
 
-local function getLocals( level )
+local function getLocals( thread, level )
     local locals = {}
     local i = 1
 
     while true do
-        local name, value = debug.getlocal( level, i )
+        local name, value = debug.getlocal( thread, level, i )
         if name == nil then break end
         if name ~= "(*temporary)" then
             table.insert( locals, { name, value == nil and "nil" or value } )
@@ -144,28 +144,35 @@ local function getLocals( level )
     return locals
 end
 
--- FIXME: There has to be a better way to do this
-local function findStackInfo()
+-- OLD: FIXME: There has to be a better way to do this
+-- NEW: Fixed by srlion :)
+local function findStackInfo( thread )
     -- Step up through the stacks to find the error we care about
-
-    for stack = 1, 12 do
-        local info = debug.getinfo( stack, "lnS" )
-        if not info then break end
-
-        local emptyName = #info.namewhat == 0
-        local notGluatest = not string.match( info.short_src, "/lua/gluatest/" )
-
-        if emptyName and notGluatest then
-            return stack, info
+    local stack, lastInfo
+    for i = 1, 20 do
+        local info = debug.traceback( thread, "", i )
+        info, line = string.match( info, "(.+):(.+): in function" )
+        if line then
+            stack = i
+            lastInfo = {
+                short_src = info:sub( 20 ), -- Removes "stack traceback:" from the start
+                currentline = tonumber( line ) or line
+            }
+        else
+            break
         end
     end
 
     -- This should never happen!!
-    ErrorNoHaltWithStack( "Could not find stack info! This should never happen - please report this!" )
-    return 2, debug.getinfo( 2, "lnS" )
+    if not stack then
+        ErrorNoHaltWithStack( "Could not find stack info! This should never happen - please report this!" )
+        return 2, debug.getinfo( 2, "lnS" )
+    end
+
+    return stack, lastInfo
 end
 
-function Helpers.FailCallback( reason )
+function Helpers.FailCallback( thread, reason )
     if reason == "" then
         ErrorNoHaltWithStack( "Received empty error reason in failCallback- ignoring " )
         return
@@ -183,14 +190,15 @@ function Helpers.FailCallback( reason )
 
     local cleanReason = table.concat( reasonSpl, ": ", 2, #reasonSpl )
 
-    local level, info = findStackInfo()
-    local locals = getLocals( level )
+    local level, info = findStackInfo( thread )
+    local locals = getLocals( thread, level )
 
     return {
         reason = cleanReason,
         sourceFile = info.short_src,
         lineNumber = info.currentline,
-        locals = locals
+        locals = locals,
+        thread = thread
     }
 end
 
@@ -218,7 +226,7 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
                 built.to.expected = function( ... )
                     if recordedFailure then return end
 
-                    local _, errInfo = xpcall( expected, Helpers.FailCallback, ... )
+                    local _, errInfo = Helpers.SafeRunFunction( expected, ... )
                     onFailedExpectation( errInfo )
 
                     recordedFailure = true
@@ -259,7 +267,7 @@ function Helpers.SafeRunWithEnv( defaultEnv, before, func, state )
     setfenv( before, defaultEnv )
 
     setfenv( func, testEnv )
-    local success, errInfo = xpcall( func, Helpers.FailCallback, state )
+    local success, errInfo = Helpers.SafeRunFunction( func )
     setfenv( func, defaultEnv )
 
     cleanup()
@@ -267,6 +275,18 @@ function Helpers.SafeRunWithEnv( defaultEnv, before, func, state )
     -- If it succeeded but never ran `expect`, it's an empty test
     if success and not ranExpect then
         return nil, nil
+    end
+
+    return success, errInfo
+end
+
+function Helpers.SafeRunFunction( func, ... )
+    local co = coroutine.create( func )
+    local success, err = coroutine.resume( co, ... )
+
+    local errInfo
+    if not success then
+        errInfo = Helpers.FailCallback( co, err )
     end
 
     return success, errInfo
