@@ -50,6 +50,11 @@ on:
         description: "Which GMod branch to run your tests on. Must be: 'live' or 'x86-64'"
         default: "live"
 
+      custom-overrides:
+        type: string
+        required: false
+        description: "An absolute path with custom files to copy to the server directly. Structure should match the contents of `garrysmod/`"
+
 jobs:
   test:
     name: "Run tests"
@@ -117,6 +122,11 @@ jobs:
 
           mkdir --verbose --parents "$dest"
           cp --recursive --verbose $source/* "$dest/"
+
+      - name: Sync custom overrides
+        if: ${{ inputs.custom-overrides }}
+        run: |
+          rsync --verbose --archive ${{ inputs.custom-overrides }} $GITHUB_WORKSPACE/garrysmod_override/
 
       - name: Pull GLuaTest Runner
         env:
