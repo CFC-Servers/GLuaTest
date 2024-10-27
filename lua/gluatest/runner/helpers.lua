@@ -1,4 +1,6 @@
+--- @class GLuaTest_RunnerHelpers
 local Helpers = {}
+
 local expect = include( "gluatest/expectations/expect.lua" )
 local stubMaker = include( "gluatest/stubs/stubMaker.lua" )
 

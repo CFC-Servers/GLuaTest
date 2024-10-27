@@ -1,7 +1,8 @@
 local RED = Color( 255, 0, 0 )
 
+--- @class GLuaTest
 GLuaTest = {
-    -- If, for some reason, you need to run GLuaTest clientside, set this to true
+    -- If, for some reason, you need to run GLuaTest clientside, set this to true (not very well supported)
     RUN_CLIENTSIDE = false,
 
     DeprecatedNotice = function( old, new )
@@ -35,6 +36,9 @@ GLuaTest.runner = include( "gluatest/runner/runner.lua" )
 
 local shouldRun = CreateConVar( "gluatest_enable", 0, FCVAR_ARCHIVE + FCVAR_PROTECTED )
 
+--- Loads all GLuaTest-compatible projects from a given path
+--- @param path string The path to load projects from (in the LUA mount point)
+--- @param testFiles table The table to add the loaded test files to
 local function loadAllProjectsFrom( path, testFiles )
     local _, projects = file.Find( path .. "/*", "LUA" )
 
@@ -44,8 +48,19 @@ local function loadAllProjectsFrom( path, testFiles )
     end
 end
 
+--- Attempts the read the version of GLuaTest
+--- First checks data_static/gluatest_version.txt (when running in docker)
+--- Then, attempts to read the git commit of the cloned GLuaTest repository
+--- Then, gives up
+local function getGLuaTestVersion()
+end
+
+--- Loads and runs all tests in the tests/ directory
 GLuaTest.runAllTests = function()
-    if not shouldRun:GetBool() then return end
+    if not shouldRun:GetBool() then
+        print( "[GLuaTest] Test runs are disabled. Enable them with: gluatest_enable 1" )
+        return
+    end
 
     local testPaths = {
         "tests",

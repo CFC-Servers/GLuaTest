@@ -1,3 +1,4 @@
+--- @type table<string, Color>
 local colors = {
     red = Color( 255, 0, 0 ),
     green = Color( 0, 255, 0 ),

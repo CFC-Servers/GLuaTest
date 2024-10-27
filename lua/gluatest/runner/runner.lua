@@ -12,6 +12,7 @@ local LogTestFailureDetails = ResultLogger.LogTestFailureDetails
 local PlainLogStart = ResultLogger.PlainLogStart
 local noop = function() end
 
+--- Global var to track the current case ID, even across lua refreshes
 GLuaTest_CaseID = GLuaTest_CaseID or 0
 local function getCaseID()
     GLuaTest_CaseID = GLuaTest_CaseID + 1
@@ -20,7 +21,6 @@ end
 
 TestRunner.results = {}
 TestRunner.testGroups = {}
-
 
 function TestRunner:AddResult( result )
     result.testGroup = self.testGroup
