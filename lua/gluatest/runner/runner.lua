@@ -18,51 +18,69 @@ local function getCaseID()
     return "case" .. GLuaTest_CaseID
 end
 
-return function( allTestGroups )
+TestRunner.results = {}
+TestRunner.testGroups = {}
+
+
+function TestRunner:AddResult( result )
+    result.testGroup = self.testGroup
+
+    hook.Run( "GLuaTest_LogTestResult", result )
+    table.insert( self.results, result )
+
+    LogTestResult( result )
+    if result.success == false then LogTestFailureDetails( result ) end
+end
+
+function TestRunner:SetSucceeded( case )
+    return self:AddResult( {
+        case = case,
+        success = true,
+    } )
+end
+
+function TestRunner:SetFailed( case, errInfo )
+    return self:AddResult( {
+        case = case,
+        success = false,
+        errInfo = errInfo
+    } )
+end
+
+function TestRunner:SetTimedOut( case )
+    return self:SetFailed( case, { reason = "Timeout" } )
+end
+
+function TestRunner:SetSkipped( case )
+    return self:AddResult( {
+        case = case,
+        skipped = true,
+    } )
+end
+
+function TestRunner:SetEmpty( case )
+    return self:AddResult( {
+        case = case,
+        empty = true,
+    } )
+end
+
+function TestRunner:RunGroup( testGroup )
+end
+
+function TestRunner:RunGroups( testGroups )
     if CLIENT and not GLuaTest.RUN_CLIENTSIDE then return end
 
-    -- A copy of the original test groups for later reference
-    local originalTestGroups = table.Copy( allTestGroups )
-
-    -- Sequential table of Result structures
-    local allResults = {}
-
-    local function addResult( result )
-        hook.Run( "GLuaTest_LogTestResult", result )
-
-        table.insert( allResults, result )
-
-        LogTestResult( result )
-        if result.success == false then LogTestFailureDetails( result ) end
-    end
-
-    -- case.when should evaluate to `true` if the test should run
-    -- case.skip should evaluate to `true` if the test should be skipped
-    -- (case.skip takes precedence over case.when)
-    local function checkShouldSkip( case )
-        -- skip
-        local skip = case.skip
-        if skip == true then return true end
-        if isfunction( skip ) then
-            return skip() == true
-        end
-
-        -- when
-        local condition = case.when
-        if condition == nil then return false end
-        if condition == false then return true end
-
-        if isfunction( condition ) then
-            return condition() ~= true
-        end
-
-        return condition ~= true
-    end
+    self.testGroups = testGroups
 
     PlainLogStart()
+
     hook.Run( "GLuaTest_StartedTestRun", allTestGroups )
-    local startTime = SysTime()
-    local defaultEnv = getfenv( 1 )
+    self.startTime = SysTime()
+    self.defaultEnv = getfenv( 1 )
+end
+
+return function( allTestGroups )
 
     local testGroup
     local testGroupState = {}
@@ -81,42 +99,6 @@ return function( allTestGroups )
             return
         end
 
-        local function setSucceeded( case )
-            return addResult( {
-                case = case,
-                testGroup = testGroup,
-                success = true,
-            } )
-        end
-
-        local function setFailed( case, errInfo )
-            return addResult( {
-                case = case,
-                testGroup = testGroup,
-                success = false,
-                errInfo = errInfo
-            } )
-        end
-
-        local function setTimedOut( case )
-            return setFailed( case, { reason = "Timeout" } )
-        end
-
-        local function setSkipped( case )
-            return addResult( {
-                case = case,
-                testGroup = testGroup,
-                skipped = true,
-            } )
-        end
-
-        local function setEmpty( case )
-            return addResult( {
-                case = case,
-                testGroup = testGroup,
-                empty = true,
-            } )
-        end
 
         local cases = testGroup.cases
         local caseCount = #cases
