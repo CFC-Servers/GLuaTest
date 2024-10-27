@@ -22,11 +22,14 @@ local function checkShouldSkip( case )
 end
 
 function GLuatest.TestGroupRunner( TestRunner )
+    --- @class GLuaTest_TestGroupRunner
     local TGR = {}
 
     TGR.state = {}
     TGR.asyncCases = {}
 
+    --- Checks if the given test case can/should be run
+    --- @param case GLuaTest_TestCase
     function TGR:CanRunCase( case )
         local shouldSkip = checkShouldSkip( case )
         if shouldSkip then

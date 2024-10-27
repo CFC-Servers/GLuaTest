@@ -10,6 +10,7 @@
 --- @field when? boolean|fun(): boolean Only run this test case when this condition is met
 --- @field skip? boolean|fun(): boolean Skip this test case when this condition is met
 --- @field clientside? boolean (Not fully supported) Whether the test is clientside
+--- @field shared? boolean (Not fully supported) Whether the test is shared
 
 --- @class GLuaTest_TestGroup
 --- @field private fileName string The name of the file the test is in
