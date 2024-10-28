@@ -1,3 +1,5 @@
+--- @meta GLuaTest_Types
+
 --- @class GLuaTest_TestState
 --- @field [any] any The state of the test
 
@@ -13,6 +15,7 @@
 --- @field shared? boolean (Not fully supported) Whether the test is shared
 
 --- @class GLuaTest_RunnableTestCase : GLuaTest_TestCase
+--- The test case with additional information that the Runner needs
 --- @field id? string The unique identifier of the test case
 --- @field state? GLuaTest_TestState The state of the test case
 
