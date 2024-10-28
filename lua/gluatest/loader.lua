@@ -1,6 +1,5 @@
 local istable = istable
 local runClientside = GLuaTest.RUN_CLIENTSIDE
-local noop = function() end
 
 --- If the file has clientside cases, send it to the client
 --- @param filePath string
@@ -46,20 +45,11 @@ local function processFile( dir, fileName, groups )
 
     if SERVER then checkSendToClients( filePath, testGroup.cases ) end
 
-    --- @type GLuaTest_RunnableTestGroup
-    local group = {
-        groupName = testGroup.groupName,
-        cases = testGroup.cases,
-        beforeAll = testGroup.beforeAll or noop,
-        beforeEach = testGroup.beforeEach or noop,
-        afterAll = testGroup.afterAll or noop,
-        afterEach = testGroup.afterEach or noop,
+    local group = testGroup
+    group.fileName = fileName
+    group.project = getProjectName( filePath )
 
-        fileName = fileName,
-        project = getProjectName( filePath ),
-    }
-
-    table.insert( groups, group )
+    table.insert( groups, group --[[@as GLuaTest_RunnableTestGroup]] )
 end
 
 --- @class GLuaTest_Loader

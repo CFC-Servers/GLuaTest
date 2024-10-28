@@ -31,11 +31,6 @@ end
 
 CreateConVar( "gluatest_use_ansi", 1, FCVAR_ARCHIVE, "Should GLuaTest use ANSI coloring in its output", 0, 1 )
 
---- @type GLuaTest_Loader
-GLuaTest.Loader = include( "gluatest/loader.lua" )
-
---- @type GLuaTest_TestRunner
-GLuaTest.Runner = include( "gluatest/runner/runner.lua" )
 
 local shouldRun = CreateConVar( "gluatest_enable", 0, FCVAR_ARCHIVE + FCVAR_PROTECTED )
 
@@ -43,11 +38,14 @@ local shouldRun = CreateConVar( "gluatest_enable", 0, FCVAR_ARCHIVE + FCVAR_PROT
 --- @param path string The path to load projects from (in the LUA mount point)
 --- @param testFiles GLuaTest_TestGroup[] The table to add the loaded test files to
 local function loadAllProjectsFrom( path, testFiles )
+    --- @type GLuaTest_Loader
+    local loader = include( "gluatest/loader.lua" )
+
     local _, projects = file.Find( path .. "/*", "LUA" )
 
     for i = 1, #projects do
         local project = projects[i]
-        table.Add( testFiles, GLuaTest.Loader.getTestsInDir( path .. "/" .. project ) )
+        table.Add( testFiles, loader.getTestsInDir( path .. "/" .. project ) )
     end
 end
 
@@ -81,7 +79,9 @@ GLuaTest.runAllTests = function()
 
     hook.Run( "GLuaTest_RunTestFiles", testFiles )
 
-    GLuaTest.Runner:Run( testFiles )
+    --- @type GLuaTest_TestRunner
+    local runner = include( "gluatest/runner/runner.lua" )
+    runner:Run( testFiles )
 end
 
 hook.Add( "Tick", "GLuaTest_Runner", function()

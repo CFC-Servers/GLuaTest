@@ -61,12 +61,15 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
     end
 
     --- Run the case synchronously
-    function TCR:RunSync()
+    --- @param cb fun(): nil The function to run once the test is complete
+    function TCR:RunSync( cb )
         local beforeFunc = group.beforeEach
         local caseResult = Helpers.SafeRunWithEnv( defaultEnv, beforeFunc, case.func, case.state )
 
         case.cleanup( case.state )
-        group.afterEach( case.state )
+
+        local afterEach = group.afterEach
+        if afterEach then afterEach( case.state ) end
 
         if caseResult.result == "empty" then
             TestGroupRunner:SetEmpty( case )
@@ -76,6 +79,8 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
             local errInfo = caseResult.errInfo
             TestGroupRunner:SetFailed( case, errInfo )
         end
+
+        cb()
     end
 
     --- Run the case asynchronously
@@ -184,12 +189,15 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
             return cb()
         end
 
-        if case.async then
-            self:RunAsync( cb )
-        else
-            self:RunSync()
-            cb()
+        local func = case.async and self.RunAsync or self.RunSync
+
+        if case.async then print( "Starting async test: " .. case.id ) end
+
+        if case.coroutine then
+            func = coroutine.wrap( func )
         end
+
+        func( self, cb )
     end
 
     return TCR

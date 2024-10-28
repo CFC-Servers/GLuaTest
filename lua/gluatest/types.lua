@@ -7,6 +7,7 @@
 --- @field name string The human-readable name of the test
 --- @field func fun(state: GLuaTest_TestState): nil The test function
 --- @field async? boolean Whether the test requires asynchronous handling
+--- @field coroutine? boolean Whether the test requires coroutine handling
 --- @field timeout? number The maximum time (in seconds) the test can run before being considered failed
 --- @field cleanup? fun(state: GLuaTest_TestState): nil A function to run after the test, regardless of the test outcome
 --- @field when? boolean|fun(): boolean Only run this test case when this condition is met

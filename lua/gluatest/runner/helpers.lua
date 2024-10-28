@@ -258,6 +258,7 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
 
             -- Wrap the error-throwing function
             -- and handle the error with the correct context
+            -- (and to only record the first failure)
             built.to.expected = function( ... )
                 if recordedFailure then return end
 
@@ -265,6 +266,7 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
                 onFailedExpectation( errInfo )
 
                 recordedFailure = true
+                print( "Expectation failed: will not run again" )
             end
 
             return built

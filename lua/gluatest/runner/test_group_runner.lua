@@ -79,21 +79,27 @@ function GLuaTest.TestGroupRunner( TestRunner, group )
     --- Run all cases in the test group
     --- @param cb fun(): nil The function to run once the group is complete
     function TGR:Run( cb )
-        group.beforeAll( self.groupState )
+        local beforeAll = group.beforeAll
+        if beforeAll then beforeAll( self.groupState ) end
 
         local runners = self.caseRunners
 
-        for _, case in ipairs( group.cases ) do
+        local cases = group.cases
+        local caseCount = #cases
+        for i = caseCount, 1, -1 do
+            local case = cases[i]
             local runner = self:MakeCaseRunner( case )
             table.insert( runners, runner )
         end
 
         local function runNext()
             local nextRunner = table.remove( runners )
+
             if not nextRunner then
-                group.afterAll( self.groupState )
-                cb()
-                return
+                local afterAll = group.afterAll
+                if afterAll then afterAll( self.groupState ) end
+
+                return cb()
             end
 
             nextRunner:Run( runNext )
