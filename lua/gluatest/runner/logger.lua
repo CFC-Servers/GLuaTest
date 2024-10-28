@@ -1,12 +1,15 @@
+--- @type GLuaTest_LogHelpers
 local Helpers = include( "gluatest/runner/log_helpers.lua" )
 local GenerateDivider = Helpers.GenerateDivider
 local GetLineWithContext = Helpers.GetLineWithContext
 local GetLeadingWhitespace = Helpers.GetLeadingWhitespace
 local NormalizeLinesIndent = Helpers.NormalizeLinesIndent
 
+--- @type GLuaTest_LogColors
 local colors = include( "gluatest/runner/colors.lua" )
 local MsgC = include( "gluatest/runner/msgc_wrapper.lua" )
 
+--- @class GLuaTest_ResultLogger
 local ResultLogger = {}
 
 
@@ -18,20 +21,22 @@ function ResultLogger.prefixLog( ... )
 end
 
 
+--- Draws a line of code in the Context Block
+--- @param content string
+--- @param lineNumber string
 function ResultLogger.drawLine( content, lineNumber )
-    --
-    -- Draws a line of code in the Context Block
-    --
     MsgC( colors.grey, string.rep( " ", 4 - #lineNumber ) )
     MsgC( colors.white, lineNumber, " " )
     MsgC( colors.grey, "| ", content )
 end
 
 
+--- Draw a given line of code, a pointer-arrow, and the failure reason
+--- @param content string
+--- @param lineNumber string
+--- @param divider string
+--- @param reason string
 function ResultLogger.drawFailingLine( content, lineNumber, divider, reason )
-    --
-    -- Draw a given line of code, a pointer-arrow, and the failure reason
-    --
     local contentLength = 7 + #content
     local newLineLength = contentLength + 2 + #reason
 
@@ -62,11 +67,10 @@ function ResultLogger.drawFailingLine( content, lineNumber, divider, reason )
 end
 
 
+--- Given a test failure, gather info about the failing code
+--- and draw a block of code context with a pointer-arrow to the failure
+--- @param errInfo GLuaTest_FailCallbackInfo
 function ResultLogger.logCodeContext( errInfo )
-    --
-    -- Given a test failure, gather info about the failing code
-    -- and draw a block of code context with a pointer-arrow to the failure
-    --
     local reason = errInfo.reason
     local sourceFile = errInfo.sourceFile
     local lineNumber = errInfo.lineNumber
@@ -108,12 +112,11 @@ function ResultLogger.logCodeContext( errInfo )
 end
 
 
+--- Given a test failure with local variables,
+--- draw a section to display the name and values
+--- of up to 5 local variables in the failing test
+--- @param errInfo GLuaTest_FailCallbackInfo
 function ResultLogger.logLocals( errInfo )
-    --
-    -- Given a test failure with local variables,
-    -- draw a section to display the name and values
-    -- of up to 5 local variables in the failing test
-    --
     local locals = errInfo.locals or {}
 
     local localCount = math.min( 5, #locals )
@@ -134,10 +137,9 @@ function ResultLogger.logLocals( errInfo )
 end
 
 
+--- Draw information about a given test failure
+--- @param errInfo GLuaTest_FailCallbackInfo
 function ResultLogger.logTestCaseFailure( errInfo )
-    --
-    -- Draw information about a given test failure
-    --
     local sourceFile = errInfo.sourceFile
 
     MsgC( colors.white, "    File:", "\n" )
@@ -148,6 +150,8 @@ function ResultLogger.logTestCaseFailure( errInfo )
 end
 
 
+--- Given a list of test results, return the counts of each type
+--- @param allResults GLuaTest_TestResult[]
 function ResultLogger.getResultCounts( allResults )
     local passed = 0
     local failed = 0
@@ -170,6 +174,9 @@ function ResultLogger.getResultCounts( allResults )
 end
 
 
+--- Given a list of test results, return a table of failures grouped by test group
+--- @param allResults GLuaTest_TestResult[]
+--- @return table<GLuaTest_TestGroup, GLuaTest_TestResult[]>
 function ResultLogger.getFailuresByGroup( allResults )
     local failuresByGroup = {}
 
@@ -186,18 +193,23 @@ function ResultLogger.getFailuresByGroup( allResults )
 end
 
 
+--- Log the start of a test group
+--- @param testGroup GLuaTest_RunnableTestGroup
 function ResultLogger.LogFileStart( testGroup )
     local fileName = testGroup.fileName
     local groupName = testGroup.groupName
     local project = testGroup.project
 
-    local identifier = project .. "/" .. ( groupName or fileName )
+    local identifier = project .. "/" .. (groupName or fileName)
 
     MsgC( "\n" )
     ResultLogger.prefixLog( colors.blue, "=== Running ", identifier, "... ===", "\n" )
 end
 
 
+--- Log the result of a test
+--- @param result GLuaTest_TestResult
+--- @param usePrefix? boolean (default true)
 function ResultLogger.LogTestResult( result, usePrefix )
     if usePrefix == nil then usePrefix = true end
 
@@ -227,6 +239,8 @@ function ResultLogger.LogTestResult( result, usePrefix )
 end
 
 
+--- Log the details of a test failure
+--- @param failure GLuaTest_TestResult
 function ResultLogger.LogTestFailureDetails( failure )
     local case = failure.case
     local errInfo = failure.errInfo
@@ -246,6 +260,10 @@ function ResultLogger.LogTestFailureDetails( failure )
 end
 
 
+--- Prints the summary of a test run
+--- @param testGroups GLuaTest_TestGroup[]
+--- @param allResults GLuaTest_TestResult[]
+--- @param duration number
 function ResultLogger.logSummaryIntro( testGroups, allResults, duration )
     local niceDuration = string.format( "%.3f", duration )
     local white = colors.white
@@ -265,6 +283,8 @@ function ResultLogger.logSummaryIntro( testGroups, allResults, duration )
 end
 
 
+--- Log the counts of each type of test result
+--- @param allResults GLuaTest_TestResult[]
 function ResultLogger.logSummaryCounts( allResults )
     local white = colors.white
     local blue = colors.blue
@@ -280,6 +300,8 @@ function ResultLogger.logSummaryCounts( allResults )
 end
 
 
+--- Log a summary of all test failures
+--- @param allResults GLuaTest_TestResult[]
 function ResultLogger.logFailureSummary( allResults )
     local allFailures = ResultLogger.getFailuresByGroup( allResults )
     if table.Count( allFailures ) == 0 then return end
@@ -304,6 +326,10 @@ function ResultLogger.logFailureSummary( allResults )
 end
 
 
+--- Log the final result of a test run
+--- @param testGroups GLuaTest_TestGroup[]
+--- @param allResults GLuaTest_TestResult[]
+--- @param duration number
 function ResultLogger.LogTestsComplete( testGroups, allResults, duration )
     MsgC( "\n", "\n" )
     ResultLogger.logSummaryIntro( testGroups, allResults, duration )
@@ -313,16 +339,15 @@ function ResultLogger.LogTestsComplete( testGroups, allResults, duration )
     ResultLogger.PlainLogEnd()
 end
 
--- External parsers rely on the output of this function it should not be changed often
+--- External parsers rely on the output of this function, it should not be changed often
 function ResultLogger.PlainLogStart()
     print( "[GLuaTest]: Test run starting..." )
 end
 
--- External parsers rely on the output of this function it should not be changed often
+--- External parsers rely on the output of this function, it should not be changed often
 function ResultLogger.PlainLogEnd()
     print( "[GLuaTest]: Test run complete!" )
 end
 
 hook.Run( "GLuaTest_MakeResultLogger", ResultLogger )
-
 return ResultLogger

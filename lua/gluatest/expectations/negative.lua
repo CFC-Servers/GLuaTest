@@ -6,6 +6,7 @@ local string_format = string.format
 return function( subject, ... )
     local args = { ... }
 
+    --- @class GLuaTest_NegativeExpectations
     local expectations = {
         expected = function( suffix, ... )
             local fmt = "Expectation Failed: Expected %s " .. suffix

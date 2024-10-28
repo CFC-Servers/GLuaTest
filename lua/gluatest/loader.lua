@@ -23,11 +23,11 @@ local getProjectName = function( dir )
     return string.match( dir, "tests/(.+)/.*$" )
 end
 
---- Given a directory and a file name, try to load the file as a test and build a test object
+--- Given a directory and a file name, try to load the file as a TestGroup and build a RunnableTestGroup from it
 --- @param dir string The directory the file is in
 --- @param fileName string The name of the file
---- @param tests GLuaTest_TestCase[]
-local function processFile( dir, fileName, tests )
+--- @param groups GLuaTest_RunnableTestGroup[]
+local function processFile( dir, fileName, groups )
     if not string.EndsWith( fileName, ".lua" ) then return end
 
     local filePath = dir .. "/" .. fileName
@@ -46,28 +46,29 @@ local function processFile( dir, fileName, tests )
 
     if SERVER then checkSendToClients( filePath, testGroup.cases ) end
 
-    -- Rebuild the test group and make sure only the fields we expect are present
-    -- TODO: Maybe we shouldn't do this, to support third party integrations better
-
-    --- @type GLuaTest_TestGroup
-    local case = {
-        fileName = fileName,
+    --- @type GLuaTest_RunnableTestGroup
+    local group = {
         groupName = testGroup.groupName,
         cases = testGroup.cases,
-        project = getProjectName( filePath ),
         beforeAll = testGroup.beforeAll or noop,
         beforeEach = testGroup.beforeEach or noop,
         afterAll = testGroup.afterAll or noop,
-        afterEach = testGroup.afterEach or noop
+        afterEach = testGroup.afterEach or noop,
+
+        fileName = fileName,
+        project = getProjectName( filePath ),
     }
 
-    table.insert( tests, case )
+    table.insert( groups, group )
 end
+
+--- @class GLuaTest_Loader
+local Loader = {}
 
 --- Given a directory, recursively search for test files and load them into the given tests table
 --- @param dir string The directory to search in
---- @param tests GLuaTest_TestGroup[]
-local function getTestsInDir( dir, tests )
+--- @param tests? GLuaTest_RunnableTestGroup[]
+function Loader.getTestsInDir( dir, tests )
     if not tests then tests = {} end
     local files, dirs = file.Find( dir .. "/*", "LUA" )
 
@@ -77,10 +78,10 @@ local function getTestsInDir( dir, tests )
 
     for _, dirName in ipairs( dirs ) do
         local newDir = dir .. "/" .. dirName
-        getTestsInDir( newDir, tests )
+        Loader.getTestsInDir( newDir, tests )
     end
 
     return tests
 end
 
-return getTestsInDir
+return Loader

@@ -12,6 +12,9 @@ if SERVER then
     local startColor = "\x1b[38;2;"
     local endColor = "\x1b[0m"
 
+    --- Converts the given Color object to an ANSI string
+    --- @param col Color
+    --- @return string
     local function colorToAnsi( col )
         local r = col.r
         local g = col.g

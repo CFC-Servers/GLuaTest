@@ -6,6 +6,7 @@ local string_format = string.format
 return function( subject, ... )
     local args = { ... }
 
+    --- @class GLuaTest_PositiveExpectations
     local expectations = {
         expected = function( suffix, ... )
             local fmt = "Expectation Failed: Expected %s " .. suffix
@@ -124,7 +125,7 @@ return function( subject, ... )
         if success == true then
             i.expected( "to error with '%s'", comparison )
         else
-            if string.StartWith( err, "lua/" ) or string.StartWith( err, "addons/" ) then
+            if string.StartsWith( err, "lua/" ) or string.StartsWith( err, "addons/" ) then
                 local _, endOfPath = string.find( err, ":%d+: ", 1 )
                 assert( endOfPath, "Could not find end of path in error message: " .. err )
 

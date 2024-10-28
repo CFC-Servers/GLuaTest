@@ -1,15 +1,29 @@
 --- @class GLuaTest_RunnerHelpers
 local Helpers = {}
 
+--- @type GLuaTest_Expect
 local expect = include( "gluatest/expectations/expect.lua" )
 local stubMaker = include( "gluatest/stubs/stubMaker.lua" )
+
+--- Global var to track the current case ID, even across lua refreshes
+GLuaTest_CaseID = GLuaTest_CaseID or 0
+
+--- Gets a unique case ID
+--- @return string
+function Helpers.GetCaseID()
+    GLuaTest_CaseID = GLuaTest_CaseID + 1
+    return "case" .. GLuaTest_CaseID
+end
 
 ------------------
 -- Cleanup stuff--
 ------------------
 
+--- Makes a mocked hook library that will clean itself up after the test completes
 local makeHookTable = function()
     local trackedHooks = {}
+
+    --- Wrapper over hook.Add that tracks the hooks added
     local hook_Add = function( event, name, func, ... )
         if not trackedHooks[event] then trackedHooks[event] = {} end
         table.insert( trackedHooks[event], name )
@@ -24,6 +38,7 @@ local makeHookTable = function()
         return _G.hook.Add( event, name, func, ... )
     end
 
+    --- Cleans up all the hooks that were added
     local function cleanup()
         for event, names in pairs( trackedHooks ) do
             for _, name in ipairs( names ) do
@@ -107,6 +122,9 @@ local function makeTestTools()
     return tools, cleanup
 end
 
+--- Creates a new environment for a test to run in
+--- @return table The test environment
+--- @return fun(): nil The cleanup function
 local function makeTestEnv()
     local testEnv, envCleanup = makeTestLibStubs()
     local testTools, toolsCleanup = makeTestTools()
@@ -130,7 +148,15 @@ local function makeTestEnv()
     return env, cleanup
 end
 
+--- @class GLuaTest_LocalVariable
+--- @field name string
+--- @field value string
+
+--- Returns all locals from a given stack level
+--- @param level number
+--- @return GLuaTest_LocalVariable[]
 local function getLocals( level )
+    --- @type GLuaTest_LocalVariable[]
     local locals = {}
     local i = 1
 
@@ -146,7 +172,9 @@ local function getLocals( level )
     return locals
 end
 
--- FIXME: There has to be a better way to do this
+--- Navigates the stack to find the correct stack level and info to report error information
+--- @return number The stack level
+--- @return debuginfo The stack info
 local function findStackInfo()
     -- Step up through the stacks to find the error we care about
 
@@ -167,10 +195,18 @@ local function findStackInfo()
     return 2, debug.getinfo( 2, "lnS" )
 end
 
+--- @class GLuaTest_FailCallbackInfo
+--- @field reason string The error message
+--- @field sourceFile? string The file the error occurred in
+--- @field lineNumber? number The line number the error occurred on
+--- @field locals? GLuaTest_LocalVariable[] The local variables at the time of the error
+
+--- A callback for when a test fails in xpcall
+--- @param reason string
+--- @return GLuaTest_FailCallbackInfo
 function Helpers.FailCallback( reason )
     if reason == "" then
-        ErrorNoHaltWithStack( "Received empty error reason in failCallback- ignoring " )
-        return
+        error( "Received empty error reason in failCallback- ignoring " )
     end
 
     -- root/file/name.lua:420: Expectation Failed: Failure reason
@@ -196,43 +232,51 @@ function Helpers.FailCallback( reason )
     }
 end
 
+--- Creates a new environment for a test to run in
+--- @param done fun(): nil The function called by the test to signal completion
+--- @param fail fun( reason: string ): nil The function called by the test to signal failure
+--- @param onFailedExpectation fun( errInfo: GLuaTest_FailCallbackInfo ): nil The function called when an expectation fails
 function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
     -- TODO: How can we make Stubs safer in Async environments?
     local stub, stubCleanup = stubMaker()
     local testEnv, envCleanup = makeTestLibStubs()
 
+    --- Function that cleans up all actions taken by the test
     local function cleanup()
         envCleanup()
         stubCleanup()
     end
 
+    --- @class GLuaTest_AsyncEnv
+    local asyncEnv = {
+        -- We manually catch expectation errors here in case
+        -- they're called in an async function
+        expect = function( subject )
+            local built = expect( subject )
+            local expected = built.to.expected
+            local recordedFailure = false
+
+            -- Wrap the error-throwing function
+            -- and handle the error with the correct context
+            built.to.expected = function( ... )
+                if recordedFailure then return end
+
+                local _, errInfo = xpcall( expected, Helpers.FailCallback, ... )
+                onFailedExpectation( errInfo )
+
+                recordedFailure = true
+            end
+
+            return built
+        end,
+
+        done = done,
+        fail = fail,
+        stub = stub,
+    }
+
     local env = setmetatable(
-        {
-            -- We manually catch expectation errors here in case
-            -- they're called in an async function
-            expect = function( subject )
-                local built = expect( subject )
-                local expected = built.to.expected
-                local recordedFailure = false
-
-                -- Wrap the error-throwing function
-                -- and handle the error with the correct context
-                built.to.expected = function( ... )
-                    if recordedFailure then return end
-
-                    local _, errInfo = xpcall( expected, Helpers.FailCallback, ... )
-                    onFailedExpectation( errInfo )
-
-                    recordedFailure = true
-                end
-
-                return built
-            end,
-
-            done = done,
-            fail = fail,
-            stub = stub,
-        },
+        asyncEnv,
         {
             __index = function( _, idx )
                 return testEnv[idx] or _G[idx]
@@ -245,6 +289,12 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
     return env, cleanup
 end
 
+--- Runs a function with a given environment, and cleans up after
+--- @param defaultEnv table
+--- @param before? fun( state: GLuaTest_TestState ): nil The function to run before the test
+--- @param func fun( state: GLuaTest_TestState ): nil The test function to run
+--- @param state GLuaTest_TestState The state to pass to the test
+--- @return GLuaTest_CaseRunResult The result of the test
 function Helpers.SafeRunWithEnv( defaultEnv, before, func, state )
     local testEnv, cleanup = makeTestEnv()
     local ranExpect = false
@@ -256,24 +306,39 @@ function Helpers.SafeRunWithEnv( defaultEnv, before, func, state )
         return ogExpect( ... )
     end
 
-    setfenv( before, testEnv )
-    before( state )
-    setfenv( before, defaultEnv )
+    if before then
+        setfenv( before, testEnv )
+        before( state )
+        setfenv( before, defaultEnv )
+    end
 
     setfenv( func, testEnv )
-    local success, errInfo = xpcall( func, Helpers.FailCallback, state )
+    local success, output = xpcall( func, Helpers.FailCallback, state )
     setfenv( func, defaultEnv )
 
     cleanup()
 
-    -- If it succeeded but never ran `expect`, it's an empty test
-    if success and not ranExpect then
-        return nil, nil
+    if success then
+        -- If it succeeded but never ran `expect`, it's an empty test
+        if not ranExpect then
+            local empty = { result = "empty" } --[[@as GLuaTest_CaseEmpty]]
+            return empty
+        end
+
+        local successful = { result = "success" } --[[@as GLuaTest_CaseSuccess]]
+        return successful
     end
 
-    return success, errInfo
+    -- Test failure
+    local errInfo = output --[[@as GLuaTest_FailCallbackInfo]]
+    local failure = { result = "failure", errInfo = errInfo } --[[@as GLuaTest_CaseFailure]]
+
+    return failure
 end
 
+--- Creates a new test state
+--- The state is unique to each case, but has a group-level passthrough
+--- @return GLuaTest_TestState
 function Helpers.CreateCaseState( testGroupState )
     return setmetatable( {}, {
         __index = function( self, idx )

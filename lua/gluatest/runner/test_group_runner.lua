@@ -1,64 +1,105 @@
--- case.when should evaluate to `true` if the test should run
--- case.skip should evaluate to `true` if the test should be skipped
--- (case.skip takes precedence over case.when)
-local function checkShouldSkip( case )
-    -- skip
-    local skip = case.skip
-    if skip == true then return true end
-    if isfunction( skip ) then
-        return skip() == true
-    end
+include( "gluatest/runner/test_case_runner.lua" )
 
-    -- when
-    local condition = case.when
-    if condition == nil then return false end
-    if condition == false then return true end
+--- @type GLuaTest_RunnerHelpers
+local Helpers = include( "gluatest/runner/helpers.lua" )
+local noop = function() end
 
-    if isfunction( condition ) then
-        return condition() ~= true
-    end
-
-    return condition ~= true
-end
-
-function GLuatest.TestGroupRunner( TestRunner )
+--- Create a new TestGroupRunner
+--- @param TestRunner GLuaTest_TestRunner
+--- @param group GLuaTest_RunnableTestGroup
+function GLuaTest.TestGroupRunner( TestRunner, group )
     --- @class GLuaTest_TestGroupRunner
     local TGR = {}
 
-    TGR.state = {}
-    TGR.asyncCases = {}
+    --- The test group that this runner is Running
+    --- @type GLuaTest_RunnableTestGroup
+    TGR.group = group
 
-    --- Checks if the given test case can/should be run
+    --- Shared group-level state
+    TGR.groupState = {}
+
+    --- Cases that we will run from this group
+    --- @type GLuaTest_TestCaseRunner[]
+    TGR.caseRunners = {}
+
+    --- Add a result to the test run
+    --- @param result GLuaTest_UngroupedTestResult
+    function TGR:AddResult( result )
+        result.testGroup = group
+
+        local groupedResult = result --[[@as GLuaTest_TestResult]]
+        TestRunner:AddResult( groupedResult )
+    end
+
+    --- Add a success result for the given case
+    --- @param case GLuaTest_RunnableTestCase
+    function TGR:SetSucceeded( case )
+        self:AddResult( { case = case, success = true } )
+    end
+
+    --- Add a failed result for the given case
+    --- @param case GLuaTest_RunnableTestCase
+    --- @param errInfo? GLuaTest_FailCallbackInfo
+    function TGR:SetFailed( case, errInfo )
+        self:AddResult( { case = case, success = false, errInfo = errInfo } )
+    end
+
+    --- Add a timeout result for the given case
+    --- @param case GLuaTest_RunnableTestCase
+    function TGR:SetTimedOut( case )
+        self:SetFailed( case, { reason = "Timeout" } )
+    end
+
+    --- Add a skipped result for the given case
+    --- @param case GLuaTest_RunnableTestCase
+    function TGR:SetSkipped( case )
+        self:AddResult( { case = case, skipped = true, } )
+    end
+
+    --- Add an empty result for the given case
+    --- @param case GLuaTest_RunnableTestCase
+    function TGR:SetEmpty( case )
+        self:AddResult( { case = case, empty = true, } )
+    end
+
+    --- Run an individual test case
     --- @param case GLuaTest_TestCase
-    function TGR:CanRunCase( case )
-        local shouldSkip = checkShouldSkip( case )
-        if shouldSkip then
-            TestRunner:SetSkipped( case )
-            return false
+    --- @return GLuaTest_TestCaseRunner
+    function TGR:MakeCaseRunner( case )
+        case.id = Helpers.GetCaseID()
+        case.state = case.state or Helpers.CreateCaseState( self.groupState )
+        case.cleanup = case.cleanup or noop
+
+        local runnableCase = case --[[@as GLuaTest_RunnableTestCase]]
+        local caseRunner = GLuaTest.TestCaseRunner( self, runnableCase )
+
+        return caseRunner
+    end
+
+    --- Run all cases in the test group
+    --- @param cb fun(): nil The function to run once the group is complete
+    function TGR:Run( cb )
+        group.beforeAll( self.groupState )
+
+        local runners = self.caseRunners
+
+        for _, case in ipairs( group.cases ) do
+            local runner = self:MakeCaseRunner( case )
+            table.insert( runners, runner )
         end
 
-        local canRun = hook.Run( "GLuaTest_CanRunTestCase", self.group, case )
-        if canRun == nil then canRun = true end
-        if not canRun then return false end
+        local function runNext()
+            local nextRunner = table.remove( runners )
+            if not nextRunner then
+                group.afterAll( self.groupState )
+                cb()
+                return
+            end
 
-        -- Tests in the wrong realm will be hidden from output
-        local shared = case.shared
-        local clientside = case.clientside
-        local serverside = not case.clientside
-        local correctRealm = shared or ( clientside and CLIENT ) or ( serverside and SERVER )
-        if not correctRealm then return false end
+            nextRunner:Run( runNext )
+        end
 
-        return true
-    end
-
-    function TGR:ProcessCase( case )
-        if not self:CanRunCase( case ) then return end
-
-    end
-
-    function TGR:RunGroup( group )
-        self.group = group
-        testGroup.beforeAll( self.state )
+        runNext()
     end
 
     return TGR

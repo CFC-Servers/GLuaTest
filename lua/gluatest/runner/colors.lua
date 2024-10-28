@@ -1,4 +1,6 @@
---- @type table<string, Color>
+--- @alias GLuaTest_LogColors table<string, Color>
+
+--- @type GLuaTest_LogColors
 local colors = {
     red = Color( 255, 0, 0 ),
     green = Color( 0, 255, 0 ),
