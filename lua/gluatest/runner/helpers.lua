@@ -251,8 +251,8 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
     local asyncEnv = {
         -- We manually catch expectation errors here in case
         -- they're called in an async function
-        expect = function( subject )
-            local built = expect( subject )
+        expect = function( subject, ... )
+            local built = expect( subject, ... )
             local expected = built.to.expected
             local recordedFailure = false
 
