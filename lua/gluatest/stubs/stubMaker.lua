@@ -1,5 +1,6 @@
 return function()
 
+    --- @type GLuaTest_Stub[]
     local stubs = {}
 
     local function cleanup()
@@ -13,6 +14,7 @@ return function()
     return function( tbl, key )
         local original = tbl and tbl[key]
 
+        --- @class GLuaTest_Stub
         local stubTbl = {
             IsStub = true,
             callCount = 0,
