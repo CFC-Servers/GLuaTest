@@ -61,7 +61,9 @@ function TestRunner:Run( testGroups )
 
         LogFileStart( nextRunner.group )
 
-        nextRunner:Run( runNext )
+        timer.Simple( 0, function()
+            nextRunner:Run( runNext )
+        end )
     end
 
     runNext()

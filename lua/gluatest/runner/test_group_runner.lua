@@ -102,7 +102,9 @@ function GLuaTest.TestGroupRunner( TestRunner, group )
                 return cb()
             end
 
-            nextRunner:Run( runNext )
+            timer.Simple( 0, function()
+                nextRunner:Run( runNext )
+            end )
         end
 
         runNext()
