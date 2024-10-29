@@ -25,7 +25,7 @@ function LogHelpers.cleanPathForRead( path )
 
         if step == "lua" or step == "gamemodes" then
             startCopy = i + 1
-            assert( startCopy < #expl )
+            assert( startCopy <= #expl, "Unhandled path! Please report this" )
             break
         end
     end
@@ -33,20 +33,37 @@ function LogHelpers.cleanPathForRead( path )
     return table_concat( expl, "/", startCopy, #expl )
 end
 
---- filePath -> fileLines
---- @type table<string, string[]>
-LogHelpers.fileCache = {}
+--- @class GLuatest_LogHelpers_FileLinesCache
+LogHelpers.fileLinesCache = {
+    --- @type table<string, string[]>
+    cache = {},
+
+    --- Caches the file lines for a given file path
+    --- @param filePath string
+    --- @param fileLines string[]
+    set = function( self, filePath, fileLines )
+        self.cache[filePath] = fileLines
+    end,
+
+    --- Returns the cached file lines for a given file path
+    --- @param filePath string
+    --- @return string[]?
+    get = function( self, filePath )
+        return self.cache[filePath]
+    end,
+
+    --- Clears the file lines cache
+    clear = function( self )
+        self.cache = {}
+    end
+}
 
 --- Reads a given file path and returns the contents split by newline
 --- Cached for future calls
 --- @param filePath string
 --- @return string[]
 function LogHelpers.getFileLines( filePath )
-    --
-    -- Reads a given file path and returns the contents split by newline.
-    -- Caches the output for future calls.
-    --
-    local cached = LogHelpers.fileCache[filePath]
+    local cached = LogHelpers.fileLinesCache:get( filePath )
     if cached then return cached end
 
     local cleanPath = LogHelpers.cleanPathForRead( filePath )
@@ -55,12 +72,12 @@ function LogHelpers.getFileLines( filePath )
     testFile:Close()
 
     local fileLines = string.Split( fileContents, "\n" )
-    LogHelpers.fileCache[filePath] = fileLines
+    LogHelpers.fileLinesCache:set( filePath, fileLines )
 
     return fileLines
 end
 hook.Add( "GLuaTest_Finished", "GLuaTest_FileCacheCleanup", function()
-    LogHelpers.fileCache = {}
+    LogHelpers.fileLinesCache:clear()
 end )
 
 --- Given a table of code lines, return a string
@@ -81,6 +98,7 @@ function LogHelpers.getLeastSharedIndent( lines )
         end
     end
 
+    if leastShared == math.huge then return 0 end
     return leastShared or 0
 end
 
@@ -93,8 +111,8 @@ function LogHelpers.NormalizeLinesIndent( lines )
     if leastSharedIndent == 0 then return lines end
 
     for i = 1, #lines do
-        local lineContent = lines[i]
-        lines[i] = string.Right( lineContent, #lineContent - leastSharedIndent )
+        local line = lines[i]
+        lines[i] = string.sub( line, leastSharedIndent + 1 )
     end
 
     return lines
