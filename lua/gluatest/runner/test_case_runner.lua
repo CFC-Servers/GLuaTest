@@ -140,6 +140,7 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
         --- @param errInfo GLuaTest_FailCallbackInfo
         local function onFailedExpectation( errInfo )
             if isDone then return end
+            if expectationFailure then return end
 
             TestGroupRunner:SetFailed( case, errInfo )
             expectationFailure = true
@@ -190,8 +191,6 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
         end
 
         local func = case.async and self.RunAsync or self.RunSync
-
-        if case.async then print( "Starting async test: " .. case.id ) end
 
         if case.coroutine then
             func = coroutine.wrap( func )
