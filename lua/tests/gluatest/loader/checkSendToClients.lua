@@ -1,5 +1,5 @@
 return {
-    groupName = "GLuaTest: Loader.checkSendToClients",
+    groupName = "checkSendToClients",
     beforeEach = function( state )
         state.Loader = include( "gluatest/loader.lua" )
     end,
@@ -27,7 +27,6 @@ return {
                 Loader.checkSendToClients( "test.lua", cases )
                 expect( AddCSLuaFileStub ).was.called()
             end,
-
             cleanup = function( state )
                 GLuaTest.RUN_CLIENTSIDE = state.currentRunClientside
             end
