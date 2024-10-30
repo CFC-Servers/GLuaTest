@@ -18,6 +18,7 @@ return function( subject, ... )
 
     --- @class GLuaTest_PositiveExpectations
     local expectations = {
+        --- Handles the error message for the expectation failure
         expected = function( suffix, ... )
             local fmt = fmtPrefix .. suffix
             local message = string_format( fmt, subject, ... )
@@ -183,7 +184,7 @@ return function( subject, ... )
     --- @param comparison string
     function expectations.errWith( comparison )
         assert( TypeID( subject ) == TYPE_FUNCTION, ".errWith expects a function" )
-        assert( isstring( comparison ), "errWith expects a string" )
+        assert( TypeID( comparison ) == TYPE_STRING, ".errWith expects a string" )
 
         local success, err = pcall( subject, unpack( args ) )
 
