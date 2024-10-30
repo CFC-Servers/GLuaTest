@@ -53,7 +53,7 @@ return function( subject, ... )
         local diff = GetDiff( subject, comparison )
 
         if not diff then
-            i.expected( "to not deeply equal '%s' - found identical contents", comparison, path )
+            i.expected( "to not deeply equal '%s' - found identical contents", comparison )
         end
     end
 

@@ -9,7 +9,10 @@ if SERVER then
     _G["_MsgC"] = _G["MsgC"]
     local _MsgC = _G["_MsgC"]
 
+    --- @diagnostic disable-next-line: err-esc
     local startColor = "\x1b[38;2;"
+
+    --- @diagnostic disable-next-line: err-esc
     local endColor = "\x1b[0m"
 
     --- Converts the given Color object to an ANSI string

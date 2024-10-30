@@ -32,11 +32,11 @@ function Loader.processFile( dir, fileName, groups )
     local fileOutput = include( filePath )
 
     if not istable( fileOutput ) then
-        print( "GLuaTest: File " .. fullPath .. " did not return a table - ignoring" )
+        print( "GLuaTest: File " .. filePath .. " did not return a table - ignoring" )
         return
     end
     if not fileOutput.cases then
-        print( "GLuaTest: File " .. fullPath .. " did not have a 'cases' field - ignoring" )
+        print( "GLuaTest: File " .. filePath .. " did not have a 'cases' field - ignoring" )
         return
     end
 

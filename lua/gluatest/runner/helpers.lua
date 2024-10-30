@@ -37,6 +37,8 @@ function Helpers.makeHookTable()
             end
         end
 
+
+        ---@diagnostic disable-next-line: redundant-parameter
         return _G.hook.Add( event, name, func, ... )
     end
 
@@ -73,6 +75,7 @@ function Helpers.makeTimerTable()
     local timer_Create = function( identifier, delay, reps, func, ... )
         table.insert( timerNames, identifier )
 
+        ---@diagnostic disable-next-line: redundant-parameter
         return timer.Create( identifier, delay, reps, func, ... )
     end
 
@@ -269,7 +272,7 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
                 if recordedFailure then return end
 
                 local _, errInfo = xpcall( expected, Helpers.FailCallback, ... )
-                onFailedExpectation( errInfo )
+                onFailedExpectation( errInfo --[[@as GLuaTest_FailCallbackInfo]] )
 
                 recordedFailure = true
                 print( "Expectation failed: will not run again" )

@@ -40,7 +40,7 @@
 --- @field errInfo? GLuaTest_FailCallbackInfo The error information if the test failed
 
 --- @class GLuaTest_TestResult : GLuaTest_UngroupedTestResult
---- @field group GLuaTest_TestGroup The test group
+--- @field testGroup GLuaTest_RunnableTestGroup The test group
 
 
 --- @class GLuaTest_CaseSuccess
@@ -54,3 +54,17 @@
 --- @field result '"empty"'
 
 --- @alias GLuaTest_CaseRunResult GLuaTest_CaseSuccess | GLuaTest_CaseFailure | GLuaTest_CaseEmpty
+
+
+--- Begin an expectation chain
+--- @param subject any The subject of the expectation
+--- @return GLuaTest_Expect
+function expect( subject, ... )
+end
+
+--- Create a stub function
+--- @param tbl table The table to stub
+--- @param key any The key to stub
+--- @return GLuaTest_Stub
+function stub( tbl, key )
+end

@@ -84,19 +84,19 @@ function ResultLogger.logCodeContext( errInfo )
         return
     end
 
-    local lines = GetLineWithContext( sourceFile, lineNumber )
+    local lines = GetLineWithContext( assert( sourceFile ), assert( lineNumber ) )
     local lineCount = #lines
     lines = NormalizeLinesIndent( lines )
 
     local divider = GenerateDivider( lines, reason )
 
     MsgC( colors.white, "    Context:", "\n" )
-    MsgC( colors.grey,  "      ", divider, "\n" )
-    MsgC( colors.grey,  "     | ", "\n" )
+    MsgC( colors.grey, "      ", divider, "\n" )
+    MsgC( colors.grey, "     | ", "\n" )
 
     for i = 1, lineCount do
         local lineContent = lines[i]
-        local contextLineNumber = lineNumber - ( lineCount - i )
+        local contextLineNumber = lineNumber - (lineCount - i)
         local lineNumStr = tostring( contextLineNumber )
         local onFailingLine = contextLineNumber == lineNumber
 
@@ -108,7 +108,7 @@ function ResultLogger.logCodeContext( errInfo )
         end
     end
 
-    MsgC( colors.grey,  "     |", divider, "\n" )
+    MsgC( colors.grey, "     |", divider, "\n" )
 end
 
 
@@ -143,7 +143,7 @@ function ResultLogger.logTestCaseFailure( errInfo )
     local sourceFile = errInfo.sourceFile
 
     MsgC( colors.white, "    File:", "\n" )
-    MsgC( colors.grey,  "       ", sourceFile, "\n\n" )
+    MsgC( colors.grey, "       ", sourceFile, "\n\n" )
 
     ResultLogger.logLocals( errInfo )
     ResultLogger.logCodeContext( errInfo )
@@ -176,7 +176,7 @@ end
 
 --- Given a list of test results, return a table of failures grouped by test group
 --- @param allResults GLuaTest_TestResult[]
---- @return table<GLuaTest_TestGroup, GLuaTest_TestResult[]>
+--- @return table<GLuaTest_RunnableTestGroup, GLuaTest_TestResult[]>
 function ResultLogger.getFailuresByGroup( allResults )
     local failuresByGroup = {}
 
@@ -243,7 +243,7 @@ end
 --- @param failure GLuaTest_TestResult
 function ResultLogger.LogTestFailureDetails( failure )
     local case = failure.case
-    local errInfo = failure.errInfo
+    local errInfo = failure.errInfo or {}
 
     -- If the error came through without a source line,
     -- we'll use the function definition
@@ -293,10 +293,10 @@ function ResultLogger.logSummaryCounts( allResults )
     local darkgrey = colors.darkgrey
 
     local passed, failed, empty, skipped = ResultLogger.getResultCounts( allResults )
-    ResultLogger.prefixLog( white, "| ", green,    "PASS: ", blue, passed, "\n" )
-    ResultLogger.prefixLog( white, "| ", red,      "FAIL: ", blue, failed, "\n" )
-    ResultLogger.prefixLog( white, "| ", darkgrey, "EMPT: ", blue, empty,  "\n" )
-    ResultLogger.prefixLog( white, "| ", darkgrey, "SKIP: ", blue, skipped,  "\n" )
+    ResultLogger.prefixLog( white, "| ", green, "PASS: ", blue, passed, "\n" )
+    ResultLogger.prefixLog( white, "| ", red, "FAIL: ", blue, failed, "\n" )
+    ResultLogger.prefixLog( white, "| ", darkgrey, "EMPT: ", blue, empty, "\n" )
+    ResultLogger.prefixLog( white, "| ", darkgrey, "SKIP: ", blue, skipped, "\n" )
 end
 
 
@@ -314,7 +314,7 @@ function ResultLogger.logFailureSummary( allResults )
         local groupName = group.groupName
         local project = group.project
 
-        local identifier = project .. "/" .. ( groupName or fileName )
+        local identifier = project .. "/" .. (groupName or fileName)
         MsgC( colors.blue, "=== ", identifier, " ===", "\n" )
 
         for _, failure in ipairs( failures ) do

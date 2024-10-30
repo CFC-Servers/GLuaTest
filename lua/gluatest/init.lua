@@ -29,7 +29,7 @@ if GLuaTest.RUN_CLIENTSIDE then
     AddCSLuaFile( "gluatest/runner/msgc_wrapper.lua" )
 end
 
-CreateConVar( "gluatest_use_ansi", 1, FCVAR_ARCHIVE, "Should GLuaTest use ANSI coloring in its output", 0, 1 )
+CreateConVar( "gluatest_use_ansi", "1", FCVAR_ARCHIVE, "Should GLuaTest use ANSI coloring in its output", 0, 1 )
 
 
 local shouldRun = CreateConVar( "gluatest_enable", "0", FCVAR_ARCHIVE + FCVAR_PROTECTED )
