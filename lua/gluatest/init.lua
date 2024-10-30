@@ -32,7 +32,7 @@ end
 CreateConVar( "gluatest_use_ansi", 1, FCVAR_ARCHIVE, "Should GLuaTest use ANSI coloring in its output", 0, 1 )
 
 
-local shouldRun = CreateConVar( "gluatest_enable", 0, FCVAR_ARCHIVE + FCVAR_PROTECTED )
+local shouldRun = CreateConVar( "gluatest_enable", "0", FCVAR_ARCHIVE + FCVAR_PROTECTED )
 
 --- Loads all GLuaTest-compatible projects from a given path
 --- @param path string The path to load projects from (in the LUA mount point)

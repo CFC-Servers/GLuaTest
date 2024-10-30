@@ -1,5 +1,7 @@
-return function()
+--- @alias StubFunction fun(tbl: table, key: any): GLuaTest_Stub
+--- @alias GLuaTest_StubMaker fun(): StubFunction, fun()
 
+return function()
     --- @type GLuaTest_Stub[]
     local stubs = {}
 
@@ -11,10 +13,13 @@ return function()
         end
     end
 
+    --- @param tbl table
+    --- @param key any
     return function( tbl, key )
         local original = tbl and tbl[key]
 
         --- @class GLuaTest_Stub
+        --- @field stubbedFunc? function
         local stubTbl = {
             IsStub = true,
             callCount = 0,

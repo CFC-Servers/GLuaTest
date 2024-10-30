@@ -1,18 +1,20 @@
 --- @class GLuaTest_RunnerHelpers
-local Helpers = {}
+local Helpers = {
+    caseId = 0,
+    caseIdPrefix = "case_" .. os.time() .. "_",
+}
 
 --- @type GLuaTest_Expect
 local expect = include( "gluatest/expectations/expect.lua" )
-local stubMaker = include( "gluatest/stubs/stubMaker.lua" )
 
---- Global var to track the current case ID, even across lua refreshes
-GLuaTest_CaseID = GLuaTest_CaseID or 0
+--- @type GLuaTest_StubMaker
+local stubMaker = include( "gluatest/stubs/stubMaker.lua" )
 
 --- Gets a unique case ID
 --- @return string
 function Helpers.GetCaseID()
-    GLuaTest_CaseID = GLuaTest_CaseID + 1
-    return "case" .. GLuaTest_CaseID
+    Helpers.caseId = Helpers.caseId + 1
+    return Helpers.caseIdPrefix .. Helpers.caseId
 end
 
 ------------------
@@ -20,7 +22,7 @@ end
 ------------------
 
 --- Makes a mocked hook library that will clean itself up after the test completes
-local makeHookTable = function()
+function Helpers.makeHookTable()
     local trackedHooks = {}
 
     --- Wrapper over hook.Add that tracks the hooks added
@@ -65,7 +67,7 @@ local makeHookTable = function()
 end
 
 local timerCount = 0
-local function makeTimerTable()
+function Helpers.makeTimerTable()
     local timerNames = {}
 
     local timer_Create = function( identifier, delay, reps, func, ... )
@@ -90,9 +92,9 @@ local function makeTimerTable()
     return table.Inherit( { Create = timer_Create, Simple = timer_Simple }, timer ), cleanup
 end
 
-local function makeTestLibStubs()
-    local testHook, hookCleanup = makeHookTable()
-    local testTimer, timerCleanup = makeTimerTable()
+function Helpers.makeTestLibStubs()
+    local testHook, hookCleanup = Helpers.makeHookTable()
+    local testTimer, timerCleanup = Helpers.makeTimerTable()
 
     local testEnv = {
         hook = testHook,
@@ -107,9 +109,13 @@ local function makeTestLibStubs()
     return testEnv, cleanup
 end
 
-local function makeTestTools()
+--- Creates a new set of test tools (stubs, expectations, etc)
+--- @return GLuaTest_TestTools tools The test tools
+--- @return fun(): nil cleanup The cleanup function
+function Helpers.makeTestTools()
     local stub, stubCleanup = stubMaker()
 
+    --- @class GLuaTest_TestTools
     local tools = {
         stub = stub,
         expect = expect,
@@ -123,11 +129,11 @@ local function makeTestTools()
 end
 
 --- Creates a new environment for a test to run in
---- @return table The test environment
---- @return fun(): nil The cleanup function
-local function makeTestEnv()
-    local testEnv, envCleanup = makeTestLibStubs()
-    local testTools, toolsCleanup = makeTestTools()
+--- @return table testEnv The test environment
+--- @return fun(): nil cleanup The cleanup function
+function Helpers.makeTestEnv()
+    local testEnv, envCleanup = Helpers.makeTestLibStubs()
+    local testTools, toolsCleanup = Helpers.makeTestTools()
 
     local function cleanup()
         envCleanup()
@@ -155,7 +161,7 @@ end
 --- Returns all locals from a given stack level
 --- @param level number
 --- @return GLuaTest_LocalVariable[]
-local function getLocals( level )
+function Helpers.getLocals( level )
     --- @type GLuaTest_LocalVariable[]
     local locals = {}
     local i = 1
@@ -175,7 +181,7 @@ end
 --- Navigates the stack to find the correct stack level and info to report error information
 --- @return number The stack level
 --- @return debuginfo The stack info
-local function findStackInfo()
+function Helpers.findStackInfo()
     -- Step up through the stacks to find the error we care about
 
     for stack = 1, 12 do
@@ -221,8 +227,8 @@ function Helpers.FailCallback( reason )
 
     local cleanReason = table.concat( reasonSpl, ": ", 2, #reasonSpl )
 
-    local level, info = findStackInfo()
-    local locals = getLocals( level )
+    local level, info = Helpers.findStackInfo()
+    local locals = Helpers.getLocals( level )
 
     return {
         reason = cleanReason,
@@ -239,7 +245,7 @@ end
 function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
     -- TODO: How can we make Stubs safer in Async environments?
     local stub, stubCleanup = stubMaker()
-    local testEnv, envCleanup = makeTestLibStubs()
+    local testEnv, envCleanup = Helpers.makeTestLibStubs()
 
     --- Function that cleans up all actions taken by the test
     local function cleanup()
@@ -298,7 +304,7 @@ end
 --- @param state GLuaTest_TestState The state to pass to the test
 --- @return GLuaTest_CaseRunResult The result of the test
 function Helpers.SafeRunWithEnv( defaultEnv, before, func, state )
-    local testEnv, cleanup = makeTestEnv()
+    local testEnv, cleanup = Helpers.makeTestEnv()
     local ranExpect = false
 
     local ogExpect = testEnv.expect
