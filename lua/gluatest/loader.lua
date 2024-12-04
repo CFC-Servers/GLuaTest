@@ -1,9 +1,11 @@
-local istable = istable
-local runClientside = GLuaTest.RUN_CLIENTSIDE
-local noop = function() end
+--- @class GLuaTest_Loader
+local Loader = {}
 
-local checkSendToClients = function( filePath, cases )
-    if not runClientside then return end
+--- If the file has clientside cases, send it to the client
+--- @param filePath string
+--- @param cases GLuaTest_TestCase[]
+function Loader.checkSendToClients( filePath, cases )
+    if not GLuaTest.RUN_CLIENTSIDE then return end
 
     for _, case in ipairs( cases ) do
         if case.clientside then
@@ -12,48 +14,61 @@ local checkSendToClients = function( filePath, cases )
     end
 end
 
--- TODO: How to prevent this from matching: `customtests/blah/blah.lua`?
-local getProjectName = function( dir )
-    return string.match( dir, "tests/(.+)/.*$" )
+--- Given a full path to a test file or directory, return the project name (the folder under tests/ it exists within)
+--- @param dir string The full path to the test file or directory
+--- @return string
+function Loader.getProjectName( dir )
+    return string.match( dir, "tests/(.*)/.*$" )
 end
 
-local function processFile( dir, fileName, tests )
+--- Given a directory and a file name, try to load the file as a TestGroup and build a RunnableTestGroup from it
+--- @param dir string The directory the file is in
+--- @param fileName string The name of the file
+--- @param groups GLuaTest_RunnableTestGroup[]
+function Loader.processFile( dir, fileName, groups )
     if not string.EndsWith( fileName, ".lua" ) then return end
 
     local filePath = dir .. "/" .. fileName
     local fileOutput = include( filePath )
 
-    if not istable( fileOutput ) then return end
-    if not fileOutput.cases then return end
+    if not istable( fileOutput ) then
+        print( "GLuaTest: File " .. filePath .. " did not return a table - ignoring" )
+        return
+    end
+    if not fileOutput.cases then
+        print( "GLuaTest: File " .. filePath .. " did not have a 'cases' field - ignoring" )
+        return
+    end
 
-    if SERVER then checkSendToClients( filePath, fileOutput.cases ) end
+    local testGroup = fileOutput --[[@as GLuaTest_TestGroup]]
 
-    table.insert( tests, {
-        fileName = fileName,
-        groupName = fileOutput.groupName,
-        cases = fileOutput.cases,
-        project = getProjectName( filePath ),
-        beforeAll = fileOutput.beforeAll or noop,
-        beforeEach = fileOutput.beforeEach or noop,
-        afterAll = fileOutput.afterAll or noop,
-        afterEach = fileOutput.afterEach or noop
-    } )
+    if SERVER then Loader.checkSendToClients( filePath, testGroup.cases ) end
+
+    local group = testGroup
+    group.fileName = fileName
+    group.project = Loader.getProjectName( filePath )
+
+    table.insert( groups, group --[[@as GLuaTest_RunnableTestGroup]] )
 end
 
-local function getTestsInDir( dir, tests )
+
+--- Given a directory, recursively search for test files and load them into the given tests table
+--- @param dir string The directory to search in
+--- @param tests? GLuaTest_RunnableTestGroup[]
+function Loader.getTestsInDir( dir, tests )
     if not tests then tests = {} end
     local files, dirs = file.Find( dir .. "/*", "LUA" )
 
     for _, fileName in ipairs( files ) do
-        processFile( dir, fileName, tests )
+        Loader.processFile( dir, fileName, tests )
     end
 
     for _, dirName in ipairs( dirs ) do
         local newDir = dir .. "/" .. dirName
-        getTestsInDir( newDir, tests )
+        Loader.getTestsInDir( newDir, tests )
     end
 
     return tests
 end
 
-return getTestsInDir
+return Loader

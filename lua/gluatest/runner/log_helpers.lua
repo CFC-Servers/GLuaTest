@@ -1,8 +1,12 @@
 local string_Explode = string.Explode
 local table_concat = table.concat
 
+--- @class GLuaTest_LogHelpers
 local LogHelpers = {}
 
+--- Given a line of code, returns the leading whitespace
+--- @param line string
+--- @return string
 function LogHelpers.GetLeadingWhitespace( line )
     return string.match( line, "^%s+" ) or ""
 end
@@ -21,7 +25,7 @@ function LogHelpers.cleanPathForRead( path )
 
         if step == "lua" or step == "gamemodes" then
             startCopy = i + 1
-            assert( startCopy < #expl )
+            assert( startCopy <= #expl, "Unhandled path! Please report this" )
             break
         end
     end
@@ -29,41 +33,59 @@ function LogHelpers.cleanPathForRead( path )
     return table_concat( expl, "/", startCopy, #expl )
 end
 
-LogHelpers.fileCache = {}
+--- @class GLuatest_LogHelpers_FileLinesCache
+LogHelpers.fileLinesCache = {
+    --- @type table<string, string[]>
+    cache = {},
+
+    --- Caches the file lines for a given file path
+    --- @param filePath string
+    --- @param fileLines string[]
+    set = function( self, filePath, fileLines )
+        self.cache[filePath] = fileLines
+    end,
+
+    --- Returns the cached file lines for a given file path
+    --- @param filePath string
+    --- @return string[]?
+    get = function( self, filePath )
+        return self.cache[filePath]
+    end,
+
+    --- Clears the file lines cache
+    clear = function( self )
+        self.cache = {}
+    end
+}
 
 --- Reads a given file path and returns the contents split by newline
 --- Cached for future calls
 --- @param filePath string
 --- @return string[]
 function LogHelpers.getFileLines( filePath )
-    --
-    -- Reads a given file path and returns the contents split by newline.
-    -- Caches the output for future calls.
-    --
-    local cached = LogHelpers.fileCache[filePath]
+    local cached = LogHelpers.fileLinesCache:get( filePath )
     if cached then return cached end
 
     local cleanPath = LogHelpers.cleanPathForRead( filePath )
-    local testFile = file.Open( cleanPath, "r", "LUA" )
+    local testFile = file.Open( cleanPath, "r", "LUA" ) --[[@as File]]
     local fileContents = testFile:Read( testFile:Size() )
     testFile:Close()
 
     local fileLines = string.Split( fileContents, "\n" )
-    LogHelpers.fileCache[filePath] = fileLines
+    LogHelpers.fileLinesCache:set( filePath, fileLines )
 
     return fileLines
 end
 hook.Add( "GLuaTest_Finished", "GLuaTest_FileCacheCleanup", function()
-    LogHelpers.fileCache = {}
+    LogHelpers.fileLinesCache:clear()
 end )
 
+--- Given a table of code lines, return a string
+--- containing the leading spacing can be removed
+--- without losing any context
+--- @param lines string[]
+--- @return number The number of characters that are safe to remove
 function LogHelpers.getLeastSharedIndent( lines )
-    --
-    -- Given a table of code lines, return a string
-    -- containing the leading spacing can be removed
-    -- without losing any context
-    --
-
     local leastShared = math.huge
 
     for _, lineContent in ipairs( lines ) do
@@ -76,22 +98,31 @@ function LogHelpers.getLeastSharedIndent( lines )
         end
     end
 
+    if leastShared == math.huge then return 0 end
     return leastShared or 0
 end
 
+--- Given lines of code, dedent them by the least shared indent
+--- (i.e. dedent the code as much as possible without losing meaningful indentation)
+--- @param lines string[] The lines of code to dedent
+--- @return string[] The dedented lines
 function LogHelpers.NormalizeLinesIndent( lines )
     local leastSharedIndent = LogHelpers.getLeastSharedIndent( lines )
     if leastSharedIndent == 0 then return lines end
 
     for i = 1, #lines do
-        local lineContent = lines[i]
-        lines[i] = string.Right( lineContent, #lineContent - leastSharedIndent )
+        local line = lines[i]
+        lines[i] = string.sub( line, leastSharedIndent + 1 )
     end
 
     return lines
 end
 
-
+--- Return the desired line of code with a configurable amount of context above/below
+--- @param path string The path to the file
+--- @param line number The line number to get
+--- @param context? number The number of lines above and below to include (Default: 5)
+--- @return string[] The lines of code with context
 function LogHelpers.GetLineWithContext( path, line, context )
     if not context then context = 5 end
     local fileLines = LogHelpers.getFileLines( path )
@@ -105,12 +136,12 @@ function LogHelpers.GetLineWithContext( path, line, context )
     return lineWithContext
 end
 
-
+--- Generates an appropriately-sized divider line
+--- based on the longest line and the length of the failure reason
+--- @param lines string[] The lines of code
+--- @param reason string The reason for the failure
+--- @return string The divider line
 function LogHelpers.GenerateDivider( lines, reason )
-    --
-    -- Generates an appropriately-sized divider line
-    -- based on the longest line and the length of the failure reason
-    --
     local longestLine = 0
 
     for i = 1, #lines do
@@ -125,8 +156,5 @@ function LogHelpers.GenerateDivider( lines, reason )
     return string.rep( "_", dividerLength )
 end
 
-
-
 hook.Run( "GLuaTest_MakeLogHelpers", LogHelpers )
-
 return LogHelpers
