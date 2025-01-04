@@ -128,12 +128,12 @@ local function makeTestEnv()
     return env, cleanup
 end
 
-local function getLocals( level )
+local function getLocals( thread, level )
     local locals = {}
     local i = 1
 
     while true do
-        local name, value = debug.getlocal( level, i )
+        local name, value = debug.getlocal( thread, level, i )
         if name == nil then break end
         if name ~= "(*temporary)" then
             table.insert( locals, { name, value == nil and "nil" or value } )
@@ -144,28 +144,47 @@ local function getLocals( level )
     return locals
 end
 
--- FIXME: There has to be a better way to do this
-local function findStackInfo()
-    -- Step up through the stacks to find the error we care about
-
-    for stack = 1, 12 do
-        local info = debug.getinfo( stack, "lnS" )
-        if not info then break end
-
-        local emptyName = #info.namewhat == 0
-        local notGluatest = not string.match( info.short_src, "/lua/gluatest/" )
-
-        if emptyName and notGluatest then
-            return stack, info
+-- OLD: FIXME: There has to be a better way to do this
+-- NEW: Fixed by srlion :)
+local function findStackInfo( thread, caseFunc, reason )
+    -- Step through the stack to find the first non-C function call. If no stack is found for the called function, it will point to case function. This case will only happen
+    -- when the function is tail called, and the error is thrown from the tail called function.
+    local lastInfoLevel, lastInfo
+    for level = 0, 20 do
+        local info = debug.getinfo( thread, level, "nSl" )
+        if info and info.short_src ~= "[C]" and not string.match( info.short_src, "/lua/gluatest/" ) then
+            lastInfoLevel, lastInfo = level, info
+            break
         end
     end
 
-    -- This should never happen!!
-    ErrorNoHaltWithStack( "Could not find stack info! This should never happen - please report this!" )
-    return 2, debug.getinfo( 2, "lnS" )
+    local locals
+    if not lastInfoLevel then
+        ErrorNoHalt(
+            "Failed to get a stack, probably returning a function that errored! " ..
+            "For example, 'return error('!')'\n"
+        )
+        lastInfo = debug.getinfo( caseFunc, "nSl" )
+        lastInfo.currentline = lastInfo.linedefined -- currentline will be -1, so we will point it to the line where the function was defined
+
+        locals = {} -- We can't get locals from a function that has tail call returns
+    else
+        -- We got info about the error, but if the error was thrown from calling a nil value 'thisdoesntexist()', we can't get the currentline (executing line) as it was a nil value!
+        -- Thankfully, the error message will contain the line number, so we can extract it from there.
+        if lastInfo.currentline == -1 then
+            local line = string.match( reason, ":(%d+):" )
+            if line then
+                lastInfo.currentline = tonumber( line )
+            end
+        end
+
+        locals = getLocals( thread, lastInfoLevel )
+    end
+
+    return lastInfo, locals
 end
 
-function Helpers.FailCallback( reason )
+function Helpers.FailCallback( thread, caseFunc, reason )
     if reason == "" then
         ErrorNoHaltWithStack( "Received empty error reason in failCallback- ignoring " )
         return
@@ -183,14 +202,14 @@ function Helpers.FailCallback( reason )
 
     local cleanReason = table.concat( reasonSpl, ": ", 2, #reasonSpl )
 
-    local level, info = findStackInfo()
-    local locals = getLocals( level )
+    local info, locals = findStackInfo( thread, caseFunc, reason )
 
     return {
         reason = cleanReason,
         sourceFile = info.short_src,
         lineNumber = info.currentline,
-        locals = locals
+        locals = locals,
+        thread = thread
     }
 end
 
@@ -218,7 +237,7 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
                 built.to.expected = function( ... )
                     if recordedFailure then return end
 
-                    local _, errInfo = xpcall( expected, Helpers.FailCallback, ... )
+                    local _, errInfo = Helpers.SafeRunFunction( expected, ... )
                     onFailedExpectation( errInfo )
 
                     recordedFailure = true
@@ -259,7 +278,7 @@ function Helpers.SafeRunWithEnv( defaultEnv, before, func, state )
     setfenv( before, defaultEnv )
 
     setfenv( func, testEnv )
-    local success, errInfo = xpcall( func, Helpers.FailCallback, state )
+    local success, errInfo = Helpers.SafeRunFunction( func, state )
     setfenv( func, defaultEnv )
 
     cleanup()
@@ -267,6 +286,18 @@ function Helpers.SafeRunWithEnv( defaultEnv, before, func, state )
     -- If it succeeded but never ran `expect`, it's an empty test
     if success and not ranExpect then
         return nil, nil
+    end
+
+    return success, errInfo
+end
+
+function Helpers.SafeRunFunction( func, ... )
+    local co = coroutine.create( func )
+    local success, err = coroutine.resume( co, ... )
+
+    local errInfo
+    if not success then
+        errInfo = Helpers.FailCallback( co, func, err )
     end
 
     return success, errInfo
