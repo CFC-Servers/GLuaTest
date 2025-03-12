@@ -67,6 +67,9 @@ on:
         required: false
         description: "An absolute path with custom files to copy to the server directly. Structure should match the contents of `garrysmod/`"
 
+env:
+  GLUA_REPO: https://github.com/CFC-Servers/GLuaTest
+
 jobs:
   test:
     name: "Run tests"
@@ -89,7 +92,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
 
-          git clone --single-branch --branch ${{ inputs.gluatest-ref }} --depth 1 https://github.com/CFC-Servers/GLuaTest.git gluatest
+          git clone --single-branch --branch ${{ inputs.gluatest-ref }} --depth 1 ${{ env.GLUA_REPO }}.git gluatest
 
           git fetch --quiet --tags
           latest="$(git describe --tags `git rev-list --tags --max-count=1`)"
@@ -126,7 +129,7 @@ jobs:
             # The repo is likely an addon
             dest="$GITHUB_WORKSPACE/garrysmod_override/addons/project/"
           else
-            echo "::error title=Unknown project structure!::Please report this: https://github.com/CFC-Servers/GLuaTest/issues"
+            echo "::error title=Unknown project structure!::Please report this: ${{ env.GLUA_REPO }}/issues"
             exit 1
           fi
 
@@ -146,7 +149,7 @@ jobs:
 
         run: |
           cd $GITHUB_WORKSPACE/gluatest/docker
-          docker build --build-arg="GMOD_BRANCH=${{ inputs.branch }}" --build-arg="GLUATEST_REF=${{ inputs.gluatest-ref }}" --tag ghcr.io/cfc-servers/gluatest:latest .
+          docker build --build-arg="GMOD_BRANCH=${{ inputs.branch }}" --build-arg="GLUATEST_REPO=${{ env.GLUA_REPO }}.git" --build-arg="GLUATEST_REF=${{ inputs.gluatest-ref }}" --tag ghcr.io/cfc-servers/gluatest:latest .
 
       - name: Run GLuaTest
         env:
