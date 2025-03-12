@@ -21,6 +21,15 @@ function Loader.getProjectName( dir )
     return string.match( dir, "tests/(.*)/.*$" )
 end
 
+function Loader.simpleError( reason, filePath )
+     return {
+         reason = string.sub( reason, string.find( reason, ":" ) + 1 ),
+         sourceFile = filePath,
+         lineNumber = -1,
+         locals = {}
+     }
+ end
+
 --- Given a directory and a file name, try to load the file as a TestGroup and build a RunnableTestGroup from it
 --- @param dir string The directory the file is in
 --- @param fileName string The name of the file
@@ -29,20 +38,33 @@ function Loader.processFile( dir, fileName, groups )
     if not string.EndsWith( fileName, ".lua" ) then return end
 
     local filePath = dir .. "/" .. fileName
-    local fileOutput = include( filePath )
-
-    if not istable( fileOutput ) then
-        print( "GLuaTest: File " .. filePath .. " did not return a table - ignoring" )
-        return
-    end
-    if not fileOutput.cases then
-        print( "GLuaTest: File " .. filePath .. " did not have a 'cases' field - ignoring" )
-        return
+    local success, result = pcall( function( filePath )
+        local fileContent = file.Read( filePath, "LUA" )
+        local compiled = CompileString( fileContent, "lua/" .. filePath, false )
+ 
+        if not isfunction( compiled ) then
+            return Loader.simpleError( compiled, filePath )
+        end
+ 
+        return compiled()
+    end, filePath )
+ 
+    success = success and istable( result ) and not result.sourceFile
+ 
+    local fileOutput
+    if success then
+        fileOutput = result
+    else
+        fileOutput = {
+            includeError = istable( result ) and result or Loader.simpleError( result, filePath ),
+            groupName = fileName,
+            cases = {}
+        }
     end
 
     local testGroup = fileOutput --[[@as GLuaTest_TestGroup]]
 
-    if SERVER then Loader.checkSendToClients( filePath, testGroup.cases ) end
+    if SERVER and success then Loader.checkSendToClients( filePath, testGroup.cases ) end
 
     local group = testGroup
     group.fileName = fileName

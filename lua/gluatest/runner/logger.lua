@@ -108,6 +108,10 @@ function ResultLogger.logCodeContext( errInfo )
         end
     end
 
+    if lineNumber == -1 then
+        MsgC( colors.grey,  "     | ", colors.red, reason, "\n" )
+    end
+
     MsgC( colors.grey, "     |", divider, "\n" )
 end
 

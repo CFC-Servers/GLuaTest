@@ -79,6 +79,11 @@ function GLuaTest.TestGroupRunner( TestRunner, group )
     --- Run all cases in the test group
     --- @param cb fun(): nil The function to run once the group is complete
     function TGR:Run( cb )
+        if group.includeError ~= nil then
+            self:SetFailed( { name = "Failed to include file" }, group.includeError )
+            return cb()
+        end
+
         local beforeAll = group.beforeAll
         if beforeAll then beforeAll( self.groupState ) end
 
