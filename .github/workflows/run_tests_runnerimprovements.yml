@@ -167,6 +167,7 @@ jobs:
           TIMEOUT: "${{ inputs.timeout }}"
 
         run: |
+          cd $GITHUB_WORKSPACE/gluatest/docker
           docker compose up --pull never --no-log-prefix --exit-code-from runner
           exitstatus=$?
 
