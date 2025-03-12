@@ -67,6 +67,12 @@ on:
         required: false
         description: "An absolute path with custom files to copy to the server directly. Structure should match the contents of `garrysmod/`"
 
+      download-artifact:
+        type: string
+        required: false
+        description: "If specified it will download and setup the given artifact. It has to be a tar file that will be unpacked in the root directory."
+        default: ""
+
 env:
   GLUA_REPO: https://github.com/CFC-Servers/GLuaTest
 
@@ -144,14 +150,21 @@ jobs:
         run: |
           rsync --verbose --archive ${{ inputs.custom-overrides }} $GITHUB_WORKSPACE/garrysmod_override/
 
+      - name: Download artifact
+        if: inputs.download-artifact != ''
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/
+          name: "${{ inputs.download-artifact }}"
+
       - name: Build GLuaTest
         env:
           REQUIREMENTS: "${{ github.workspace }}/project/${{ inputs.requirements }}"
           CUSTOM_SERVER_CONFIG: "${{ github.workspace }}/project/${{ inputs.server-cfg }}"
           PROJECT_DIR: "${{ github.workspace }}/garrysmod_override"
-
         run: |
           cd $GITHUB_WORKSPACE/gluatest/docker
+          mkdir -p _gluatest_artifacts
           docker build --build-arg="GMOD_BRANCH=${{ inputs.branch }}" --build-arg="GLUATEST_REPO=${{ env.GLUA_REPO }}.git" --build-arg="GLUATEST_REF=${{ inputs.gluatest-ref }}" --tag ghcr.io/cfc-servers/gluatest:latest .
 
       - name: Run GLuaTest
@@ -165,7 +178,6 @@ jobs:
           SSH_PRIVATE_KEY: "${{ inputs.ssh-private-key }}"
           GITHUB_TOKEN: "${{ inputs.github-token }}"
           TIMEOUT: "${{ inputs.timeout }}"
-
         run: |
           cd $GITHUB_WORKSPACE/gluatest/docker
           docker compose up --pull never --no-log-prefix --exit-code-from runner

@@ -40,6 +40,14 @@ COPY base_server.cfg $server/cfg/test.cfg
 # Base fixture addon
 COPY testfixture $server/addons/testfixture
 
+# Any additional files
+COPY _gluatest_artifacts/ $gmodroot/
+
+RUN for file in $gmodroot/*.tar.gz; do \
+      tar -xzf "$file" -C "$gmodroot" && \
+      rm -f "$file"; \
+    done
+
 # Make requirements file
 RUN touch $gmodroot/requirements.txt
 
