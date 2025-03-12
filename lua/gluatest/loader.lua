@@ -62,6 +62,11 @@ function Loader.processFile( dir, fileName, groups )
         }
     end
 
+    if not fileOutput.cases then
+        print( "GLuaTest: File " .. filePath .. " did not have a 'cases' field - ignoring" )
+        return
+    end
+
     local testGroup = fileOutput --[[@as GLuaTest_TestGroup]]
 
     if SERVER and success then Loader.checkSendToClients( filePath, testGroup.cases ) end
