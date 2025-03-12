@@ -53,7 +53,7 @@ on:
       branch:
         type: string
         required: false
-        description: "Which GMod branch to run your tests on. Must be: 'live' or 'x86-64'"
+        description: "Which GMod branch to run your tests on. Must be: 'live', 'prerelease', 'dev' or 'x86-64'"
         default: "live"
 
       gluatest-ref:
