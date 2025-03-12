@@ -60,7 +60,7 @@
 --- @param subject any The subject of the expectation
 --- @return GLuaTest_Expect
 function expect( subject, ... )
-    _ = subject
+    _ = subject -- _ is used to make the GLuaLinter happy, as else it'll complain that the variables are unused.
 end
 
 --- Create a stub function
