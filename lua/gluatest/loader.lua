@@ -22,12 +22,12 @@ function Loader.getProjectName( dir )
 end
 
 function Loader.simpleError( reason, filePath )
-     return {
-         reason = string.sub( reason, string.find( reason, ":" ) + 1 ),
-         sourceFile = filePath,
-         lineNumber = -1,
-         locals = {}
-     }
+    return {
+        reason = string.sub( reason, string.find( reason, ":" ) + 1 ),
+        sourceFile = filePath,
+        lineNumber = -1,
+        locals = {}
+    }
  end
 
 --- Given a directory and a file name, try to load the file as a TestGroup and build a RunnableTestGroup from it
@@ -38,19 +38,19 @@ function Loader.processFile( dir, fileName, groups )
     if not string.EndsWith( fileName, ".lua" ) then return end
 
     local filePath = dir .. "/" .. fileName
-    local success, result = pcall( function( filePath )
-        local fileContent = file.Read( filePath, "LUA" )
-        local compiled = CompileString( fileContent, "lua/" .. filePath, false )
- 
+    local success, result = pcall( function( givenFilePath )
+        local fileContent = file.Read( givenFilePath, "LUA" )
+        local compiled = CompileString( fileContent, "lua/" .. givenFilePath, false )
+
         if not isfunction( compiled ) then
-            return Loader.simpleError( compiled, filePath )
+            return Loader.simpleError( compiled, givenFilePath )
         end
- 
+
         return compiled()
     end, filePath )
- 
+
     success = success and istable( result ) and not result.sourceFile
- 
+
     local fileOutput
     if success then
         fileOutput = result

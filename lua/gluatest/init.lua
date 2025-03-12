@@ -53,8 +53,8 @@ end
 --- First checks data_static/gluatest_version.txt (when running in docker)
 --- Then, attempts to read the git commit of the cloned GLuaTest repository
 --- Then, gives up
-local function getGLuaTestVersion()
-end
+--- local function getGLuaTestVersion()
+--- end
 
 --- Loads and runs all tests in the tests/ directory
 GLuaTest.runAllTests = function()
