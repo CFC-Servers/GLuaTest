@@ -94,11 +94,14 @@ jobs:
 
           git clone --single-branch --branch ${{ inputs.gluatest-ref }} --depth 1 ${{ env.GLUA_REPO }}.git gluatest
 
+          cd gluatest
           git fetch --quiet --tags
-          latest="$(git describe --tags `git rev-list --tags --max-count=1`)"
+
+          latest=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "0.00")
           echo "Latest Tag: $latest"
           echo "LATEST_TAG=$latest" >> $GITHUB_OUTPUT
 
+          cd ../
           cd $GITHUB_WORKSPACE
 
       - name: Prepare the override directory
