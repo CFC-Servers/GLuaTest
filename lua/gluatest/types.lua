@@ -68,6 +68,7 @@ end
 --- @param key any The key to stub
 --- @return GLuaTest_Stub
 function stub( tbl, key )
+    -- _ is used to make the GLuaLinter happy, as else it'll complain that the variables are unused.
     _ = tbl
     _ = key
 end
