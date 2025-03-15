@@ -16,6 +16,12 @@ USER steam
 RUN if [ "$GMOD_BRANCH" = "x86-64" ]; then \
     echo "Downloading x86-64 branch"; \
     ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta x86-64 validate +quit; \
+elif [ "$GMOD_BRANCH" = "dev" ]; then \
+    echo "Downloading dev branch"; \
+    ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta dev validate +quit; \
+elif [ "$GMOD_BRANCH" = "prerelease" ]; then \
+    echo "Downloading prerelease branch"; \
+    ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta prerelease validate +quit; \
 else \
     echo "Downloading live branch"; \
     ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 validate +quit; \
@@ -33,6 +39,14 @@ COPY base_server.cfg $server/cfg/test.cfg
 
 # Base fixture addon
 COPY testfixture $server/addons/testfixture
+
+# Any additional files
+COPY _gluatest_artifacts/ $gmodroot/
+
+RUN for file in $gmodroot/*.tar.gz; do \
+      tar -xzf "$file" -C "$gmodroot" && \
+      rm -f "$file"; \
+    done
 
 # Make requirements file
 RUN touch $gmodroot/requirements.txt
