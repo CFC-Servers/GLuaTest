@@ -96,7 +96,7 @@ function ResultLogger.logCodeContext( errInfo )
 
     for i = 1, lineCount do
         local lineContent = lines[i]
-        local contextLineNumber = lineNumber - (lineCount - i)
+        local contextLineNumber = lineNumber - ( lineCount - i )
         local lineNumStr = tostring( contextLineNumber )
         local onFailingLine = contextLineNumber == lineNumber
 
@@ -106,6 +106,10 @@ function ResultLogger.logCodeContext( errInfo )
             ResultLogger.drawLine( lineContent, lineNumStr )
             MsgC( "\n" )
         end
+    end
+
+    if lineNumber == -1 then
+        MsgC( colors.grey,  "     | ", colors.red, reason, "\n" )
     end
 
     MsgC( colors.grey, "     |", divider, "\n" )
@@ -200,7 +204,7 @@ function ResultLogger.LogFileStart( testGroup )
     local groupName = testGroup.groupName
     local project = testGroup.project
 
-    local identifier = project .. "/" .. (groupName or fileName)
+    local identifier = project .. "/" .. ( groupName or fileName )
 
     MsgC( "\n" )
     ResultLogger.prefixLog( colors.blue, "=== Running ", identifier, "... ===", "\n" )
@@ -314,7 +318,7 @@ function ResultLogger.logFailureSummary( allResults )
         local groupName = group.groupName
         local project = group.project
 
-        local identifier = project .. "/" .. (groupName or fileName)
+        local identifier = project .. "/" .. ( groupName or fileName )
         MsgC( colors.blue, "=== ", identifier, " ===", "\n" )
 
         for _, failure in ipairs( failures ) do

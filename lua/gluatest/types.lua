@@ -60,6 +60,7 @@
 --- @param subject any The subject of the expectation
 --- @return GLuaTest_Expect
 function expect( subject, ... )
+    _ = subject -- _ is used to make the GLuaLinter happy, as else it'll complain that the variables are unused.
 end
 
 --- Create a stub function
@@ -67,4 +68,7 @@ end
 --- @param key any The key to stub
 --- @return GLuaTest_Stub
 function stub( tbl, key )
+    -- _ is used to make the GLuaLinter happy, as else it'll complain that the variables are unused.
+    _ = tbl
+    _ = key
 end
