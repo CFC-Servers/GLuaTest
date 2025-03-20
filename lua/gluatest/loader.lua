@@ -71,11 +71,19 @@ function Loader.processFile( dir, fileName, groups )
 
     if SERVER and success then Loader.checkSendToClients( filePath, testGroup.cases ) end
 
-    local group = testGroup
-    group.fileName = fileName
-    group.project = Loader.getProjectName( filePath )
+    local group = {
+        cases = testGroup.cases,
+        groupName = testGroup.groupName,
+        beforeAll = testGroup.beforeAll,
+        beforeEach = testGroup.beforeEach,
+        afterAll = testGroup.afterAll,
+        afterEach = testGroup.afterEach,
 
-    table.insert( groups, group --[[@as GLuaTest_RunnableTestGroup]] )
+        fileName = fileName,
+        project = Loader.getProjectName( filePath )
+    } --[[@as GLuaTest_RunnableTestGroup]]
+
+    table.insert( groups, group )
 end
 
 

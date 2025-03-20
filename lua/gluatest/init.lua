@@ -29,10 +29,24 @@ if GLuaTest.RUN_CLIENTSIDE then
     AddCSLuaFile( "gluatest/runner/msgc_wrapper.lua" )
 end
 
+-- TOOD: Unnecessary with the new colored output changes?
 CreateConVar( "gluatest_use_ansi", "1", FCVAR_ARCHIVE, "Should GLuaTest use ANSI coloring in its output", 0, 1 )
 
-
 local shouldRun = CreateConVar( "gluatest_enable", "0", FCVAR_ARCHIVE + FCVAR_PROTECTED )
+local shouldSelfTest = CreateConVar( "gluatest_selftest_enable", "0", FCVAR_ARCHIVE + FCVAR_PROTECTED )
+
+--- @param loader GLuaTest_Loader
+--- @param projectName string
+--- @param path string
+--- @param testFiles GLuaTest_TestGroup[]
+local function addTestFiles( loader, projectName, path, testFiles )
+    if projectName == "gluatest" and not shouldSelfTest:GetBool() then
+        return
+    end
+
+    local tests = loader.getTestsInDir( path .. "/" .. projectName )
+    table.Add( testFiles, tests )
+end
 
 --- Loads all GLuaTest-compatible projects from a given path
 --- @param path string The path to load projects from (in the LUA mount point)
@@ -44,8 +58,8 @@ local function loadAllProjectsFrom( path, testFiles )
     local _, projects = file.Find( path .. "/*", "LUA" )
 
     for i = 1, #projects do
-        local project = projects[i]
-        table.Add( testFiles, loader.getTestsInDir( path .. "/" .. project ) )
+        local projectName = projects[i]
+        addTestFiles( loader, projectName, path, testFiles )
     end
 end
 
@@ -91,4 +105,4 @@ end )
 
 concommand.Add( "gluatest_run_tests", function()
     GLuaTest.runAllTests()
-end, nil, "Run all tests in the tests/ directory", FCVAR_PROTECTED )
+end, nil, "Run all tests in the tests/ directory", { FCVAR_PROTECTED } )
