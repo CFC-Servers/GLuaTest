@@ -21,6 +21,10 @@ function Loader.getProjectName( dir )
     return string.match( dir, "tests/(.*)/.*$" )
 end
 
+--- Returns a simple error table for when a file fails to load
+--- @param reason string
+--- @param filePath string
+--- @return table
 function Loader.simpleError( reason, filePath )
     return {
         reason = string.sub( reason, string.find( reason, ":" ) + 1 ),
@@ -28,7 +32,7 @@ function Loader.simpleError( reason, filePath )
         lineNumber = -1,
         locals = {}
     }
- end
+end
 
 --- Given a directory and a file name, try to load the file as a TestGroup and build a RunnableTestGroup from it
 --- @param dir string The directory the file is in
@@ -43,7 +47,7 @@ function Loader.processFile( dir, fileName, groups )
         local compiled = CompileString( fileContent, "lua/" .. givenFilePath, false )
 
         if not isfunction( compiled ) then
-            return Loader.simpleError( compiled, givenFilePath )
+            return Loader.simpleError( compiled --[[@as string]], givenFilePath )
         end
 
         return compiled()
@@ -104,6 +108,18 @@ function Loader.getTestsInDir( dir, tests )
     end
 
     return tests
+end
+
+--- Loads all lua files in the given directory
+--- @param dir string
+function Loader.loadExtensions( dir )
+    local files = file.Find( dir .. "/*.lua", "LUA" )
+
+    for _, fileName in ipairs( files ) do
+        local filePath = dir .. "/" .. fileName
+        print( "[GLuaTest] Loading extension: " .. filePath )
+        include( filePath )
+    end
 end
 
 return Loader

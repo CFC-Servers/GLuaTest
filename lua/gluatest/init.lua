@@ -49,12 +49,10 @@ local function addTestFiles( loader, projectName, path, testFiles )
 end
 
 --- Loads all GLuaTest-compatible projects from a given path
+--- @param loader GLuaTest_Loader
 --- @param path string The path to load projects from (in the LUA mount point)
 --- @param testFiles GLuaTest_TestGroup[] The table to add the loaded test files to
-local function loadAllProjectsFrom( path, testFiles )
-    --- @type GLuaTest_Loader
-    local loader = include( "gluatest/loader.lua" )
-
+local function loadAllProjectsFrom( loader, path, testFiles )
     local _, projects = file.Find( path .. "/*", "LUA" )
 
     for i = 1, #projects do
@@ -77,6 +75,10 @@ GLuaTest.runAllTests = function()
         return
     end
 
+    --- @type GLuaTest_Loader
+    local Loader = include( "gluatest/loader.lua" )
+    Loader.loadExtensions( "gluatest/extensions" )
+
     local testPaths = {
         "tests",
         GAMEMODE.FolderName .. "/gamemode/tests"
@@ -88,7 +90,7 @@ GLuaTest.runAllTests = function()
 
     for i = 1, #testPaths do
         local path = testPaths[i]
-        loadAllProjectsFrom( path, testFiles )
+        loadAllProjectsFrom( Loader, path, testFiles )
     end
 
     hook.Run( "GLuaTest_RunTestFiles", testFiles )
