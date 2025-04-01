@@ -22,6 +22,11 @@ services:
         target: /home/steam/garrysmod_override
         read_only: true
 
+      - type: bind
+        source: $GMOD_ARTIFACT_DIR
+        target: /home/steam/_gluatest_artifacts
+        read_only: true
+
     environment:
       - GAMEMODE=$GAMEMODE
       - COLLECTION_ID=$COLLECTION_ID
