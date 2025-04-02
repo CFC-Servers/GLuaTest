@@ -21,8 +21,8 @@ rsync --verbose --archive $home/serverfiles_override/ $gmodroot/
 cp $home/_gluatest_artifacts/_gluatest_artifacts/* $gmodroot/
 
 for file in $gmodroot/*.tar.gz; do \
-    tar -xzf "$file" -C "$gmodroot" && \
-    rm -f "$file"; \
+    tar --extract --verbose --ungzip --file="$file" --directory="$gmodroot" && \
+    rm --force --verbose "$file"; \
 done
 
 if [ -f "$gmodroot/custom_requirements.txt" ]; then
