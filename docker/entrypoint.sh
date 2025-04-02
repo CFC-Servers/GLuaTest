@@ -86,6 +86,8 @@ base_srcds_args=(
     # Test requirements
     -systemtest       # Allows us to exit the game from inside Lua
     -condebug         # Logs everything to console.log
+    -debug            # On crashes generate a debug.log allowing for better debugging.
+    -norestart        # If we crash, do not restart.
 
     # Disabling things we don't need/want
     -nodns            # Disables DNS requests and resolving DNS addresses
@@ -131,6 +133,13 @@ if [ "$GMOD_BRANCH" = "x86-64" ]; then
 else
     echo "Starting 32-bit server"
     unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
+fi
+
+if [ -f "$gmodroot/debug.log" ]; then
+	cat "$gmodroot/debug.log" # Dump the entire debug log
+
+	echo "::error:: Server crashed! - Failing workflow"
+	exit 1
 fi
 
 status=$?

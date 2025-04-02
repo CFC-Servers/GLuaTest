@@ -6,7 +6,7 @@ ARG GLUATEST_REPO=https://github.com/CFC-Servers/GLuaTest.git
 
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt update && apt install -y --no-install-recommends --no-install-suggests git python3-minimal expect rsync openssh-client && apt autoremove
+RUN apt update && apt install -y --no-install-recommends --no-install-suggests git python3-minimal expect rsync openssh-client gdb && apt autoremove
 
 ARG home=/home/steam
 ARG gmodroot=$home/gmodserver
@@ -53,6 +53,9 @@ RUN touch $gmodroot/requirements.txt
 
 # GitHub Server Keys
 RUN ssh-keyscan github.com >> $home/github_known_hosts
+
+# Enable core dumps
+RUN ulimit -c unlimited
 
 # Entrypoint
 COPY entrypoint.sh $gmodroot/entrypoint.sh
