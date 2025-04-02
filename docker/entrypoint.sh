@@ -17,6 +17,14 @@ rm -rf _tmp_ssh _tmp_https
 echo "Copying serverfiles overrides..."
 rsync --verbose --archive $home/serverfiles_override/ $gmodroot/
 
+# Any additional files
+cp $home/_gluatest_artifacts/_gluatest_artifacts/* $gmodroot/
+
+for file in $gmodroot/*.tar.gz; do \
+    tar --extract --verbose --ungzip --file="$file" --directory="$gmodroot" && \
+    rm --force --verbose "$file"; \
+done
+
 if [ -f "$gmodroot/custom_requirements.txt" ]; then
     echo "Appending custom requirements"
     cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
