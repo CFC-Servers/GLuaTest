@@ -259,7 +259,7 @@ jobs:
 
 ### GMod Branch
 <details>
- <summary><strong>You can run your tests on the live branch of the `x86-64` branch</strong></summary>
+ <summary><strong>You can run your tests on any of the GMod branches</strong></summary>
 <br>
 
 
@@ -277,6 +277,12 @@ jobs:
     with:
       branch: x86-64
 ```
+
+Acceptable options are:
+- `live` (Main GMod version - this is the default)
+- `x86-64`
+- `prerelease`
+- `dev`
 
 </summary>
 </details>
@@ -311,6 +317,8 @@ jobs:
 Running tests in a GitHub Runner is surprisingly fast.
 
 Even with hundreds of tests, you can expect the entire check to take **under 30 seconds!**
+
+In fact, the test suite itself will often complete in only a couple of seconds. Most of the time is spent downloading the image and setting up the runner.
 
 _(Failing async tests will slow down the time significantly because it has to wait for the timeouts)_
 
@@ -459,11 +467,12 @@ The Test Group (that is, the table you return from your Test File) can have the 
 ### The Test Case
 Each Test Case is a table with the following keys:
 
-| Key          | Type              | Description                                                                    | Required | Default |
-|--------------|:-----------------:|--------------------------------------------------------------------------------|:--------:|:-------:|
+| Key              | Type              | Description                                                                    | Required | Default |
+|------------------|:-----------------:|--------------------------------------------------------------------------------|:--------:|:-------:|
 | **`name`**       | `string`          | Name of the Test Case (for reference later)                                    |  ✔️       |         |
 | **`func`**       | `function`        | The actual test function. Takes a `state` table                                |  ✔️       |         |
 | **`async`**      | `bool`            | If your test relies on timers, hooks, or callbacks, it must run asynchronously |  ❌      | `false` |
+| **`coroutine`**  | `bool`            | This allows your test to use coroutines to control its execution               |  ❌      | `false` |
 | **`timeout`**    | `int`             | How long to wait for your async test before marking it as having timed out     |  ❌      | 60      |
 | **`cleanup`**    | `function`        | The function to run after running your test. Takes a `state` table             |  ❌      |         |
 | **`when`**       | `bool / function` | Only run this test case "when" this field is _(or evaluates to)_ `true`          |  ❌      |         |
@@ -555,6 +564,71 @@ Skipping is also handy if you want to disable a test but keep the code:
 ```
 
 **Note:** `skip` takes precedence over `when`
+
+<br>
+
+#### The `coroutine` option
+<details>
+ <summary><strong>Sometimes you need your test to wait indefinitely for unpredictable circumstances that don't have callbacks</strong></summary>
+
+ In these situations, you can use the `coroutine` option to run your test in a coroutine.
+
+ For example, if you're testing with Nextbots, you'll find it frustrating to wait for them to disconnect before your next test runs.
+
+```lua
+-- lua/gluatest/extensions/my_nextbot_extensions.lua
+
+--- Halts the coroutine until the server is empty
+WaitForEmptyServer = function()
+    local co = coroutine.running()
+    local identifier = getWaitIdentifier()
+
+    hook.Add( "Think", identifier, function()
+        local count = player.GetCount()
+        if count > 0 then return end
+
+        hook.Remove( "Think", identifier )
+        coroutine.resume( co )
+    end )
+
+    return coroutine.yield()
+end
+```
+
+```lua
+-- lua/tests/my_nextbot/my_nextbot.lua
+
+return {
+    groupName = "My Nextbot tests",
+
+    -- Automatically kick all bots after each test
+    afterEach = function()
+        for _, bot in ipairs( player.GetBots() ) do
+            game.KickID( bot:UserID() )
+        end
+    end,
+
+    cases = {
+        {
+            name = "Should be able to spawn a nextbot",
+            async = true,
+            timeout = 2,
+            coroutine = true,
+            func = function()
+                WaitForEmptyServer() -- We need to be sure the server is empty before we do our tests, otherwise it could fail due to timing
+
+                local myBot = player.CreateNextBot( "Silly little guy" )
+                expect( player.GetCount() ).to.equal( 1 )
+                expect( player.GetAll()[1] ).to.equal( myBot )
+
+                done()
+            end
+        }
+    }
+}
+```
+
+</details>
 
 <br>
 
