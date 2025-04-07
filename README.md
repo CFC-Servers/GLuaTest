@@ -1000,6 +1000,76 @@ return {
 ```
 </details>
 
+### Extensions
+<details>
+ <summary><strong>Extensions allow you to make your own test utilities or GLuaTest extensions</strong></summary>
+
+ If you have a function or tool that you'd like to use in your tests, you can add it to the `gluatest/extensions/` directory.
+
+ For example, if you were going to be testing a lot of entities in the same way, you could save yourself some headache by making an extension like this:
+```lua
+-- lua/gluatest/extensions/with_entity.lua
+
+--- Returns a GLuaTest TestGroup that is set up for Entity Testing
+--- @param classname string The class name of the entity to spawn
+--- @param testGroup GLuaTest_TestGroup
+WithEntityTests = function( classname, testGroup )
+    testGroup.beforeEach = function( state )
+        state.ents = {}
+
+        function state.SpawnEnt()
+            local ent = ents.Create( classname )
+            ent:Spawn()
+
+            table.insert( state.ents, ent )
+            return ent
+        end
+
+        function state.RemoveEnt( ent )
+            table.RemoveByValue( state.ents, ent )
+
+            if IsValid( ent ) then
+                ent:Remove()
+            end
+        end
+    end
+
+    testGroup.afterEach = function( state )
+        for _, ent in ipairs( state.ents ) do
+            if IsValid( ent ) then
+                ent:Remove()
+            end
+        end
+    end
+end
+```
+
+And then you can set up your test like this:
+```lua
+-- lua/tests/my_project/entity_1.lua
+
+return WithEntityTests( "my_special_entity", {
+    groupName = "My Special Entity Tests",
+
+    -- No need to include any special setup/cleanup logic here as it's already handled by WithEntityTests
+
+    cases = {
+        {
+            name = "Spawns with default values",
+            func = function( state )
+                local ent = state.SpawnEnt()
+
+                expect( ent:GetModel() ).to.equal( "models/my_special_entity.mdl" )
+                expect( ent:GetColor() ).to.equal( Color( 255, 255, 255 ) )
+            end
+        }
+    }
+} )
+```
+</details>
+
+<br>
+
 ---
 
 <br>
