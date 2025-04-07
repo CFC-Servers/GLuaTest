@@ -502,8 +502,9 @@ There are a number of different expectations you can use.
 #### Expectations
 | Expectation          | Description                                               | Example                                                         |
 |----------------------|-----------------------------------------------------------|-----------------------------------------------------------------|
-| **`equal`**/**`eq`**     | Basic `==` equality check                                     | `expect( a ).to.equal( b )`                                     |
+| **`equal`**/**`eq`** | Basic `==` equality check                                     | `expect( a ).to.equal( b )`                                     |
 | **`aboutEqual`**     | Basic `==` equality check, with a tolerance                   | `expect( 0.999 ).to.aboutEqual( 1 )`                            |
+| **`deepEqual`**      | Expects that two tables are deeply equal                      | `expect( {{ Entity(1) }} ).to.deepEqual( {{ Entity(1) }} )`     |
 | **`beLessThan`**     | Basic `<` comparison                                          | `expect( 5 ).to.beLessThan( 6 )`                                |
 | **`beGreaterThan`**  | Basic `>` comparison                                          | `expect( 10 ).to.beGreaterThan( 1 )`                            |
 | **`beBetween`**      | Expects the subject to be less than min, and greater than max | `expect( 5 ).to.beBetween( 3, 7 )`                              |
@@ -513,7 +514,7 @@ There are a number of different expectations you can use.
 | **`beInvalid`**      | Expects `IsValid( value )` to return `false`                  | `expect( nil ).to.beInvalid()`                                  |
 | **`beNil`**          | Expects the subject to literally be `nil`                     | `expect( player.GetAll()[2] ).to.beNil()`                       |
 | **`exist`**          | Expects the subject to not be `nil`                           | `expect( MyProject ).to.exist()`                                |
-| **`beA`**/**`beAn`**     | Expects the subject to have the given `type`                  | `expect( "test" ).to.beA( "string" )`                           |
+| **`beA`**/**`beAn`** | Expects the subject to have the given `type`                  | `expect( "test" ).to.beA( "string" )`                           |
 | **`succeed`**        | Expects the subject function to run without error             | `expect( func, param ).to.succeed()`                            |
 | **`err`**            | Expects the subject function to throw an error                | `expect( error ).to.err()`                                      |
 | **`errWith`**        | Expects the subject function to throw the given error         | `expect( badFunc, param ).to.errWith( "error message" )`        |
