@@ -288,16 +288,20 @@ jobs:
  <summary><strong>Here are all of the options you can pass to the workflow</strong></summary>
 <br>
 
-| **Name**          | **Description**                                                                             | **Example**                                |
-|-------------------|---------------------------------------------------------------------------------------------|--------------------------------------------|
-| `server-cfg`      | A path (relative to project directory) with extra server config options                     | `data_static/my_addon.cfg`                 |
-| `requirements`    | A path (relative to project directory) with a list of all requirements to test this project | `data_static/my_addon.txt`                 |
-| `gamemode`        | The name of the gamemode for the test server to run                                         | `darkrp`                                   |
-| `collection`      | The workshop ID of the collection for the test server to use                                | `1629732176`                               |
-| `ssh-private-key` | The Private SSH key to use when cloning the dependencies                                    | `-----BEGIN OPENSSH PRIVATE KEY-----\n...` |
-| `github-token`    | A GitHub Personal Access Token, used when cloning dependencies                              |                                            |
-| `timeout`         | How many minutes to let the job run before killing the server                               | `10`                                       |
-| `branch`          | Which GMod branch to run your tests on                                                      | `x86-64`                                   |
+| **Name**                 | **Description**                                                                                                            | **Example**                                                                                         |
+|----------------------|------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
+| `server-cfg`         | A path (relative to project directory) with extra server config options                                                | `data_static/my_addon.cfg`                                                                              |
+| `requirements`       | A path (relative to project directory) with a list of all requirements to test this project                            | `data_static/my_addon.txt`                                                                              |
+| `gamemode`           | The name of the gamemode for the test server to run                                                                    | `darkrp`                                                                                                |
+| `collection`         | The workshop ID of the collection for the test server to use                                                           | `1629732176`                                                                                            |
+| `extra-startup-args` | The workshop ID of the collection for the test server to use                                                           | `1629732176`                                                                                            |
+| `ssh-private-key`    | The Private SSH key to use when cloning the dependencies                                                               | `-----BEGIN OPENSSH PRIVATE KEY-----\n...`                                                              |
+| `github-token`       | A GitHub Personal Access Token, used when cloning dependencies                                                         |                                                                                                         |
+| `timeout`            | How many minutes to let the job run before killing the server                                                          | `10`                                                                                                    |
+| `branch`             | Which GMod branch to run your tests on                                                                                 | `live`|`prerelease`|`dev`|`x86-64`                                                                      |
+| `gluatest-ref`       | Which tag/branch of GLuaTest to run                                                                                    | `main`|`feature/new-feature-branch`                                                                     |
+| `custom-overrides`   | An absolute path with custom files to copy to the server directly. Structure should match the contents of `garrysmod/` | `$GITHUB_WORKSPACE/my_overrides`                                                                        |
+| `download-artifact`  | A URL path to a .tar.gz file that will be unpacked in the root directory                                               | `https://github.com/RaphaelIT7/gmod-holylib/releases/download/Release0.7/gmsv_holylib_linux_packed.zip` |
 
 </summary>
 </details>
