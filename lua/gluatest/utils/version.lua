@@ -12,8 +12,8 @@ function VersionTools.getVersion()
     local version = "unknown"
 
     if file.Exists( "data_static/gluatest_version.txt", "DATA" ) then
-        local file = file.Read( "data_static/gluatest_version.txt", "DATA" )
-        version = string.Trim( file )
+        local versionContents = file.Read( "data_static/gluatest_version.txt", "DATA" )
+        version = string.Trim( versionContents )
     else
         -- See if it's cloned into the addons folder
         local clonedInfo = GitTools.getClonedInfo()
