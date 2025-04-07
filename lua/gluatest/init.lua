@@ -1,5 +1,8 @@
 local RED = Color( 255, 0, 0 )
 
+--- @type VersionTools
+local VersionTools = include( "utils/version.lua" )
+
 --- @class GLuaTest
 GLuaTest = {
     -- If, for some reason, you need to run GLuaTest clientside, set this to true (not very well supported)
@@ -28,9 +31,6 @@ if GLuaTest.RUN_CLIENTSIDE then
     AddCSLuaFile( "gluatest/runner/log_helpers.lua" )
     AddCSLuaFile( "gluatest/runner/msgc_wrapper.lua" )
 end
-
--- TOOD: Unnecessary with the new colored output changes?
-CreateConVar( "gluatest_use_ansi", "1", FCVAR_ARCHIVE, "Should GLuaTest use ANSI coloring in its output", 0, 1 )
 
 local shouldRun = CreateConVar( "gluatest_enable", "0", FCVAR_ARCHIVE + FCVAR_PROTECTED )
 local shouldSelfTest = CreateConVar( "gluatest_selftest_enable", "0", FCVAR_ARCHIVE + FCVAR_PROTECTED )
@@ -61,19 +61,14 @@ local function loadAllProjectsFrom( loader, path, testFiles )
     end
 end
 
---- Attempts the read the version of GLuaTest
---- First checks data_static/gluatest_version.txt (when running in docker)
---- Then, attempts to read the git commit of the cloned GLuaTest repository
---- Then, gives up
---- local function getGLuaTestVersion()
---- end
-
 --- Loads and runs all tests in the tests/ directory
 GLuaTest.runAllTests = function()
     if not shouldRun:GetBool() then
         print( "[GLuaTest] Test runs are disabled. Enable them with: gluatest_enable 1" )
         return
     end
+
+    GLuaTest.VERSION = VersionTools.getVersion()
 
     --- @type GLuaTest_Loader
     local Loader = include( "gluatest/loader.lua" )

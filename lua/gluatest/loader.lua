@@ -60,7 +60,7 @@ function Loader.processFile( dir, fileName, groups )
         fileOutput = result
     else
         fileOutput = {
-            includeError = istable( result ) and result or Loader.simpleError( result, filePath ),
+            includeError = istable( result ) and result or Loader.simpleError( result --[[@as string]], filePath ),
             groupName = fileName,
             cases = {}
         }
