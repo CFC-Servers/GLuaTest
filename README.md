@@ -206,12 +206,12 @@ And that's it!
 
 <br>
 
-### Gamemodes
+### Gamemodes and Maps
 <details>
- <summary><strong>If you're testing a non-sandbox project, you need to tell the test server which gamemode to run</strong></summary>
+ <summary><strong>You can customize which gamemode and map the server starts with</strong></summary>
 <br>
 
-Simply specify the desired gamemode in your workflow's `with` section.
+Simply specify the desired gamemode and/or map in your workflow's `with` section.
 
 ```yml
 name: GLuaTest Runner
@@ -224,6 +224,7 @@ jobs:
     uses: CFC-Servers/GLuaTest/.github/workflows/run_tests.yml@main
     with:
       gamemode: darkrp
+      map: rp_downtown_tits_v2
 ```
 
 </summary>
@@ -305,14 +306,8 @@ jobs:
   run-tests:
     uses: CFC-Servers/GLuaTest/.github/workflows/run_tests.yml@main
     with:
-      extra-startup-args: "-tickrate 16"
+      extra-startup-args: "-tickrate 16 -usegh"
 ```
-
-Acceptable options are:
-- `live` (Main GMod version - this is the default)
-- `x86-64`
-- `prerelease`
-- `dev`
 
 </summary>
 </details>
@@ -331,7 +326,7 @@ Acceptable options are:
 | `gamemode`           | The name of the gamemode for the test server to run                                                                    | `darkrp`                                                                                                |
 | `map`                | The direct name of the map you want the server to startup with                                                         | `gm_bigcity_improved_lite`                                                                              |
 | `collection`         | The workshop ID of the collection for the test server to use                                                           | `1629732176`                                                                                            |
-| `extra-startup-args` | Additional startup arguments to add to the srcds startup                                                               | `-tickrate 16`                                                                                          |
+| `extra-startup-args` | Additional startup arguments to add to the srcds startup                                                               | `-tickrate 16 -usegh`                                                                                   |
 | `ssh-private-key`    | The Private SSH key to use when cloning the dependencies                                                               | `-----BEGIN OPENSSH PRIVATE KEY-----\n...`                                                              |
 | `github-token`       | A GitHub Personal Access Token, used when cloning dependencies                                                         |                                                                                                         |
 | `timeout`            | How many minutes to let the job run before killing the server                                                          | `10`                                                                                                    |
