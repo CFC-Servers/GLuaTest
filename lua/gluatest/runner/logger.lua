@@ -7,7 +7,6 @@ local NormalizeLinesIndent = Helpers.NormalizeLinesIndent
 
 --- @type GLuaTest_LogColors
 local colors = include( "gluatest/runner/colors.lua" )
-local MsgC = include( "gluatest/runner/msgc_wrapper.lua" )
 
 --- @class GLuaTest_ResultLogger
 local ResultLogger = {}
@@ -340,17 +339,12 @@ function ResultLogger.LogTestsComplete( testGroups, allResults, duration )
     ResultLogger.logSummaryCounts( allResults )
     ResultLogger.logFailureSummary( allResults )
     MsgC( "\n" )
-    ResultLogger.PlainLogEnd()
 end
 
 --- External parsers rely on the output of this function, it should not be changed often
 function ResultLogger.PlainLogStart()
-    print( "[GLuaTest]: Test run starting..." )
-end
-
---- External parsers rely on the output of this function, it should not be changed often
-function ResultLogger.PlainLogEnd()
-    print( "[GLuaTest]: Test run complete!" )
+    ResultLogger.prefixLog( colors.green, "Test Run starting...", "\n" )
+    ResultLogger.prefixLog( colors.blue, "Version: ", colors.white, GLuaTest.VERSION, "\n" )
 end
 
 hook.Run( "GLuaTest_MakeResultLogger", ResultLogger )
