@@ -23,6 +23,12 @@ on:
         description: "The name of the gamemode for the test server to run. (Be sure to list it as a requirement or include it in the test collection, if necessary)"
         default: "sandbox"
 
+      map:
+        type: string
+        required: false
+        description: "The name of the map for the test server to run. (Be sure to list it as a requirement or include it in the test collection, if necessary)"
+        default: "gm_construct"
+
       collection:
         type: string
         required: false
@@ -165,7 +171,11 @@ jobs:
           GMOD_ARTIFACT_DIR: "${{ github.workspace }}/gluatest/docker/_gluatest_artifacts"
         run: |
           cd $GITHUB_WORKSPACE/gluatest/docker
-          docker build --build-arg="GMOD_BRANCH=${{ inputs.branch }}" --build-arg="GLUATEST_REPO=${{ env.GLUA_REPO }}.git" --build-arg="GLUATEST_REF=${{ inputs.gluatest-ref }}" --tag ghcr.io/cfc-servers/gluatest:latest .
+          docker build \
+            --build-arg="GMOD_BRANCH=${{ inputs.branch }}" \
+            --build-arg="GLUATEST_REPO=${{ env.GLUA_REPO }}.git" \
+            --build-arg="GLUATEST_REF=${{ inputs.gluatest-ref }}" \
+            --tag ghcr.io/cfc-servers/gluatest:latest .
 
       - name: Run GLuaTest
         env:
@@ -174,13 +184,17 @@ jobs:
           PROJECT_DIR: "${{ github.workspace }}/garrysmod_override"
           EXTRA_STARTUP_ARGS: "${{ inputs.extra-startup-args }}"
           GAMEMODE: "${{ inputs.gamemode }}"
+          MAP: "${{ inputs.map }}"
           COLLECTION_ID: "${{ inputs.collection }}"
           SSH_PRIVATE_KEY: "${{ inputs.ssh-private-key }}"
           GITHUB_TOKEN: "${{ inputs.github-token }}"
           TIMEOUT: "${{ inputs.timeout }}"
         run: |
           cd $GITHUB_WORKSPACE/gluatest/docker
-          echo "core" | sudo tee /proc/sys/kernel/core_pattern # RaphaelIT7: Setting up the core pattern here as inside the docker image it's a read-only filesystem
+
+          # RaphaelIT7: Setting up the core pattern here as inside the docker image it's a read-only filesystem
+          echo "core" | sudo tee /proc/sys/kernel/core_pattern
+
           docker compose up --pull never --no-log-prefix --exit-code-from runner
           exitstatus=$?
 

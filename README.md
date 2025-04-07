@@ -287,6 +287,36 @@ Acceptable options are:
 </summary>
 </details>
 
+### Extra Startup Arguments
+<details>
+ <summary><strong>You can give GLuaTest custom startup args to fine-tune your test setup</strong></summary>
+<br>
+
+
+You can use the `extra-startup-args` input to pass any arguments you want to the srcds instance. For example:
+
+```yml
+name: GLuaTest Runner
+
+on:
+  pull_request:
+
+jobs:
+  run-tests:
+    uses: CFC-Servers/GLuaTest/.github/workflows/run_tests.yml@main
+    with:
+      extra-startup-args: "-tickrate 16"
+```
+
+Acceptable options are:
+- `live` (Main GMod version - this is the default)
+- `x86-64`
+- `prerelease`
+- `dev`
+
+</summary>
+</details>
+
 <br>
 
 ### All options
@@ -294,13 +324,14 @@ Acceptable options are:
  <summary><strong>Here are all of the options you can pass to the workflow</strong></summary>
 <br>
 
-| **Name**                 | **Description**                                                                                                            | **Example**                                                                                         |
+| **Name**                 | **Description**                                                                                                            | **Example**                                                                                     |
 |----------------------|------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
 | `server-cfg`         | A path (relative to project directory) with extra server config options                                                | `data_static/my_addon.cfg`                                                                              |
 | `requirements`       | A path (relative to project directory) with a list of all requirements to test this project                            | `data_static/my_addon.txt`                                                                              |
 | `gamemode`           | The name of the gamemode for the test server to run                                                                    | `darkrp`                                                                                                |
+| `map`                | The direct name of the map you want the server to startup with                                                         | `gm_bigcity_improved_lite`                                                                              |
 | `collection`         | The workshop ID of the collection for the test server to use                                                           | `1629732176`                                                                                            |
-| `extra-startup-args` | The workshop ID of the collection for the test server to use                                                           | `1629732176`                                                                                            |
+| `extra-startup-args` | Additional startup arguments to add to the srcds startup                                                               | `-tickrate 16`                                                                                          |
 | `ssh-private-key`    | The Private SSH key to use when cloning the dependencies                                                               | `-----BEGIN OPENSSH PRIVATE KEY-----\n...`                                                              |
 | `github-token`       | A GitHub Personal Access Token, used when cloning dependencies                                                         |                                                                                                         |
 | `timeout`            | How many minutes to let the job run before killing the server                                                          | `10`                                                                                                    |
