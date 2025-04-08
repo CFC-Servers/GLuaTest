@@ -163,19 +163,27 @@ jobs:
           path: ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/
           name: "${{ inputs.download-artifact }}"
 
-      - name: Build GLuaTest
-        env:
-          REQUIREMENTS: "${{ github.workspace }}/project/${{ inputs.requirements }}"
-          CUSTOM_SERVER_CONFIG: "${{ github.workspace }}/project/${{ inputs.server-cfg }}"
-          PROJECT_DIR: "${{ github.workspace }}/garrysmod_override"
-          GMOD_ARTIFACT_DIR: "${{ github.workspace }}/gluatest/docker/_gluatest_artifacts"
+      - name: Pull GLuaTest Runner
         run: |
-          cd $GITHUB_WORKSPACE/gluatest/docker
-          docker build \
-            --build-arg="GMOD_BRANCH=${{ inputs.branch }}" \
-            --build-arg="GLUATEST_REPO=${{ env.GLUA_REPO }}.git" \
-            --build-arg="GLUATEST_REF=${{ inputs.gluatest-ref }}" \
-            --tag ghcr.io/cfc-servers/gluatest:latest .
+          if [ ${{ inputs.branch }} = "x86-64" ]; then
+            echo "Updating compose file to use x86-64 image"
+            # Replace 'cfc-servers/gluatest' with 'cfc-servers/gluatest/64bit'
+            sed -i 's/cfc-servers\/gluatest/cfc-servers\/gluatest\/64bit/g' docker-compose.yml
+          fi
+
+          if [ ${{ inputs.branch }} = "dev" ]; then
+            echo "Updating compose file to use dev image"
+            # Replace 'cfc-servers/gluatest' with 'cfc-servers/gluatest/dev'
+            sed -i 's/cfc-servers\/gluatest/cfc-servers\/gluatest\/dev/g' docker-compose.yml
+          fi
+
+          if [ ${{ inputs.branch }} = "prerelease" ]; then
+            echo "Updating compose file to use prerelease image"
+            # Replace 'cfc-servers/gluatest' with 'cfc-servers/gluatest/prerelease'
+            sed -i 's/cfc-servers\/gluatest/cfc-servers\/gluatest\/prerelease/g' docker-compose.yml
+          fi
+
+          docker compose pull
 
       - name: Run GLuaTest
         env:

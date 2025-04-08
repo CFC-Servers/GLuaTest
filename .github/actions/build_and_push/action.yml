@@ -3,7 +3,7 @@ description: "Build and push GLuaTest for the given gmod branch"
 
 inputs:
   gmod_branch:
-    description: "The branch to build. Must be 'public'/'x86-64'"
+    description: "The branch to build. Must be 'public'/'x86-64'/'dev'/'prerelease'"
     required: true
     default: "public"
   tag_name:
@@ -51,6 +51,10 @@ runs:
 
         if [ "${{ inputs.gmod_branch }}" = "x86-64" ]; then
           BASE=ghcr.io/cfc-servers/gluatest/64bit
+        elif [ "${{ inputs.gmod_branch }}" = "dev" ]; then
+          BASE=ghcr.io/cfc-servers/gluatest/dev
+        elif [ "${{ inputs.gmod_branch }}" = "prerelease" ]; then
+          BASE=ghcr.io/cfc-servers/gluatest/prerelease
         else
           BASE=ghcr.io/cfc-servers/gluatest
         fi
@@ -90,6 +94,10 @@ runs:
       run: |
         if [ "${{ inputs.gmod_branch }}" = "x86-64" ]; then
           BASE=ghcr.io/cfc-servers/gluatest/64bit
+        elif [ "${{ inputs.gmod_branch }}" = "dev" ]; then
+          BASE=ghcr.io/cfc-servers/gluatest/dev
+        elif [ "${{ inputs.gmod_branch }}" = "prerelease" ]; then
+          BASE=ghcr.io/cfc-servers/gluatest/prerelease
         else
           BASE=ghcr.io/cfc-servers/gluatest
         fi

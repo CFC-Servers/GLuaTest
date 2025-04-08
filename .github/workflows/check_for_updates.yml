@@ -1,4 +1,4 @@
-name: Check for Update
+name: Check for Update and Build Parallel
 
 on:
   workflow_dispatch:
@@ -6,10 +6,23 @@ on:
     - cron: "18 */12 * * *"
 
 jobs:
-  build:
+  check_updates:
     runs-on: ubuntu-latest
+    outputs:
+      latest_tag: ${{ steps.latest_tag.outputs.tag_name }}
+      latest_public: ${{ steps.latest_versions.outputs.public }}
+      latest_sixtyfour: ${{ steps.latest_versions.outputs.sixtyfour }}
+      latest_dev: ${{ steps.latest_versions.outputs.dev }}
+      latest_prerelease: ${{ steps.latest_versions.outputs.prerelease }}
+      needs_update_public: ${{ steps.needs_update.outputs.public }}
+      needs_update_sixtyfour: ${{ steps.needs_update.outputs.sixtyfour }}
+      needs_update_dev: ${{ steps.needs_update.outputs.dev }}
+      needs_update_prerelease: ${{ steps.needs_update.outputs.prerelease }}
+
+      any_update_needed: ${{ steps.needs_update.outputs.any }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Full Repo
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           path: full_repo
@@ -18,7 +31,13 @@ jobs:
         id: latest_tag
         run: |
           cd "$GITHUB_WORKSPACE/full_repo"
-          latest_tag=$(git describe --tags --abbrev=0 --match='[0-9]*.[0-9]*.[0-9]*' --match='[0-9]*.[0-9]*' --exclude='*[^0-9.]*')
+          # Robust tag matching for semver-like tags
+          latest_tag=$(git tag --list --sort=-v:refname '[0-9]*.[0-9]*' '[0-9]*.[0-9]*.[0-9]*' | grep -v '[^0-9.]' | head -n 1)
+
+          if [ -z "$latest_tag" ]; then
+            echo "Could not find a suitable latest tag."
+            exit 1
+          fi
 
           echo "Latest tag: $latest_tag"
           echo "tag_name=$latest_tag" >> $GITHUB_OUTPUT
@@ -30,6 +49,8 @@ jobs:
       - name: Lookup latest build IDs
         id: latest_versions
         run: |
+          # Ensure workspace directory exists if needed later
+          mkdir -p "$GITHUB_WORKSPACE"
           docker run \
             --rm \
             --name version_checker \
@@ -38,18 +59,22 @@ jobs:
             > "$GITHUB_WORKSPACE/raw_output.txt"
 
           # Extract just the part we care about
-          struct=struct.txt
-          cat "$GITHUB_WORKSPACE/raw_output.txt" | sed -e '1,/"4020"$/ d' > $struct;
+          struct="$GITHUB_WORKSPACE/struct.txt"
+          sed -e '1,/"4020"$/ d' "$GITHUB_WORKSPACE/raw_output.txt" > "$struct"
 
           # Get the latest build IDs
-          public=$(grep -A 2 '"public"' $struct | grep '"buildid"' | awk '{print $2}' | sed 's/"//g')
-          sixtyfour=$(grep -A 2 '"x86-64"' $struct | grep '"buildid"' | awk '{print $2}' | sed 's/"//g')
+          public=$(grep -A 2 '"public"' "$struct" | grep '"buildid"' | awk '{print $2}' | sed 's/"//g')
+          sixtyfour=$(grep -A 2 '"x86-64"' "$struct" | grep '"buildid"' | awk '{print $2}' | sed 's/"//g')
+          dev=$(grep -A 2 '"dev"' "$struct" | grep '"buildid"' | awk '{print $2}' | sed 's/"//g')
+          prerelease=$(grep -A 2 '"prerelease"' "$struct" | grep '"buildid"' | awk '{print $2}' | sed 's/"//g')
 
           echo "Latest Public ID: '$public'"
           echo "Latest 64bit ID: '$sixtyfour'"
+          echo "Latest Dev ID: '$dev'"
+          echo "Latest prerelease ID: '$prerelease'"
 
-          if [ -z "$public" ] || [ -z "$sixtyfour" ]; then
-            echo "Failed to get the latest build IDs"
+          if [ -z "$public" ] || [ -z "$sixtyfour" ] || [ -z "$dev" ] || [ -z "$prerelease" ]; then
+            echo "Failed to get one or more latest build IDs"
             echo "Raw Output from SteamCMD:"
             cat "$GITHUB_WORKSPACE/raw_output.txt"
             exit 1
@@ -58,6 +83,8 @@ jobs:
           # Set the output
           echo "public=$public" >> $GITHUB_OUTPUT
           echo "sixtyfour=$sixtyfour" >> $GITHUB_OUTPUT
+          echo "dev=$dev" >> $GITHUB_OUTPUT
+          echo "prerelease=$prerelease" >> $GITHUB_OUTPUT
 
       - name: Checkout last build branch
         uses: actions/checkout@v4
@@ -68,73 +95,120 @@ jobs:
       - name: Read last build IDs
         id: last_versions
         run: |
-          public=$(cat $GITHUB_WORKSPACE/build_versions/last_public_build.txt)
-          sixtyfour=$(cat $GITHUB_WORKSPACE/build_versions/last_64bit_build.txt)
+          public=$(cat $GITHUB_WORKSPACE/build_versions/last_public_build.txt 2>/dev/null || echo "0")
+          sixtyfour=$(cat $GITHUB_WORKSPACE/build_versions/last_64bit_build.txt 2>/dev/null || echo "0")
+          dev=$(cat $GITHUB_WORKSPACE/build_versions/last_dev_build.txt 2>/dev/null || echo "0")
+          prerelease=$(cat $GITHUB_WORKSPACE/build_versions/last_prerelease_build.txt 2>/dev/null || echo "0")
 
           echo "Last Public ID built: '$public'"
           echo "Last 64bit ID built: '$sixtyfour'"
+          echo "Last Dev ID built: '$dev'"
+          echo "Last prerelease ID built: '$prerelease'"
 
           echo "public=$public" >> $GITHUB_OUTPUT
           echo "sixtyfour=$sixtyfour" >> $GITHUB_OUTPUT
+          echo "dev=$dev" >> $GITHUB_OUTPUT
+          echo "prerelease=$prerelease" >> $GITHUB_OUTPUT
 
       - name: Identify pending updates
         id: needs_update
         run: |
-          latest_public=${{ steps.latest_versions.outputs.public }}
-          last_public=${{ steps.last_versions.outputs.public }}
-          latest_sixtyfour=${{ steps.latest_versions.outputs.sixtyfour }}
-          last_sixtyfour=${{ steps.last_versions.outputs.sixtyfour }}
-          echo "Comparing Public: $latest_public != $last_public"
-          echo "Comparing 64bit: $latest_sixtyfour != $last_sixtyfour"
+          # Compare versions and set boolean flags (as strings 'true'/'false')
+          needs_public=$([[ "${{ steps.latest_versions.outputs.public }}" != "${{ steps.last_versions.outputs.public }}" ]] && echo "true" || echo "false")
+          needs_sixtyfour=$([[ "${{ steps.latest_versions.outputs.sixtyfour }}" != "${{ steps.last_versions.outputs.sixtyfour }}" ]] && echo "true" || echo "false")
+          needs_dev=$([[ "${{ steps.latest_versions.outputs.dev }}" != "${{ steps.last_versions.outputs.dev }}" ]] && echo "true" || echo "false")
+          needs_prerelease=$([[ "${{ steps.latest_versions.outputs.prerelease }}" != "${{ steps.last_versions.outputs.prerelease }}" ]] && echo "true" || echo "false")
 
-          public=${{ steps.latest_versions.outputs.public != steps.last_versions.outputs.public }}
-          sixtyfour=${{ steps.latest_versions.outputs.sixtyfour != steps.last_versions.outputs.sixtyfour }}
+          echo "Should build Public: '$needs_public'"
+          echo "Should build 64bit: '$needs_sixtyfour'"
+          echo "Should build Dev: '$needs_dev'"
+          echo "Should build Prerelease: '$needs_prerelease'"
 
-          echo "Should build Public: '$public'"
-          echo "Should build 64bit: '$sixtyfour'"
+          echo "public=$needs_public" >> $GITHUB_OUTPUT
+          echo "sixtyfour=$needs_sixtyfour" >> $GITHUB_OUTPUT
+          echo "dev=$needs_dev" >> $GITHUB_OUTPUT
+          echo "prerelease=$needs_prerelease" >> $GITHUB_OUTPUT
 
-          echo "public=$public" >> $GITHUB_OUTPUT
-          echo "sixtyfour=$sixtyfour" >> $GITHUB_OUTPUT
+          # Determine if any update is needed for the final commit step
+          any_update="false"
+          if [[ "$needs_public" == "true" || "$needs_sixtyfour" == "true" || "$needs_dev" == "true" || "$needs_prerelease" == "true" ]]; then
+            any_update="true"
+          fi
+          echo "Any update needed: $any_update"
+          echo "any=$any_update" >> $GITHUB_OUTPUT
 
-      - name: Update Public Build
-        if: ${{ steps.needs_update.outputs.public == 'true' }}
+  trigger_builds:
+    needs: check_updates
+    runs-on: ubuntu-latest
+    if: needs.check_updates.outputs.any_update_needed == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        branch: [public, x86-64, dev, prerelease]
+        include:
+          - branch: public
+            needs_update_flag: ${{ needs.check_updates.outputs.needs_update_public }}
+            game_version: ${{ needs.check_updates.outputs.latest_public }}
+          - branch: x86-64
+            needs_update_flag: ${{ needs.check_updates.outputs.needs_update_sixtyfour }}
+            game_version: ${{ needs.check_updates.outputs.latest_sixtyfour }}
+          - branch: dev
+            needs_update_flag: ${{ needs.check_updates.outputs.needs_update_dev }}
+            game_version: ${{ needs.check_updates.outputs.latest_dev }}
+          - branch: prerelease
+            needs_update_flag: ${{ needs.check_updates.outputs.needs_update_prerelease }}
+            game_version: ${{ needs.check_updates.outputs.latest_prerelease }}
+
+    steps:
+      - name: Checkout Full Repo
+        uses: actions/checkout@v4
+        with:
+          path: full_repo
+
+      - name: Update ${{ matrix.branch }} Build
+        if: matrix.needs_update_flag == 'true'
         uses: ./full_repo/.github/actions/build_and_push
         with:
-          gmod_branch: public
-          game_version: ${{ steps.latest_versions.outputs.public }}
-          tag_name: ${{ steps.latest_tag.outputs.tag_name }}
+          gmod_branch: ${{ matrix.branch }}
+          game_version: ${{ matrix.game_version }}
+          tag_name: ${{ needs.check_updates.outputs.latest_tag }}
           release: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
           path: $GITHUB_WORKSPACE/full_repo
 
-      - name: Update 64bit Build
-        if: ${{ steps.needs_update.outputs.sixtyfour == 'true' }}
-        uses: ./full_repo/.github/actions/build_and_push
-        with:
-          gmod_branch: x86-64
-          game_version: ${{ steps.latest_versions.outputs.sixtyfour }}
-          tag_name: ${{ steps.latest_tag.outputs.tag_name }}
-          release: true
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          path: $GITHUB_WORKSPACE/full_repo
+  update_last_versions:
+    runs-on: ubuntu-latest
+    needs: [check_updates, trigger_builds]
+    if: always() && needs.check_updates.outputs.any_update_needed == 'true'
 
-      - name: Update last versions
-        if: ${{ steps.needs_update.outputs.public == 'true' || steps.needs_update.outputs.sixtyfour == 'true' }}
+    steps:
+      - name: Checkout last build branch
+        uses: actions/checkout@v4
+        with:
+          ref: build/last-build-versions
+          path: build_versions
+
+      - name: Update last version files
         run: |
           cd $GITHUB_WORKSPACE/build_versions
 
-          echo ${{ steps.latest_versions.outputs.public }} > ./last_public_build.txt
-          echo ${{ steps.latest_versions.outputs.sixtyfour }} > ./last_64bit_build.txt
+          # Update files with the latest versions fetched in the check_updates job
+          echo "${{ needs.check_updates.outputs.latest_public }}" > ./last_public_build.txt
+          echo "${{ needs.check_updates.outputs.latest_sixtyfour }}" > ./last_64bit_build.txt
+          echo "${{ needs.check_updates.outputs.latest_dev }}" > ./last_dev_build.txt
+          echo "${{ needs.check_updates.outputs.latest_prerelease }}" > ./last_prerelease_build.txt
 
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
 
           if [[ -z $(git status --porcelain) ]]; then
-            echo "No changes to commit"
+            echo "No changes detected in last build version files."
             exit 0
           else
-            git add ./last_public_build.txt
-            git add ./last_64bit_build.txt
-            git commit -m "Update last build ID(s)"
-            git push
+            echo "Changes detected. Committing and pushing..."
+            git add .
+            git commit -m "Update last build versions after check [skip ci]"
+            git push origin build/last-build-versions
           fi
+        env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
