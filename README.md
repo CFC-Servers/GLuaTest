@@ -539,6 +539,7 @@ There are a number of different expectations you can use.
 | **`beValid`**        | Expects `IsValid( value )` to return `true`                   | `expect( ply ).to.beValid()`                                    |
 | **`beInvalid`**      | Expects `IsValid( value )` to return `false`                  | `expect( nil ).to.beInvalid()`                                  |
 | **`beNil`**          | Expects the subject to literally be `nil`                     | `expect( player.GetAll()[2] ).to.beNil()`                       |
+| **`beNaN`**          | Expects the subject to be NaN                                 | `expect( 0 / 0 ).to.beNaN()`                                    |
 | **`exist`**          | Expects the subject to not be `nil`                           | `expect( MyProject ).to.exist()`                                |
 | **`beA`**/**`beAn`** | Expects the subject to have the given `type`                  | `expect( "test" ).to.beA( "string" )`                           |
 | **`succeed`**        | Expects the subject function to run without error             | `expect( func, param ).to.succeed()`                            |

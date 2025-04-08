@@ -132,6 +132,15 @@ return function( subject, ... )
         end
     end
 
+    --- Expects the subject to be NaN
+    function expectations.beNaN()
+        assert( TypeID( subject ) == TYPE_NUMBER, ".beNaN expects a number" )
+
+        if subject == subject then
+            i.expected( "to be NaN" )
+        end
+    end
+
     --- Expects the subject to not be nil
     function expectations.exist()
         if subject == nil then
