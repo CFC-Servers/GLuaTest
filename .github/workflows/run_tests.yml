@@ -23,10 +23,22 @@ on:
         description: "The name of the gamemode for the test server to run. (Be sure to list it as a requirement or include it in the test collection, if necessary)"
         default: "sandbox"
 
+      map:
+        type: string
+        required: false
+        description: "The name of the map for the test server to run. (Be sure to list it as a requirement or include it in the test collection, if necessary)"
+        default: "gm_construct"
+
       collection:
         type: string
         required: false
         description: "The workshop ID of the collection for the test server to use"
+
+      extra-startup-args:
+        type: string
+        required: false
+        description: "Extra arguments to pass to the test server on startup"
+        default: ""
 
       ssh-private-key:
         type: string
@@ -47,13 +59,28 @@ on:
       branch:
         type: string
         required: false
-        description: "Which GMod branch to run your tests on. Must be: 'live' or 'x86-64'"
+        description: "Which GMod branch to run your tests on. Must be: 'live', 'prerelease', 'dev' or 'x86-64'"
         default: "live"
+
+      gluatest-ref:
+        type: string
+        required: false
+        description: "With tag/branch of GLuaTest to run"
+        default: "main"
 
       custom-overrides:
         type: string
         required: false
         description: "An absolute path with custom files to copy to the server directly. Structure should match the contents of `garrysmod/`"
+
+      download-artifact:
+        type: string
+        required: false
+        description: "If specified it will download and setup the given artifact. It has to be a tar file that will be unpacked in the root directory."
+        default: ""
+
+env:
+  GLUA_REPO: https://github.com/CFC-Servers/GLuaTest
 
 jobs:
   test:
@@ -77,15 +104,16 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
 
-          git clone --single-branch --branch main --depth 1 https://github.com/CFC-Servers/GLuaTest.git gluatest
-          cd ./gluatest
-          cp docker/docker-compose.yml $GITHUB_WORKSPACE/docker-compose.yml
+          git clone --single-branch --branch ${{ inputs.gluatest-ref }} --depth 1 ${{ env.GLUA_REPO }}.git gluatest
 
+          cd gluatest
           git fetch --quiet --tags
-          latest="$(git describe --tags `git rev-list --tags --max-count=1`)"
+
+          latest=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "0.00")
           echo "Latest Tag: $latest"
           echo "LATEST_TAG=$latest" >> $GITHUB_OUTPUT
 
+          cd ../
           cd $GITHUB_WORKSPACE
 
       - name: Prepare the override directory
@@ -116,7 +144,7 @@ jobs:
             # The repo is likely an addon
             dest="$GITHUB_WORKSPACE/garrysmod_override/addons/project/"
           else
-            echo "::error title=Unknown project structure!::Please report this: https://github.com/CFC-Servers/GLuaTest/issues"
+            echo "::error title=Unknown project structure!::Please report this: ${{ env.GLUA_REPO }}/issues"
             exit 1
           fi
 
@@ -128,34 +156,46 @@ jobs:
         run: |
           rsync --verbose --archive ${{ inputs.custom-overrides }} $GITHUB_WORKSPACE/garrysmod_override/
 
-      - name: Pull GLuaTest Runner
+      - name: Download artifact
+        if: inputs.download-artifact != ''
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/
+          name: "${{ inputs.download-artifact }}"
+
+      - name: Build GLuaTest
         env:
           REQUIREMENTS: "${{ github.workspace }}/project/${{ inputs.requirements }}"
           CUSTOM_SERVER_CONFIG: "${{ github.workspace }}/project/${{ inputs.server-cfg }}"
           PROJECT_DIR: "${{ github.workspace }}/garrysmod_override"
-
+          GMOD_ARTIFACT_DIR: "${{ github.workspace }}/gluatest/docker/_gluatest_artifacts"
         run: |
-          if [ ${{ inputs.branch }} = "x86-64" ]; then
-            echo "Updating compose file to use x86-64 image"
-            # Replace 'cfc-servers/gluatest' with 'cfc-servers/gluatest/64bit'
-            sed -i 's/cfc-servers\/gluatest/cfc-servers\/gluatest\/64bit/g' docker-compose.yml
-          fi
-
-          docker compose pull
+          cd $GITHUB_WORKSPACE/gluatest/docker
+          docker build \
+            --build-arg="GMOD_BRANCH=${{ inputs.branch }}" \
+            --build-arg="GLUATEST_REPO=${{ env.GLUA_REPO }}.git" \
+            --build-arg="GLUATEST_REF=${{ inputs.gluatest-ref }}" \
+            --tag ghcr.io/cfc-servers/gluatest:latest .
 
       - name: Run GLuaTest
         env:
           REQUIREMENTS: "${{ github.workspace }}/project/${{ inputs.requirements }}"
           CUSTOM_SERVER_CONFIG: "${{ github.workspace }}/project/${{ inputs.server-cfg }}"
           PROJECT_DIR: "${{ github.workspace }}/garrysmod_override"
+          EXTRA_STARTUP_ARGS: "${{ inputs.extra-startup-args }}"
           GAMEMODE: "${{ inputs.gamemode }}"
+          MAP: "${{ inputs.map }}"
           COLLECTION_ID: "${{ inputs.collection }}"
           SSH_PRIVATE_KEY: "${{ inputs.ssh-private-key }}"
           GITHUB_TOKEN: "${{ inputs.github-token }}"
           TIMEOUT: "${{ inputs.timeout }}"
-
         run: |
-          docker compose up --no-log-prefix --exit-code-from runner
+          cd $GITHUB_WORKSPACE/gluatest/docker
+
+          # RaphaelIT7: Setting up the core pattern here as inside the docker image it's a read-only filesystem
+          echo "core" | sudo tee /proc/sys/kernel/core_pattern
+
+          docker compose up --pull never --no-log-prefix --exit-code-from runner
           exitstatus=$?
 
           if [ $exitstatus -ne 0 ]; then

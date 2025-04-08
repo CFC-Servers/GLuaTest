@@ -1,0 +1,11 @@
+name: GLuaTest (Self Tests)
+
+on:
+  pull_request:
+
+jobs:
+  lint:
+    uses: CFC-Servers/GLuaTest/.github/workflows/run_tests.yml
+    with:
+      github-ref: ${{ github.head_ref }}
+      server-cfg: lua/tests/gluatest/server.cfg
