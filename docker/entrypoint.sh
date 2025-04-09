@@ -140,6 +140,12 @@ echo "GMOD_BRANCH: $GMOD_BRANCH"
 if [ "$GMOD_BRANCH" = "x86-64" ]; then
     echo "Starting 64-bit server"
     unbuffer timeout "$timeout" "$gmodroot"/srcds_run_x64 "$srcds_args"
+elif [ "$GMOD_BRANCH" = "prerelease" ]; then
+    echo "Starting 32-bit prerelease server"
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
+elif [ "$GMOD_BRANCH" = "dev" ]; then
+    echo "Starting 32-bit dev server"
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
 else
     echo "Starting 32-bit server"
     unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
