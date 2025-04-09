@@ -145,6 +145,13 @@ else
     unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
 fi
 
+status=$?
+
+if [ "$status" -ne 0 ]; then
+    echo "::error:: Something went wrong! - Failing workflow"
+    exit "$status"
+fi
+
 if [ -f "$gmodroot/debug.log" ]; then
 	cat "$gmodroot/debug.log" # Dump the entire debug log
 
