@@ -156,12 +156,12 @@ jobs:
 
           mkdir --verbose --parents "$dest"
           cp --recursive --verbose $source/* "$dest/"
+          mkdir -p ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/ # Silently also setup the artifacts dir
 
       - name: Sync custom overrides
         if: ${{ inputs.custom-overrides }}
         run: |
           rsync --verbose --archive ${{ inputs.custom-overrides }} $GITHUB_WORKSPACE/garrysmod_override/
-          mkdir -p ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/ # Silently also setup the artifacts dir
 
       - name: Download artifact (Github)
         if: inputs.download-artifact != '' && !(startsWith(inputs.download-artifact, 'https://') || startsWith(inputs.download-artifact, 'http://'))

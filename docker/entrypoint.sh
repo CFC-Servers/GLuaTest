@@ -15,15 +15,17 @@ rm -rf _tmp_ssh _tmp_https
 
 # Copy the overrides overtop the server files
 echo "Copying serverfiles overrides..."
-rsync --verbose --archive $home/serverfiles_override/ $gmodroot/
+rsync --verbose --archive $home/garrysmod_override/ $server/
 
 # Any additional files
-cp $home/_gluatest_artifacts/_gluatest_artifacts/* $gmodroot/
+if [ -n "$(ls -A $home/_gluatest_artifacts/_gluatest_artifacts/)" ]; then # Only execute if there are any artifacts or else tar will complain
+    cp $home/_gluatest_artifacts/_gluatest_artifacts/* $gmodroot/
 
-for file in $gmodroot/*.tar.gz; do \
-    tar --extract --verbose --ungzip --file="$file" --directory="$gmodroot" && \
-    rm --force --verbose "$file"; \
-done
+    for file in $gmodroot/*.tar.gz; do \
+        tar --extract --verbose --ungzip --file="$file" --directory="$gmodroot" && \
+        rm --force --verbose "$file"; \
+    done
+fi
 
 if [ -f "$gmodroot/custom_requirements.txt" ]; then
     echo "Appending custom requirements"
