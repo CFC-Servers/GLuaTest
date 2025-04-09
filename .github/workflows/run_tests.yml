@@ -184,6 +184,7 @@ jobs:
 
       - name: Pull GLuaTest Runner
         run: |
+          cd $GITHUB_WORKSPACE/gluatest/docker
           if [ ${{ inputs.branch }} = "x86-64" ]; then
             echo "Updating compose file to use x86-64 image"
             # Replace 'cfc-servers/gluatest' with 'cfc-servers/gluatest/64bit'
