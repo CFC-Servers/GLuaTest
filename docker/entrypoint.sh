@@ -159,7 +159,7 @@ if [ -f "$gmodroot/debug.log" ]; then
 	exit 1
 fi
 
-if [ "$(cat $server/data/gluatest_clean_exit.txt)" = "false" ]; then
+if [ ! -f "$server/data/gluatest_clean_exit.txt" ] || [ "$(cat $server/data/gluatest_clean_exit.txt)" = "false" ]; then
     echo "::warning:: Test runner did not exit cleanly. Test results unavailable!"
     exit 1 # This should never happen normally, GLuaTest probably had an error while executing so we should fail.
 fi
