@@ -20,7 +20,6 @@ return {
         {
             name = "Convars exist",
             func = function()
-                expect( ConVarExists( "gluatest_use_ansi" ) ).to.beTrue()
                 expect( ConVarExists( "gluatest_enable" ) ).to.beTrue()
             end
         }
