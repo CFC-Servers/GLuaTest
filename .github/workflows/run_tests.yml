@@ -76,7 +76,13 @@ on:
       download-artifact:
         type: string
         required: false
-        description: "If specified it will download and setup the given artifact. It has to be a tar file that will be unpacked in the root directory."
+        description: "If specified it will download and setup the given artifact (can also be given a url to a file). It has to be a tar file that will be unpacked in the root directory."
+        default: ""
+
+      additional-setup:
+        type: string
+        required: false
+        description: "If specified it execute the given string as a command after everything was set up allowing you to execute additional commands/scripts"
         default: ""
 
 env:
@@ -155,13 +161,26 @@ jobs:
         if: ${{ inputs.custom-overrides }}
         run: |
           rsync --verbose --archive ${{ inputs.custom-overrides }} $GITHUB_WORKSPACE/garrysmod_override/
+          mkdir -p ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/ # Silently also setup the artifacts dir
 
-      - name: Download artifact
-        if: inputs.download-artifact != ''
+      - name: Download artifact (Github)
+        if: inputs.download-artifact != '' && !(startsWith(inputs.download-artifact, 'https://') || startsWith(inputs.download-artifact, 'http://'))
         uses: actions/download-artifact@v4
         with:
           path: ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/
           name: "${{ inputs.download-artifact }}"
+
+      - name: Download artifact (Http)
+        if: inputs.download-artifact != '' && (startsWith(inputs.download-artifact, 'https://') || startsWith(inputs.download-artifact, 'http://'))
+        run: |
+          cd ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/
+          wget -O artifact.tar.gz ${{ inputs.download-artifact }} # No matter what, we expect it as a .tar.gz
+
+      - name: Run Additional Setup
+        if: inputs.additional-setup != ''
+        run: |
+          cd ${{ github.workspace }}
+          ${{ inputs.additional-setup }}
 
       - name: Pull GLuaTest Runner
         run: |
