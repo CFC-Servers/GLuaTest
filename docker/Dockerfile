@@ -40,14 +40,6 @@ COPY base_server.cfg $server/cfg/test.cfg
 # Base fixture addon
 COPY testfixture $server/addons/testfixture
 
-# Any additional files
-COPY _gluatest_artifacts/ $gmodroot/
-
-RUN for file in $gmodroot/*.tar.gz; do \
-      tar -xzf "$file" -C "$gmodroot" && \
-      rm -f "$file"; \
-    done
-
 # Make requirements file
 RUN touch $gmodroot/requirements.txt
 
@@ -70,7 +62,11 @@ RUN chown --recursive steam:steam \
 USER steam
 ENV GMOD_BRANCH=${GMOD_BRANCH}
 
-RUN git clone --depth 1 --branch $GLUATEST_REF $GLUATEST_REPO $server/addons/gluatest
+RUN git clone --depth 1 $GLUATEST_REPO $server/addons/gluatest && \
+    cd $server/addons/gluatest && \
+    git fetch --quiet origin $GLUATEST_REF && \
+    git checkout FETCH_HEAD
+
 RUN mkdir --parents --verbose $server/addons/gluatest/data_static
 RUN echo "$GLUATEST_REF" > $server/addons/gluatest/data_static/gluatest_version.txt
 
