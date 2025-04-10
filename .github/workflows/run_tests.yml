@@ -65,8 +65,8 @@ on:
       gluatest-ref:
         type: string
         required: false
-        description: "Which tag/branch of GLuaTest to run"
-        default: "main"
+        description: "Which tag/branch of GLuaTest to run. Falls back to the workflow branch"
+        default: ""
 
       custom-overrides:
         type: string
@@ -93,6 +93,7 @@ on:
 
 env:
   GLUA_REPO: https://github.com/${{ github.repository }}
+  GLUA_BRANCH: ${{ input.gluatest-ref != '' && gluatest-ref || github.ref }}
 
 jobs:
   test:
