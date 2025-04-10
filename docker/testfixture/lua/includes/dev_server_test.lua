@@ -6,6 +6,9 @@ local string_format = string.format
 local failures = {}
 local ghOutput = CreateConVar( "gluatest_github_output", "1", FCVAR_UNREGISTERED, "", 0, 1 )
 
+-- Quick status command to show the server setup
+RunConsoleCommand( "status" )
+
 local function cleanSource( fileName )
     local spl = string_Split( fileName, "/" )
     for i, step in ipairs( spl ) do
