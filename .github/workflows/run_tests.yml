@@ -65,7 +65,7 @@ on:
       gluatest-ref:
         type: string
         required: false
-        description: "With tag/branch of GLuaTest to run"
+        description: "Which tag/branch of GLuaTest to run"
         default: "main"
 
       custom-overrides:
