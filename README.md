@@ -309,6 +309,8 @@ jobs:
       extra-startup-args: "-tickrate 16 -usegh"
 ```
 
+**Note:** These args are passed in before the base params, so you can override any of the base srcds arguments.
+
 </summary>
 </details>
 
