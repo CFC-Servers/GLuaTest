@@ -27,8 +27,8 @@ hook.Add( "GLuaTest_LoggedTestFailure", "TestLog", function( errInfo )
 
     if ghOutput:GetBool() then
         local fi = failInfo
-        local str = "::error file=%s,line=%s::%s"
-        print( string_format( str, fi.sourceFile, fi.lineNumber, fi.reason ) )
+        local str = "\n::error file=%s,line=%s::%s" -- RaphaelIT7: We require the \n at the beginning since print uses colors in the output which would cause Github to not recognize the ::error:: unless it's a new line. (Thx Rubat for suggesting this <3)
+        print( string_format( str, fi.sourceFile, fi.lineNumber, fi.reason ) ) -- ToDo: Switch to MsgC( color_white ) in the next GMod update because of https://github.com/Facepunch/garrysmod-requests/issues/2712
     end
 end )
 

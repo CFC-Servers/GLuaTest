@@ -76,11 +76,23 @@ on:
       download-artifact:
         type: string
         required: false
-        description: "If specified it will download and setup the given artifact. It has to be a tar file that will be unpacked in the root directory."
+        description: "If specified it will download and setup the given artifact (can also be given a url to a file). It has to be a tar file that will be unpacked in the root directory."
         default: ""
 
+      additional-setup:
+        type: string
+        required: false
+        description: "If specified it execute the given string as a command after everything was set up allowing you to execute additional commands/scripts"
+        default: ""
+
+      dockerbuild:
+        type: string
+        required: false
+        description: "If enabled it will build the docker image from scratch"
+        default: "false"
+
 env:
-  GLUA_REPO: https://github.com/CFC-Servers/GLuaTest
+  GLUA_REPO: https://github.com/${{ github.repository }}
 
 jobs:
   test:
@@ -104,9 +116,11 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
 
-          git clone --single-branch --branch ${{ inputs.gluatest-ref }} --depth 1 ${{ env.GLUA_REPO }}.git gluatest
+          git clone --single-branch --depth 1 ${{ env.GLUA_REPO }}.git gluatest
 
           cd gluatest
+          git fetch --quiet origin ${{ inputs.gluatest-ref }}
+          git checkout FETCH_HEAD
           git fetch --quiet --tags
 
           latest=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "0.00")
@@ -150,21 +164,36 @@ jobs:
 
           mkdir --verbose --parents "$dest"
           cp --recursive --verbose $source/* "$dest/"
+          mkdir -p ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/ # Silently also setup the artifacts dir
 
       - name: Sync custom overrides
         if: ${{ inputs.custom-overrides }}
         run: |
           rsync --verbose --archive ${{ inputs.custom-overrides }} $GITHUB_WORKSPACE/garrysmod_override/
 
-      - name: Download artifact
-        if: inputs.download-artifact != ''
+      - name: Download artifact (Github)
+        if: inputs.download-artifact != '' && !(startsWith(inputs.download-artifact, 'https://') || startsWith(inputs.download-artifact, 'http://'))
         uses: actions/download-artifact@v4
         with:
           path: ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/
           name: "${{ inputs.download-artifact }}"
 
-      - name: Pull GLuaTest Runner
+      - name: Download artifact (Http)
+        if: inputs.download-artifact != '' && (startsWith(inputs.download-artifact, 'https://') || startsWith(inputs.download-artifact, 'http://'))
         run: |
+          cd ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/
+          wget -O artifact.tar.gz ${{ inputs.download-artifact }} # No matter what, we expect it as a .tar.gz
+
+      - name: Run Additional Setup
+        if: inputs.additional-setup != ''
+        run: |
+          cd ${{ github.workspace }}
+          ${{ inputs.additional-setup }}
+
+      - name: Pull GLuaTest Runner
+        if: inputs.dockerbuild != 'true'
+        run: |
+          cd $GITHUB_WORKSPACE/gluatest/docker
           if [ ${{ inputs.branch }} = "x86-64" ]; then
             echo "Updating compose file to use x86-64 image"
             # Replace 'cfc-servers/gluatest' with 'cfc-servers/gluatest/64bit'
@@ -184,6 +213,21 @@ jobs:
           fi
 
           docker compose pull
+
+      - name: Build GLuaTest
+        if: inputs.dockerbuild == 'true'
+        env:
+          REQUIREMENTS: "${{ github.workspace }}/project/${{ inputs.requirements }}"
+          CUSTOM_SERVER_CONFIG: "${{ github.workspace }}/project/${{ inputs.server-cfg }}"
+          PROJECT_DIR: "${{ github.workspace }}/garrysmod_override"
+          GMOD_ARTIFACT_DIR: "${{ github.workspace }}/gluatest/docker/_gluatest_artifacts"
+        run: |
+          cd $GITHUB_WORKSPACE/gluatest/docker
+          docker build \
+            --build-arg="GMOD_BRANCH=${{ inputs.branch }}" \
+            --build-arg="GLUATEST_REPO=${{ env.GLUA_REPO }}.git" \
+            --build-arg="GLUATEST_REF=${{ inputs.gluatest-ref }}" \
+            --tag ghcr.io/cfc-servers/gluatest:latest .
 
       - name: Run GLuaTest
         env:

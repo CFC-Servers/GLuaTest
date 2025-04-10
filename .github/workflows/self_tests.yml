@@ -2,10 +2,22 @@ name: GLuaTest (Self Tests)
 
 on:
   pull_request:
+  push:
+    branches:
+      - 'main'
 
 jobs:
-  lint:
-    uses: CFC-Servers/GLuaTest/.github/workflows/run_tests.yml
+  run_tests:
+    uses: ./.github/workflows/run_tests.yml
     with:
-      github-ref: ${{ github.head_ref }}
+      gluatest-ref: ${{ github.head_ref != null && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.ref }}
       server-cfg: lua/tests/gluatest/server.cfg
+      dockerbuild: "true"
+    strategy:
+      matrix:
+        branch:
+          - "x86-64"
+          - "dev"
+          - "prerelease"
+          - "main"
+      fail-fast: false
