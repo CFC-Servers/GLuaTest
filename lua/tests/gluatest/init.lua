@@ -21,7 +21,19 @@ return {
             name = "Convars exist",
             func = function()
                 expect( ConVarExists( "gluatest_enable" ) ).to.beTrue()
+                expect( ConVarExists( "gluatest_selftest_enable" ) ).to.beTrue()
             end
-        }
+        },
+
+        {
+            name = "Convars have correct defaults",
+            func = function()
+                local gluatest_enable = GetConVar( "gluatest_enable" )
+                expect( gluatest_enable:GetBool() ).to.beFalse()
+
+                local gluatest_selftest_enable = GetConVar( "gluatest_selftest_enable" )
+                expect( gluatest_selftest_enable:GetBool() ).to.beFalse()
+            end
+        },
     }
 }

@@ -1,6 +1,7 @@
 --- @class GitTools
 local GitTools = {}
 
+--- Returns the name of the addon directory we're running from
 function GitTools.whereAmI()
     -- addons/cfc_err_forwarder/lua/autorun/server/cfc_err_fwd.lua
     local path = debug.getinfo( 1, "S" ).short_src
