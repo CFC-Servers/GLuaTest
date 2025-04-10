@@ -57,9 +57,14 @@ on:
         default: "2"
 
       branch:
-        type: string
+        type: choice
         required: false
-        description: "Which GMod branch to run your tests on. Must be: 'live', 'prerelease', 'dev' or 'x86-64'"
+        description: "Which GMod branch to run your tests on. Must be: `live`, `x86-64`, `prerelease`, or `dev`"
+        options:
+          - live
+          - x86-64
+          - prerelease
+          - dev
         default: "live"
 
       gluatest-repo:
@@ -94,7 +99,7 @@ on:
       dockerbuild:
         type: string
         required: false
-        description: "If enabled it will build the docker image from scratch"
+        description: "If enabled it will build the docker image from scratch (You should only use this if you are testing a change to the GLuaTest docker image itself)"
         default: "false"
 
 jobs:

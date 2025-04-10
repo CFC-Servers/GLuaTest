@@ -146,9 +146,12 @@ elif [ "$GMOD_BRANCH" = "prerelease" ]; then
 elif [ "$GMOD_BRANCH" = "dev" ]; then
     echo "Starting 32-bit dev server"
     unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
-else
-    echo "Starting 32-bit server"
+elif [ "$GMOD_BRANCH" = "live" ]; then
+    echo "Starting 32-bit live server"
     unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
+else
+    echo "Unknown GMOD_BRANCH: $GMOD_BRANCH"
+    exit 1
 fi
 
 status=$?
