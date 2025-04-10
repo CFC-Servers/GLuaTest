@@ -29,10 +29,10 @@ return {
             name = "Convars have correct defaults",
             func = function()
                 local gluatest_enable = GetConVar( "gluatest_enable" )
-                expect( gluatest_enable:GetDefault() ).to.beFalse()
+                expect( gluatest_enable:GetDefault() ).to.equal( 0 )
 
                 local gluatest_selftest_enable = GetConVar( "gluatest_selftest_enable" )
-                expect( gluatest_selftest_enable:GetDefault() ).to.beFalse()
+                expect( gluatest_selftest_enable:GetDefault() ).to.equal( 0 )
             end
         },
     }
