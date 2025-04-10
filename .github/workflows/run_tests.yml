@@ -65,8 +65,8 @@ on:
       gluatest-ref:
         type: string
         required: false
-        description: "Which tag/branch of GLuaTest to run. Falls back to the workflow branch"
-        default: ""
+        description: "Which tag/branch of GLuaTest to run."
+        default: "main"
 
       custom-overrides:
         type: string
@@ -91,9 +91,15 @@ on:
         description: "If enabled it will build the docker image from scratch"
         default: "false"
 
-env:
-  GLUA_REPO: https://github.com/${{ github.repository }}
-  GLUA_BRANCH: ${{ input.gluatest-ref != '' && gluatest-ref || github.ref }}
+      gluatest-repo:
+        type: string
+        required: false
+        description: "Which repository of GLuaTest to run."
+        default: "CFC-Servers/GLuaTest"
+
+env: # RaphaelIT7: Theses values are hard coded. Why? Because Github provides no way at all to determin the repo/branch of the reusable workflow.
+  GLUA_REPO: https://github.com/${{ input.gluatest-repo != '' && gluatest-repo || 'CFC-Servers/GLuaTest' }}
+  GLUA_BRANCH: ${{ input.gluatest-ref != '' && gluatest-ref || 'main' }}
 
 jobs:
   test:
@@ -120,7 +126,7 @@ jobs:
           git clone --single-branch --depth 1 ${{ env.GLUA_REPO }}.git gluatest
 
           cd gluatest
-          git fetch --quiet origin ${{ inputs.gluatest-ref }}
+          git fetch --quiet origin ${{ env.GLUA_BRANCH }}
           git checkout FETCH_HEAD
           git fetch --quiet --tags
 
@@ -227,7 +233,7 @@ jobs:
           docker build \
             --build-arg="GMOD_BRANCH=${{ inputs.branch }}" \
             --build-arg="GLUATEST_REPO=${{ env.GLUA_REPO }}.git" \
-            --build-arg="GLUATEST_REF=${{ inputs.gluatest-ref }}" \
+            --build-arg="GLUATEST_REF=${{ env.GLUA_BRANCH }}" \
             --tag ghcr.io/cfc-servers/gluatest:latest .
 
       - name: Run GLuaTest
