@@ -5,7 +5,7 @@ on:
   push:
 
 jobs:
-  lint:
+  run_tests:
     uses: ./.github/workflows/run_tests.yml
     with:
       gluatest-ref: ${{ github.head_ref != null && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.ref }}
