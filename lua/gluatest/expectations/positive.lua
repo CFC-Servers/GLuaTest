@@ -34,7 +34,13 @@ return function( subject, ... )
     --- @param comparison any
     function expectations.equal( comparison )
         if subject ~= comparison then
-            i.expected( "to equal '%s'", comparison )
+            local expectedMessage = "to equal %s"
+
+            if isstring( comparison ) then
+                expectedMessage = "to equal '%s'"
+            end
+
+            i.expected( expectedMessage, comparison )
         end
     end
 

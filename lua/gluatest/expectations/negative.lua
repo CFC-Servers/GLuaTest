@@ -33,7 +33,13 @@ return function( subject, ... )
     --- @param comparison any
     function expectations.equal( comparison )
         if subject == comparison then
-            i.expected( "to not equal '%s'", comparison )
+            local expectedMessage = "to not equal %s"
+
+            if isstring( comparison ) then
+                expectedMessage = "to not equal '%s'"
+            end
+
+            i.expected( expectedMessage, comparison )
         end
     end
 
