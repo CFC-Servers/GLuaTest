@@ -111,6 +111,11 @@ jobs:
           touch $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
           echo "gluatest_github_output 1" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
 
+          # FIXME: Testing, remove
+          echo "github.repository: ${{ github.repository }}"
+          echo "github.workflow_ref: ${{ github.workflow_ref }}"
+          exit 1
+
       - name: Get latest GLuaTest version
         id: latest-tag-getter
         run: |
