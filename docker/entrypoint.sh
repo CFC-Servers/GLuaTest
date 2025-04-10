@@ -113,6 +113,7 @@ base_srcds_args=(
     -hushasserts      # "Disables a number of asserts in core Source libraries, skipping some error checks and messages"
     -snoforceformat   # Skips sound buffer creation
     -insecure         # Disable VAC
+    -noconclr         # Breaks ::error outputs
 
     # Optimizations
     -collate          # "Skips everything, just merges the reslist from temp folders to the final folder again"
