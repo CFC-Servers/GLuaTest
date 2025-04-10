@@ -133,7 +133,7 @@ base_srcds_args=(
     +map "$map"
     +servercfgfile test.cfg
 )
-srcds_args="${base_srcds_args[@]} $EXTRA_STARTUP_ARGS"
+srcds_args="$EXTRA_STARTUP_ARGS ${base_srcds_args[@]}"
 
 echo "GMOD_BRANCH: $GMOD_BRANCH"
 
