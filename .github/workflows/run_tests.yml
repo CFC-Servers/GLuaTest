@@ -62,6 +62,12 @@ on:
         description: "Which GMod branch to run your tests on. Must be: 'live', 'prerelease', 'dev' or 'x86-64'"
         default: "live"
 
+      gluatest-repo:
+        type: string
+        required: false
+        description: "The GLuaTest repository to use. This is usually the same as the one this action is in"
+        default: "https://github.com/CFC-Servers/GLuaTest"
+
       gluatest-ref:
         type: string
         required: false
@@ -91,9 +97,6 @@ on:
         description: "If enabled it will build the docker image from scratch"
         default: "false"
 
-env:
-  GLUA_REPO: https://github.com/${{ github.repository }}
-
 jobs:
   test:
     name: "Run tests"
@@ -111,17 +114,12 @@ jobs:
           touch $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
           echo "gluatest_github_output 1" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
 
-          # FIXME: Testing, remove
-          echo "github.repository: ${{ github.repository }}"
-          echo "github.workflow_ref: ${{ github.workflow_ref }}"
-          exit 1
-
       - name: Get latest GLuaTest version
         id: latest-tag-getter
         run: |
           cd $GITHUB_WORKSPACE
 
-          git clone --single-branch --depth 1 ${{ env.GLUA_REPO }}.git gluatest
+          git clone --single-branch --depth 1 ${{ inputs.gluatest-repo }}.git gluatest
 
           cd gluatest
           git fetch --quiet origin ${{ inputs.gluatest-ref }}
@@ -163,7 +161,7 @@ jobs:
             # The repo is likely an addon
             dest="$GITHUB_WORKSPACE/garrysmod_override/addons/project/"
           else
-            echo "::error title=Unknown project structure!::Please report this: ${{ env.GLUA_REPO }}/issues"
+            echo "::error title=Unknown project structure!::Please report this: ${{ inputs.gluatest-repo }}/issues"
             exit 1
           fi
 
@@ -230,7 +228,7 @@ jobs:
           cd $GITHUB_WORKSPACE/gluatest/docker
           docker build \
             --build-arg="GMOD_BRANCH=${{ inputs.branch }}" \
-            --build-arg="GLUATEST_REPO=${{ env.GLUA_REPO }}.git" \
+            --build-arg="GLUATEST_REPO=${{ inputs.gluatest-repo }}.git" \
             --build-arg="GLUATEST_REF=${{ inputs.gluatest-ref }}" \
             --tag ghcr.io/cfc-servers/gluatest:latest .
 
