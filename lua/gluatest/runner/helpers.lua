@@ -275,7 +275,6 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
                 onFailedExpectation( errInfo --[[@as GLuaTest_FailCallbackInfo]] )
 
                 recordedFailure = true
-                print( "Expectation failed: will not run again" )
             end
 
             return built
