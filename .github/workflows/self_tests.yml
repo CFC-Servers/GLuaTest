@@ -19,5 +19,5 @@ jobs:
           - "x86-64"
           - "dev"
           - "prerelease"
-          - "main"
+          - "live"
       fail-fast: false
