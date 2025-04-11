@@ -151,7 +151,8 @@ elif [ "$GMOD_BRANCH" = "live" ]; then
     unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
 else
     echo "Unknown GMOD_BRANCH: $GMOD_BRANCH"
-    exit 1
+    echo "Defaultint to: 32-bit live server"
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
 fi
 
 status=$?
