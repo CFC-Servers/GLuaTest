@@ -135,23 +135,11 @@ base_srcds_args=(
 )
 srcds_args="$EXTRA_STARTUP_ARGS ${base_srcds_args[@]}"
 
-echo "GMOD_BRANCH: $GMOD_BRANCH"
-
-if [ "$GMOD_BRANCH" = "x86-64" ]; then
+if [ "$SIXTYFOUR" = "true" ]; then
     echo "Starting 64-bit server"
     unbuffer timeout "$timeout" "$gmodroot"/srcds_run_x64 "$srcds_args"
-elif [ "$GMOD_BRANCH" = "prerelease" ]; then
-    echo "Starting 32-bit prerelease server"
-    unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
-elif [ "$GMOD_BRANCH" = "dev" ]; then
-    echo "Starting 32-bit dev server"
-    unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
-elif [ "$GMOD_BRANCH" = "live" ]; then
-    echo "Starting 32-bit live server"
-    unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
 else
-    echo "Unknown GMOD_BRANCH: $GMOD_BRANCH"
-    echo "Defaultint to: 32-bit live server"
+    echo "Starting 32-bit server"
     unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
 fi
 
