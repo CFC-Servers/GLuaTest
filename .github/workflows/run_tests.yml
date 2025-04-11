@@ -244,6 +244,7 @@ jobs:
           SSH_PRIVATE_KEY: "${{ inputs.ssh-private-key }}"
           GITHUB_TOKEN: "${{ inputs.github-token }}"
           TIMEOUT: "${{ inputs.timeout }}"
+          GMOD_BRANCH: "${{ inputs.branch }}"
         run: |
           cd $GITHUB_WORKSPACE/gluatest/docker
 
