@@ -1,4 +1,4 @@
-name: GLuaFixer
+name: Lint
 
 on:
   pull_request:
@@ -8,3 +8,6 @@ jobs:
     uses: FPtje/GLuaFixer/.github/workflows/glualint.yml@master
     with:
       config: "https://cfc.gg/configs/gluafixer/glualint.json"
+
+  luals:
+    uses: CFC-Servers/gmod_luals_workflow/.github/workflows/luals.yml@main

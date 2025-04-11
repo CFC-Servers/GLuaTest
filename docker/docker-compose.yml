@@ -22,9 +22,17 @@ services:
         target: /home/steam/garrysmod_override
         read_only: true
 
+      - type: bind
+        source: $GMOD_ARTIFACT_DIR
+        target: /home/steam/_gluatest_artifacts
+        read_only: true
+
     environment:
       - GAMEMODE=$GAMEMODE
       - COLLECTION_ID=$COLLECTION_ID
       - SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
       - GITHUB_TOKEN=$GITHUB_TOKEN
-      - TIMEOUT=${TIMEOUT-5}
+      - TIMEOUT=$TIMEOUT
+      - GAMEMODE=$GAMEMODE
+      - MAP=$MAP
+      - EXTRA_STARTUP_ARGS=$EXTRA_STARTUP_ARGS

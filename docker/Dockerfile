@@ -6,7 +6,7 @@ ARG GLUATEST_REPO=https://github.com/CFC-Servers/GLuaTest.git
 
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt update && apt install -y --no-install-recommends --no-install-suggests git python3-minimal expect rsync openssh-client && apt autoremove
+RUN apt update && apt install -y --no-install-recommends --no-install-suggests git python3-minimal expect rsync openssh-client gdb && apt autoremove
 
 ARG home=/home/steam
 ARG gmodroot=$home/gmodserver
@@ -16,6 +16,12 @@ USER steam
 RUN if [ "$GMOD_BRANCH" = "x86-64" ]; then \
     echo "Downloading x86-64 branch"; \
     ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta x86-64 validate +quit; \
+elif [ "$GMOD_BRANCH" = "dev" ]; then \
+    echo "Downloading dev branch"; \
+    ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta dev validate +quit; \
+elif [ "$GMOD_BRANCH" = "prerelease" ]; then \
+    echo "Downloading prerelease branch"; \
+    ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta prerelease validate +quit; \
 else \
     echo "Downloading live branch"; \
     ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 validate +quit; \
@@ -40,6 +46,9 @@ RUN touch $gmodroot/requirements.txt
 # GitHub Server Keys
 RUN ssh-keyscan github.com >> $home/github_known_hosts
 
+# Enable core dumps
+RUN ulimit -c unlimited
+
 # Entrypoint
 COPY entrypoint.sh $gmodroot/entrypoint.sh
 RUN chown --recursive steam:steam \
@@ -53,7 +62,11 @@ RUN chown --recursive steam:steam \
 USER steam
 ENV GMOD_BRANCH=${GMOD_BRANCH}
 
-RUN git clone --depth 1 --branch $GLUATEST_REF $GLUATEST_REPO $server/addons/gluatest
+RUN git clone --depth 1 $GLUATEST_REPO $server/addons/gluatest && \
+    cd $server/addons/gluatest && \
+    git fetch --quiet origin $GLUATEST_REF && \
+    git checkout FETCH_HEAD
+
 RUN mkdir --parents --verbose $server/addons/gluatest/data_static
 RUN echo "$GLUATEST_REF" > $server/addons/gluatest/data_static/gluatest_version.txt
 

@@ -206,12 +206,12 @@ And that's it!
 
 <br>
 
-### Gamemodes
+### Gamemodes and Maps
 <details>
- <summary><strong>If you're testing a non-sandbox project, you need to tell the test server which gamemode to run</strong></summary>
+ <summary><strong>You can customize which gamemode and map the server starts with</strong></summary>
 <br>
 
-Simply specify the desired gamemode in your workflow's `with` section.
+Simply specify the desired gamemode and/or map in your workflow's `with` section.
 
 ```yml
 name: GLuaTest Runner
@@ -224,6 +224,7 @@ jobs:
     uses: CFC-Servers/GLuaTest/.github/workflows/run_tests.yml@main
     with:
       gamemode: darkrp
+      map: rp_downtown_tits_v2
 ```
 
 </summary>
@@ -259,7 +260,7 @@ jobs:
 
 ### GMod Branch
 <details>
- <summary><strong>You can run your tests on the live branch of the `x86-64` branch</strong></summary>
+ <summary><strong>You can run your tests on any of the GMod branches</strong></summary>
 <br>
 
 
@@ -278,6 +279,38 @@ jobs:
       branch: x86-64
 ```
 
+Acceptable options are:
+- `live` (Main GMod version - this is the default)
+- `x86-64`
+- `prerelease`
+- `dev`
+
+</summary>
+</details>
+
+### Extra Startup Arguments
+<details>
+ <summary><strong>You can give GLuaTest custom startup args to fine-tune your test setup</strong></summary>
+<br>
+
+
+You can use the `extra-startup-args` input to pass any arguments you want to the srcds instance. For example:
+
+```yml
+name: GLuaTest Runner
+
+on:
+  pull_request:
+
+jobs:
+  run-tests:
+    uses: CFC-Servers/GLuaTest/.github/workflows/run_tests.yml@main
+    with:
+      extra-startup-args: "-tickrate 16 -usegh"
+```
+
+**Note:** These args are passed in before the base params, so you can override any of the base srcds arguments.
+
 </summary>
 </details>
 
@@ -288,16 +321,22 @@ jobs:
  <summary><strong>Here are all of the options you can pass to the workflow</strong></summary>
 <br>
 
-| **Name**          | **Description**                                                                             | **Example**                                |
-|-------------------|---------------------------------------------------------------------------------------------|--------------------------------------------|
-| `server-cfg`      | A path (relative to project directory) with extra server config options                     | `data_static/my_addon.cfg`                 |
-| `requirements`    | A path (relative to project directory) with a list of all requirements to test this project | `data_static/my_addon.txt`                 |
-| `gamemode`        | The name of the gamemode for the test server to run                                         | `darkrp`                                   |
-| `collection`      | The workshop ID of the collection for the test server to use                                | `1629732176`                               |
-| `ssh-private-key` | The Private SSH key to use when cloning the dependencies                                    | `-----BEGIN OPENSSH PRIVATE KEY-----\n...` |
-| `github-token`    | A GitHub Personal Access Token, used when cloning dependencies                              |                                            |
-| `timeout`         | How many minutes to let the job run before killing the server                               | `10`                                       |
-| `branch`          | Which GMod branch to run your tests on                                                      | `x86-64`                                   |
+| **Name**                 | **Description**                                                                                                            | **Example**                                                                                     |
+|----------------------|------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
+| `server-cfg`         | A path (relative to project directory) with extra server config options                                                | `data_static/my_addon.cfg`                                                                              |
+| `requirements`       | A path (relative to project directory) with a list of all requirements to test this project                            | `data_static/my_addon.txt`                                                                              |
+| `gamemode`           | The name of the gamemode for the test server to run                                                                    | `darkrp`                                                                                                |
+| `map`                | The direct name of the map you want the server to startup with                                                         | `gm_bigcity_improved_lite`                                                                              |
+| `collection`         | The workshop ID of the collection for the test server to use                                                           | `1629732176`                                                                                            |
+| `extra-startup-args` | Additional startup arguments to add to the srcds startup                                                               | `-tickrate 16 -usegh`                                                                                   |
+| `ssh-private-key`    | The Private SSH key to use when cloning the dependencies                                                               | `-----BEGIN OPENSSH PRIVATE KEY-----\n...`                                                              |
+| `github-token`       | A GitHub Personal Access Token, used when cloning dependencies                                                         |                                                                                                         |
+| `timeout`            | How many minutes to let the job run before killing the server                                                          | `10`                                                                                                    |
+| `branch`             | Which GMod branch to run your tests on                                                                                 | `live`|`prerelease`|`dev`|`x86-64`                                                                      |
+| `gluatest-ref`       | Which tag/branch of GLuaTest to run                                                                                    | `main`|`feature/new-feature-branch`                                                                     |
+| `custom-overrides`   | An absolute path with custom files to copy to the server directly. Structure should match the contents of `garrysmod/` | `$GITHUB_WORKSPACE/my_overrides`                                                                        |
+| `download-artifact`  | A URL path to a .tar.gz file that will be unpacked in the root directory                                               | `https://github.com/RaphaelIT7/gmod-holylib/releases/download/Release0.7/gmsv_holylib_linux_packed.zip` |
+| `additional-setup`   | If specificed, executes the given string as a script after all setup is complete, allowing additional setup            | `echo "Hello, this is a test!"`                                                                         |
 
 </summary>
 </details>
@@ -307,6 +346,8 @@ jobs:
 Running tests in a GitHub Runner is surprisingly fast.
 
 Even with hundreds of tests, you can expect the entire check to take **under 30 seconds!**
+
+In fact, the test suite itself will often complete in only a couple of seconds. Most of the time is spent downloading the image and setting up the runner.
 
 _(Failing async tests will slow down the time significantly because it has to wait for the timeouts)_
 
@@ -455,11 +496,12 @@ The Test Group (that is, the table you return from your Test File) can have the 
 ### The Test Case
 Each Test Case is a table with the following keys:
 
-| Key          | Type              | Description                                                                    | Required | Default |
-|--------------|:-----------------:|--------------------------------------------------------------------------------|:--------:|:-------:|
+| Key              | Type              | Description                                                                    | Required | Default |
+|------------------|:-----------------:|--------------------------------------------------------------------------------|:--------:|:-------:|
 | **`name`**       | `string`          | Name of the Test Case (for reference later)                                    |  ✔️       |         |
 | **`func`**       | `function`        | The actual test function. Takes a `state` table                                |  ✔️       |         |
 | **`async`**      | `bool`            | If your test relies on timers, hooks, or callbacks, it must run asynchronously |  ❌      | `false` |
+| **`coroutine`**  | `bool`            | This allows your test to use coroutines to control its execution               |  ❌      | `false` |
 | **`timeout`**    | `int`             | How long to wait for your async test before marking it as having timed out     |  ❌      | 60      |
 | **`cleanup`**    | `function`        | The function to run after running your test. Takes a `state` table             |  ❌      |         |
 | **`when`**       | `bool / function` | Only run this test case "when" this field is _(or evaluates to)_ `true`          |  ❌      |         |
@@ -489,8 +531,9 @@ There are a number of different expectations you can use.
 #### Expectations
 | Expectation          | Description                                               | Example                                                         |
 |----------------------|-----------------------------------------------------------|-----------------------------------------------------------------|
-| **`equal`**/**`eq`**     | Basic `==` equality check                                     | `expect( a ).to.equal( b )`                                     |
+| **`equal`**/**`eq`** | Basic `==` equality check                                     | `expect( a ).to.equal( b )`                                     |
 | **`aboutEqual`**     | Basic `==` equality check, with a tolerance                   | `expect( 0.999 ).to.aboutEqual( 1 )`                            |
+| **`deepEqual`**      | Expects that two tables are deeply equal                      | `expect( {{ Entity(1) }} ).to.deepEqual( {{ Entity(1) }} )`     |
 | **`beLessThan`**     | Basic `<` comparison                                          | `expect( 5 ).to.beLessThan( 6 )`                                |
 | **`beGreaterThan`**  | Basic `>` comparison                                          | `expect( 10 ).to.beGreaterThan( 1 )`                            |
 | **`beBetween`**      | Expects the subject to be less than min, and greater than max | `expect( 5 ).to.beBetween( 3, 7 )`                              |
@@ -499,8 +542,9 @@ There are a number of different expectations you can use.
 | **`beValid`**        | Expects `IsValid( value )` to return `true`                   | `expect( ply ).to.beValid()`                                    |
 | **`beInvalid`**      | Expects `IsValid( value )` to return `false`                  | `expect( nil ).to.beInvalid()`                                  |
 | **`beNil`**          | Expects the subject to literally be `nil`                     | `expect( player.GetAll()[2] ).to.beNil()`                       |
+| **`beNaN`**          | Expects the subject to be NaN                                 | `expect( 0 / 0 ).to.beNaN()`                                    |
 | **`exist`**          | Expects the subject to not be `nil`                           | `expect( MyProject ).to.exist()`                                |
-| **`beA`**/**`beAn`**     | Expects the subject to have the given `type`                  | `expect( "test" ).to.beA( "string" )`                           |
+| **`beA`**/**`beAn`** | Expects the subject to have the given `type`                  | `expect( "test" ).to.beA( "string" )`                           |
 | **`succeed`**        | Expects the subject function to run without error             | `expect( func, param ).to.succeed()`                            |
 | **`err`**            | Expects the subject function to throw an error                | `expect( error ).to.err()`                                      |
 | **`errWith`**        | Expects the subject function to throw the given error         | `expect( badFunc, param ).to.errWith( "error message" )`        |
@@ -551,6 +595,71 @@ Skipping is also handy if you want to disable a test but keep the code:
 ```
 
 **Note:** `skip` takes precedence over `when`
+
+<br>
+
+#### The `coroutine` option
+<details>
+ <summary><strong>Sometimes you need your test to wait indefinitely for unpredictable circumstances that don't have callbacks</strong></summary>
+
+ In these situations, you can use the `coroutine` option to run your test in a coroutine.
+
+ For example, if you're testing with Nextbots, you'll find it frustrating to wait for them to disconnect before your next test runs.
+
+```lua
+-- lua/gluatest/extensions/my_nextbot_extensions.lua
+
+--- Halts the coroutine until the server is empty
+WaitForEmptyServer = function()
+    local co = coroutine.running()
+    local identifier = getWaitIdentifier()
+
+    hook.Add( "Think", identifier, function()
+        local count = player.GetCount()
+        if count > 0 then return end
+
+        hook.Remove( "Think", identifier )
+        coroutine.resume( co )
+    end )
+
+    return coroutine.yield()
+end
+```
+
+```lua
+-- lua/tests/my_nextbot/my_nextbot.lua
+
+return {
+    groupName = "My Nextbot tests",
+
+    -- Automatically kick all bots after each test
+    afterEach = function()
+        for _, bot in ipairs( player.GetBots() ) do
+            game.KickID( bot:UserID() )
+        end
+    end,
+
+    cases = {
+        {
+            name = "Should be able to spawn a nextbot",
+            async = true,
+            timeout = 2,
+            coroutine = true,
+            func = function()
+                WaitForEmptyServer() -- We need to be sure the server is empty before we do our tests, otherwise it could fail due to timing
+
+                local myBot = player.CreateNextBot( "Silly little guy" )
+                expect( player.GetCount() ).to.equal( 1 )
+                expect( player.GetAll()[1] ).to.equal( myBot )
+
+                done()
+            end
+        }
+    }
+}
+```
+
+</details>
 
 <br>
 
@@ -920,6 +1029,76 @@ return {
 }
 ```
 </details>
+
+### Extensions
+<details>
+ <summary><strong>Extensions allow you to make your own test utilities or GLuaTest extensions</strong></summary>
+
+ If you have a function or tool that you'd like to use in your tests, you can add it to the `gluatest/extensions/` directory.
+
+ For example, if you were going to be testing a lot of entities in the same way, you could save yourself some headache by making an extension like this:
+```lua
+-- lua/gluatest/extensions/with_entity.lua
+
+--- Returns a GLuaTest TestGroup that is set up for Entity Testing
+--- @param classname string The class name of the entity to spawn
+--- @param testGroup GLuaTest_TestGroup
+WithEntityTests = function( classname, testGroup )
+    testGroup.beforeEach = function( state )
+        state.ents = {}
+
+        function state.SpawnEnt()
+            local ent = ents.Create( classname )
+            ent:Spawn()
+
+            table.insert( state.ents, ent )
+            return ent
+        end
+
+        function state.RemoveEnt( ent )
+            table.RemoveByValue( state.ents, ent )
+
+            if IsValid( ent ) then
+                ent:Remove()
+            end
+        end
+    end
+
+    testGroup.afterEach = function( state )
+        for _, ent in ipairs( state.ents ) do
+            if IsValid( ent ) then
+                ent:Remove()
+            end
+        end
+    end
+end
+```
+
+And then you can set up your test like this:
+```lua
+-- lua/tests/my_project/entity_1.lua
+
+return WithEntityTests( "my_special_entity", {
+    groupName = "My Special Entity Tests",
+
+    -- No need to include any special setup/cleanup logic here as it's already handled by WithEntityTests
+
+    cases = {
+        {
+            name = "Spawns with default values",
+            func = function( state )
+                local ent = state.SpawnEnt()
+
+                expect( ent:GetModel() ).to.equal( "models/my_special_entity.mdl" )
+                expect( ent:GetColor() ).to.equal( Color( 255, 255, 255 ) )
+            end
+        }
+    }
+} )
+```
+</details>
+
+<br>
 
 ---
 

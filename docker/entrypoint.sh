@@ -14,13 +14,26 @@ git clone --depth 1 https://github.com/CFC-Servers/GLuaTest.git _tmp_https &> /d
 rm -rf _tmp_ssh _tmp_https
 
 # Copy the overrides overtop the server files
-rsync --archive $home/garrysmod_override/ $server/
+echo "Copying serverfiles overrides..."
+rsync --verbose --archive $home/garrysmod_override/ $server/
+
+# Any additional files
+if [ -n "$(ls -A $home/_gluatest_artifacts/_gluatest_artifacts/)" ]; then # Only execute if there are any artifacts or else tar will complain
+    cp $home/_gluatest_artifacts/_gluatest_artifacts/* $gmodroot/
+
+    for file in $gmodroot/*.tar.gz; do \
+        tar --extract --verbose --ungzip --file="$file" --directory="$gmodroot" && \
+        rm --force --verbose "$file"; \
+    done
+fi
 
 if [ -f "$gmodroot/custom_requirements.txt" ]; then
+    echo "Appending custom requirements"
     cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
 fi
 
 if [ -f "$gmodroot/custom_server.cfg" ]; then
+    echo "Appending custom server configs"
     cat "$gmodroot/custom_server.cfg" >> "$server/cfg/test.cfg"
 fi
 
@@ -35,8 +48,6 @@ if [[ ! -z "$SSH_PRIVATE_KEY" ]]; then
     eval `ssh-agent -s`
     ssh-add - <<< "$SSH_PRIVATE_KEY"
 fi
-
-cd "$server"/addons
 
 function getCloneLine {
     python3 - <<-EOF
@@ -66,8 +77,9 @@ print("git clone -v --depth 1 " + url + branch + " --single-branch " + name)
 EOF
 }
 
+cd "$server"/addons
 while read p; do
-    echo "$p"
+    echo "Handling requirement: $p"
     if [[ -z "$SSH_PRIVATE_KEY" ]]; then
         eval $(getCloneLine "$p" )
     else
@@ -77,12 +89,15 @@ done <"$gmodroot"/requirements.txt
 
 gamemode="${GAMEMODE:-sandbox}"
 collection="${COLLECTION_ID:-0}"
+map="${MAP:-gm_construct}"
 echo "Starting the server with gamemode: $gamemode"
 
-srcds_args=(
+base_srcds_args=(
     # Test requirements
     -systemtest       # Allows us to exit the game from inside Lua
     -condebug         # Logs everything to console.log
+    -debug            # On crashes generate a debug.log allowing for better debugging.
+    -norestart        # If we crash, do not restart.
 
     # Disabling things we don't need/want
     -nodns            # Disables DNS requests and resolving DNS addresses
@@ -104,6 +119,10 @@ srcds_args=(
     -high             # Sets "high" process affinity
     -threads 6        # Double the allocated threads to the threadpool
 
+    -maxplayers 12
+    -disableluarefresh
+    +mat_dxlevel 1
+
     # Game setup
     -game garrysmod
     -ip 127.0.0.1
@@ -111,28 +130,47 @@ srcds_args=(
     +clientport 27005
     +gamemode "$gamemode"
     +host_workshop_collection "$collection"
-    +map gm_construct
-    -maxplayers 12
+    +map "$map"
     +servercfgfile test.cfg
-    -disableluarefresh
-    +mat_dxlevel 1
 )
+srcds_args="$EXTRA_STARTUP_ARGS ${base_srcds_args[@]}"
 
 echo "GMOD_BRANCH: $GMOD_BRANCH"
 
 if [ "$GMOD_BRANCH" = "x86-64" ]; then
     echo "Starting 64-bit server"
-    unbuffer timeout "$timeout" "$gmodroot"/srcds_run_x64 "${srcds_args[@]}"
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run_x64 "$srcds_args"
+elif [ "$GMOD_BRANCH" = "prerelease" ]; then
+    echo "Starting 32-bit prerelease server"
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
+elif [ "$GMOD_BRANCH" = "dev" ]; then
+    echo "Starting 32-bit dev server"
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
+elif [ "$GMOD_BRANCH" = "live" ]; then
+    echo "Starting 32-bit live server"
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
 else
-    echo "Starting 32-bit server"
-    unbuffer timeout "$timeout" "$gmodroot"/srcds_run "${srcds_args[@]}"
+    echo "Unknown GMOD_BRANCH: $GMOD_BRANCH"
+    exit 1
 fi
 
 status=$?
 
-if [ "$(cat $server/data/gluatest_clean_exit.txt)" = "false" ]; then
-    echo "::warning:: Test runner did not exit cleanly. Test results unavailable!"
+if [ "$status" -ne 0 ]; then
+    echo "::error:: Something went wrong! - Failing workflow"
     exit "$status"
+fi
+
+if [ -f "$gmodroot/debug.log" ]; then
+	cat "$gmodroot/debug.log" # Dump the entire debug log
+
+	echo "::error:: Server crashed! - Failing workflow"
+	exit 1
+fi
+
+if [ ! -f "$server/data/gluatest_clean_exit.txt" ] || [ "$(cat $server/data/gluatest_clean_exit.txt)" = "false" ]; then
+    echo "::warning:: Test runner did not exit cleanly. Test results unavailable!"
+    exit 1 # This should never happen normally, GLuaTest probably had an error while executing so we should fail.
 fi
 
 if [ -s "$server/data/gluatest_failures.json" ]; then

@@ -6,6 +6,9 @@ local string_format = string.format
 local failures = {}
 local ghOutput = CreateConVar( "gluatest_github_output", "1", FCVAR_UNREGISTERED, "", 0, 1 )
 
+-- Quick status command to show the server setup
+RunConsoleCommand( "status" )
+
 local function cleanSource( fileName )
     local spl = string_Split( fileName, "/" )
     for i, step in ipairs( spl ) do
@@ -27,8 +30,8 @@ hook.Add( "GLuaTest_LoggedTestFailure", "TestLog", function( errInfo )
 
     if ghOutput:GetBool() then
         local fi = failInfo
-        local str = "::error file=%s,line=%s::%s"
-        print( string_format( str, fi.sourceFile, fi.lineNumber, fi.reason ) )
+        local str = "\n::error file=%s,line=%s::%s" -- RaphaelIT7: We require the \n at the beginning since print uses colors in the output which would cause Github to not recognize the ::error:: unless it's a new line. (Thx Rubat for suggesting this <3)
+        print( string_format( str, fi.sourceFile, fi.lineNumber, fi.reason ) ) -- ToDo: Switch to MsgC( color_white ) in the next GMod update because of https://github.com/Facepunch/garrysmod-requests/issues/2712
     end
 end )
 
