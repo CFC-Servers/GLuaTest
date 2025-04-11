@@ -2,6 +2,12 @@ name: Check for Update and Build Parallel
 
 on:
   workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild all images regardless of version checks'
+        required: false
+        type: boolean
+        default: false
   schedule:
     - cron: "18 */12 * * *"
 
@@ -118,6 +124,15 @@ jobs:
           needs_sixtyfour=$([[ "${{ steps.latest_versions.outputs.sixtyfour }}" != "${{ steps.last_versions.outputs.sixtyfour }}" ]] && echo "true" || echo "false")
           needs_dev=$([[ "${{ steps.latest_versions.outputs.dev }}" != "${{ steps.last_versions.outputs.dev }}" ]] && echo "true" || echo "false")
           needs_prerelease=$([[ "${{ steps.latest_versions.outputs.prerelease }}" != "${{ steps.last_versions.outputs.prerelease }}" ]] && echo "true" || echo "false")
+
+          # If this was a manual run with the "force_rebuild" option, update them all regardless of if they're outdated
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+            echo "Force rebuild requested via workflow_dispatch input. Overriding version checks."
+            needs_public="true"
+            needs_sixtyfour="true"
+            needs_dev="true"
+            needs_prerelease="true"
+          fi
 
           echo "Should build Public: '$needs_public'"
           echo "Should build 64bit: '$needs_sixtyfour'"
