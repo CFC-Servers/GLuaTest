@@ -10,4 +10,4 @@ jobs:
       config: "https://cfc.gg/configs/gluafixer/glualint.json"
 
   luals:
-    uses: CFC-Servers/gmod_luals_workflow/.github/workflows/luals.yml@master
+    uses: CFC-Servers/gmod_luals_workflow/.github/workflows/luals.yml@main
