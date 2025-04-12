@@ -67,6 +67,7 @@ RUN git clone --depth 1 $GLUATEST_REPO $server/addons/gluatest && \
     git fetch --quiet origin $GLUATEST_REF && \
     git checkout FETCH_HEAD
 
+RUN mkdir --parents --verbose $server/data
 RUN mkdir --parents --verbose $server/addons/gluatest/data_static
 RUN echo "$GLUATEST_REF" > $server/addons/gluatest/data_static/gluatest_version.txt
 

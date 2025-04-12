@@ -5,6 +5,7 @@ gmodroot=$home/gmodserver
 server=$home/gmodserver/garrysmod
 pat=$GITHUB_TOKEN@
 timeout="${TIMEOUT:-2}"m
+gmodbranch="${GMOD_BRANCH}"
 
 # Make sure docker-slim doesn't remove bins we'll eventually need
 echo $(date)
@@ -135,7 +136,7 @@ base_srcds_args=(
 )
 srcds_args="$EXTRA_STARTUP_ARGS ${base_srcds_args[@]}"
 
-if [ "$SIXTYFOUR" = "true" ]; then
+if [ "$gmodbranch" = "x86-64" ]; then
     echo "Starting 64-bit server"
     unbuffer timeout "$timeout" "$gmodroot"/srcds_run_x64 "$srcds_args"
 else
