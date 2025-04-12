@@ -18,6 +18,7 @@ GLuaTest is a testing framework for Garry's Mod Lua (GLua) projects, designed to
   - `name` (required): Description of the test.
   - `func` (required): Function containing the test logic.
   - `async` (optional, default `false`): Set to `true` for asynchronous tests.
+  - `coroutine`) (optional, default `false`): Set to `true` to treat the test like a coroutine.
   - `timeout` (optional, default `60`): Time in seconds before an async test times out. (Keep this as low as possible)
   - `cleanup` (optional): Function executed after the test case, even if it fails.
   - `when` (optional): Boolean or function; test runs only if `true`.
@@ -255,7 +256,7 @@ return {
 
 **Caveats:**
 
-- **No External Functions:** Do not use functions not provided by GLuaTest.
+- **No External Functions:** Do not use testing functions not provided by GLuaTest.
 - **Automatic Stub Restoration:** Stubs are automatically restored after each test; manual restoration is rarely needed.
 - **Async Tests Must Signal Completion:** Always call `done()` or `fail()` in async tests.
 
