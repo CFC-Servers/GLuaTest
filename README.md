@@ -1,13 +1,16 @@
 # GLuaTest
 <p align="left">
-    <a href="https://discord.gg/5JUqZjzmYJ" alt="Discord Invite"><img src="https://img.shields.io/discord/981394195812085770?label=Support&logo=discord&logoColor=white" /></a>
+    <a href="https://discord.gg/5JUqZjzmYJ" alt="Discord Invite"><img src="https://img.shields.io/discord/981394195812085770?style=flat-square&logo=discord&logoColor=white&label=Support" /></a>
+    <a href="https://github.com/CFC-Servers/GLuaTests/actions/workflows/self_tests.yml" alt="GLuaTest Status"><img src="https://img.shields.io/github/actions/workflow/status/CFC-Servers/GLuaTest/self_tests.yml?branch=main&logo=lua&logoColor=white&style=flat-square&label=Self%20Tests" /></a>
+    <a href="https://github.com/CFC-Servers/GLuaTests/actions/workflows/self_tests.yml" alt="GLuaTest Status"><img src="https://img.shields.io/github/v/tag/CFC-Servers/GLuaTest?sort=semver&style=flat-square&logo=github&logoColor=white&label=Version" /></a>
 </p>
+
 🎉 <strong>The missing test framework for GMod</strong> 🎉
 
 **GLuaTest is a testing framework built for Garry's Mod.**
 **Its job is to make writing automated tests for Garry's Mod projects easy and tolerable.**
 
-**It offers an approachable (albeit strange) syntax that makes writing tests intuitive.**
+**It offers an approachable and flexible syntax that makes writing tests intuitive.**
 
 GLuaTest takes a lot of inspiration from both Ruby's [RSpec](https://rspec.info/) and JavaScript's [Jest](https://jestjs.io/)
 
