@@ -32,8 +32,8 @@ if GLuaTest.RUN_CLIENTSIDE then
     AddCSLuaFile( "gluatest/runner/msgc_wrapper.lua" )
 end
 
-local shouldRun = CreateConVar( "gluatest_enable", "0", FCVAR_ARCHIVE + FCVAR_PROTECTED )
-local shouldSelfTest = CreateConVar( "gluatest_selftest_enable", "0", FCVAR_ARCHIVE + FCVAR_PROTECTED )
+local shouldRun = CreateConVar( "gluatest_enable", "1", FCVAR_ARCHIVE + FCVAR_PROTECTED, "Should GLuaTest run?" )
+local shouldSelfTest = CreateConVar( "gluatest_selftest_enable", "0", FCVAR_ARCHIVE + FCVAR_PROTECTED, "Should GLuaTest run its own tests?" )
 
 --- @param loader GLuaTest_Loader
 --- @param projectName string
@@ -102,4 +102,4 @@ end )
 
 concommand.Add( "gluatest_run_tests", function()
     GLuaTest.runAllTests()
-end, nil, "Run all tests in the tests/ directory", { FCVAR_PROTECTED } )
+end, nil, "Run all tests in the tests/ directory", FCVAR_PROTECTED )
