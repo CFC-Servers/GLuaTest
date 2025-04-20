@@ -97,6 +97,12 @@ on:
         description: "If enabled it will build the docker image from scratch (You should only use this if you are testing a change to the GLuaTest docker image itself)"
         default: "false"
 
+      no-checkout: # If this is given, all files are probably inside the given artifact.
+        type: string
+        required: false
+        description: "If enabled it will skip the override directory step"
+        default: "false"
+
 jobs:
   test:
     name: "Run tests"
@@ -104,6 +110,7 @@ jobs:
 
     steps:
       - name: "Check out the repo"
+        if: ${{ inputs.no-checkout != 'true' }}
         uses: actions/checkout@v4
         with:
           path: project
@@ -111,6 +118,8 @@ jobs:
       - name: Set up output files
         run: |
           cd $GITHUB_WORKSPACE
+          mkdir -p project # In case there was no checkout
+          mkdir -p garrysmod_override # Same here
           touch $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
           echo "gluatest_github_output 1" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
 
@@ -132,8 +141,10 @@ jobs:
 
           cd ../
           cd $GITHUB_WORKSPACE
+          mkdir -p ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/ # Silently also setup the artifacts dir
 
       - name: Prepare the override directory
+        if: ${{ inputs.no-checkout != 'true' }}
         run: |
           cd $GITHUB_WORKSPACE/project
 
@@ -167,7 +178,6 @@ jobs:
 
           mkdir --verbose --parents "$dest"
           cp --recursive --verbose $source/* "$dest/"
-          mkdir -p ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/ # Silently also setup the artifacts dir
 
       - name: Sync custom overrides
         if: ${{ inputs.custom-overrides }}
