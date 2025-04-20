@@ -372,7 +372,7 @@ Nothing better than free 😎
 
 It's actually extremely simple to run GLuaTest locally.
 
-Just put GLuaTest into your `addons/` directory, set `gluatest_enable 1` on the server, and restart!
+Just put GLuaTest into your `addons/` directory and restart!
 
 
 All of your tests will run when the server starts up and you can view the output in the server console/logs.
@@ -1118,16 +1118,6 @@ Check out this wiki page addressing that very question:
 https://github.com/CFC-Servers/GLuaTest/wiki/I-set-up-GLuaTest...-now-what
 
 <br>
-
-# Troubleshooting 🤔
-<details>
- <summary>Solutions to common problems</summary>
-
- ### Does your test output look completely unreadable?
- ![image](https://user-images.githubusercontent.com/7936439/170231750-e59f880f-138a-485d-be47-8b81f60c9cad.png)
-
- **Try setting the `gluatest_use_ansi` convar to `0`**
-</details>
 
 # Developers 👨‍💻
 <details>
