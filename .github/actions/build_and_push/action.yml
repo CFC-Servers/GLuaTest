@@ -68,12 +68,11 @@ runs:
           --show-clogs --show-blogs \
           --include-bin /usr/bin/date \
           --include-bin /usr/bin/echo \
-          --include-bin /bin/echo \
           --include-bin /usr/bin/python3 \
           --include-bin /usr/bin/git \
           --include-bin /usr/bin/tar \
           --include-bin /usr/bin/cp \
-          --include-bin /bin/cp \
+          --include-bin /usr/bin/gzip \
           --tag $BASE:$rawVersionTag \
           --tag $BASE:gamebuild-$id
 
