@@ -66,13 +66,14 @@ runs:
           --http-probe-off \
           --continue-after 30 \
           --show-clogs --show-blogs \
-          --include-bin /usr/bin/date \
-          --include-bin /usr/bin/echo \
-          --include-bin /usr/bin/python3 \
-          --include-bin /usr/bin/git \
-          --include-bin /usr/bin/tar \
-          --include-bin /usr/bin/cp \
-          --include-bin /usr/bin/gzip \
+          --include-bin "/usr/bin/date" \
+          --include-bin "/usr/bin/echo" \
+          --include-bin "/usr/bin/python3" \
+          --include-bin "/usr/bin/git" \
+          --include-bin "/usr/bin/tar" \
+          --include-bin "/usr/bin/cp" \
+          --include-bin "/usr/bin/gzip" \
+          --include-bin "/home/steam/gmodserver/bin/libbass.so" \
           --tag $BASE:$rawVersionTag \
           --tag $BASE:gamebuild-$id
 
