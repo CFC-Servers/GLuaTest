@@ -260,8 +260,8 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
     local asyncEnv = {
         -- We manually catch expectation errors here in case
         -- they're called in an async function
-        expect = function( subject, ... )
-            local built = expect( subject, ... )
+        expect = function( ... )
+            local built = expect( ... )
             local expected = built.to.expected
             local recordedFailure = false
 
@@ -271,8 +271,20 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
             built.to.expected = function( ... )
                 if recordedFailure then return end
 
+                local stack = debug.getinfo( 3, "lnS" )
+                local locals = Helpers.getLocals( 3 )
+
                 local _, errInfo = xpcall( expected, Helpers.FailCallback, ... )
-                onFailedExpectation( errInfo --[[@as GLuaTest_FailCallbackInfo]] )
+                assert( errInfo )
+
+                local final = {
+                    reason = errInfo.reason,
+                    sourceFile = stack.short_src,
+                    lineNumber = stack.currentline,
+                    locals = locals
+                }
+
+                onFailedExpectation( final --[[@as GLuaTest_FailCallbackInfo]] )
 
                 recordedFailure = true
             end
