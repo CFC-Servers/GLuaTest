@@ -4,7 +4,10 @@ local string_Split = string.Split
 local string_format = string.format
 
 local failures = {}
-local ghOutput = CreateConVar( "gluatest_github_output", "1", FCVAR_UNREGISTERED, "", 0, 1 )
+
+-- FCVAR_UNREGISTERED = 1
+local unregistered = 1
+local ghOutput = CreateConVar( "gluatest_github_output", "1", unregistered, "", 0, 1 )
 
 -- Quick status command to show the server setup
 RunConsoleCommand( "status" )

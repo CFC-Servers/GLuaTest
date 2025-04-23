@@ -62,6 +62,8 @@
 --- @return GLuaTest_Expect
 function expect( subject, ... )
     _ = subject -- _ is used to make the GLuaLinter happy, as else it'll complain that the variables are unused.
+
+    return fake --[[@as GLuaTest_Expect]]
 end
 
 --- Create a stub function
@@ -72,4 +74,6 @@ function stub( tbl, key )
     -- _ is used to make the GLuaLinter happy, as else it'll complain that the variables are unused.
     _ = tbl
     _ = key
+
+    return fake --[[@as GLuaTest_Stub]]
 end
