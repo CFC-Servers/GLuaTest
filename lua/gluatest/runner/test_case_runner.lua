@@ -175,7 +175,7 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
         if isDone then return end
 
         -- If the test ran successfully, start the case-specific timeout timer
-        local timeout = case.timeout or 60
+        local timeout = case.timeout or 5
 
         timer.Create( "GLuaTest_AsyncTimeout_" .. case.id, timeout, 1, function()
             TestGroupRunner:SetTimedOut( case )

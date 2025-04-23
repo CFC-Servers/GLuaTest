@@ -31,6 +31,7 @@
 --- @class GLuaTest_RunnableTestGroup : GLuaTest_TestGroup
 --- @field fileName string The name of the file the test is in
 --- @field project string The name of the project the test is in
+--- @field includeError? GLuaTest_FailCallbackInfo The error that occurred when including the test file
 
 --- @class GLuaTest_UngroupedTestResult
 --- @field case GLuaTest_TestCase The test case
