@@ -171,6 +171,7 @@ function Helpers.getLocals( level )
 
     while true do
         local name, value = debug.getlocal( level, i )
+
         if name == nil then break end
         if name ~= "(*temporary)" then
             table.insert( locals, { name, value == nil and "nil" or value } )
@@ -272,7 +273,7 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
                 if recordedFailure then return end
 
                 local stack = debug.getinfo( 3, "lnS" )
-                local locals = Helpers.getLocals( 3 )
+                local locals = Helpers.getLocals( 4 )
 
                 local _, errInfo = xpcall( expected, Helpers.FailCallback, ... )
                 assert( errInfo )
