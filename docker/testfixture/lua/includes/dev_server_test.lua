@@ -4,6 +4,8 @@ local string_Split = string.Split
 local string_format = string.format
 
 local failures = {}
+
+--- @diagnostic disable-next-line: param-type-mismatch
 local ghOutput = CreateConVar( "gluatest_github_output", "1", FCVAR_UNREGISTERED, "", 0, 1 )
 
 -- Quick status command to show the server setup

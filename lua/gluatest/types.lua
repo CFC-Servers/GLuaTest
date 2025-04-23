@@ -31,6 +31,7 @@
 --- @class GLuaTest_RunnableTestGroup : GLuaTest_TestGroup
 --- @field fileName string The name of the file the test is in
 --- @field project string The name of the project the test is in
+--- @field includeError? GLuaTest_FailCallbackInfo The error that occurred when including the test file
 
 --- @class GLuaTest_UngroupedTestResult
 --- @field case GLuaTest_TestCase The test case
@@ -61,6 +62,8 @@
 --- @return GLuaTest_Expect
 function expect( subject, ... )
     _ = subject -- _ is used to make the GLuaLinter happy, as else it'll complain that the variables are unused.
+
+    return _G.fake --[[@as GLuaTest_Expect]]
 end
 
 --- Create a stub function
@@ -71,4 +74,6 @@ function stub( tbl, key )
     -- _ is used to make the GLuaLinter happy, as else it'll complain that the variables are unused.
     _ = tbl
     _ = key
+
+    return _G.fake --[[@as GLuaTest_Stub]]
 end

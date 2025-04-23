@@ -25,9 +25,17 @@ function GLuaTest.TestGroupRunner( TestRunner, group )
     --- Add a result to the test run
     --- @param result GLuaTest_UngroupedTestResult
     function TGR:AddResult( result )
-        result.testGroup = group
+        --- @type GLuaTest_TestResult
+        local groupedResult = {
+            case = result.case,
+            empty = result.empty,
+            success = result.success,
+            skipped = result.skipped,
+            errInfo = result.errInfo,
 
-        local groupedResult = result --[[@as GLuaTest_TestResult]]
+            testGroup = group
+        }
+
         TestRunner:AddResult( groupedResult )
     end
 
@@ -66,11 +74,23 @@ function GLuaTest.TestGroupRunner( TestRunner, group )
     --- @param case GLuaTest_TestCase
     --- @return GLuaTest_TestCaseRunner
     function TGR:MakeCaseRunner( case )
-        case.id = Helpers.GetCaseID()
-        case.state = case.state or Helpers.CreateCaseState( self.groupState )
-        case.cleanup = case.cleanup or noop
+        --- @type GLuaTest_RunnableTestCase
+        local runnableCase = {
+            name = case.name,
+            func = case.func,
+            async = case.async,
+            coroutine = case.coroutine,
+            timeout = case.timeout,
+            when = case.when,
+            skip = case.skip,
+            clientside = case.clientside,
+            shared = case.shared,
 
-        local runnableCase = case --[[@as GLuaTest_RunnableTestCase]]
+            cleanup = case.cleanup or noop,
+            id = Helpers.GetCaseID(),
+            state = Helpers.CreateCaseState( self.groupState )
+        }
+
         local caseRunner = GLuaTest.TestCaseRunner( self, runnableCase )
 
         return caseRunner
@@ -80,7 +100,13 @@ function GLuaTest.TestGroupRunner( TestRunner, group )
     --- @param cb fun(): nil The function to run once the group is complete
     function TGR:Run( cb )
         if group.includeError ~= nil then
-            self:SetFailed( { name = "Failed to include file" }, group.includeError )
+            --- @type GLuaTest_RunnableTestCase
+            local mockTestCase = {
+                name = "Failed to include file",
+                func = function() end,
+            }
+
+            self:SetFailed( mockTestCase, group.includeError )
             return cb()
         end
 
@@ -107,9 +133,7 @@ function GLuaTest.TestGroupRunner( TestRunner, group )
                 return cb()
             end
 
-            timer.Simple( 0, function()
-                nextRunner:Run( runNext )
-            end )
+            ProtectedCall( nextRunner.Run, nextRunner, runNext )
         end
 
         runNext()

@@ -32,7 +32,9 @@ if GLuaTest.RUN_CLIENTSIDE then
     AddCSLuaFile( "gluatest/runner/msgc_wrapper.lua" )
 end
 
+--- @diagnostic disable-next-line: param-type-mismatch
 local shouldRun = CreateConVar( "gluatest_enable", "1", FCVAR_ARCHIVE + FCVAR_PROTECTED, "Should GLuaTest run?" )
+--- @diagnostic disable-next-line: param-type-mismatch
 local shouldSelfTest = CreateConVar( "gluatest_selftest_enable", "0", FCVAR_ARCHIVE + FCVAR_PROTECTED, "Should GLuaTest run its own tests?" )
 
 --- @param loader GLuaTest_Loader
@@ -100,6 +102,5 @@ hook.Add( "Tick", "GLuaTest_Runner", function()
     GLuaTest.runAllTests()
 end )
 
-concommand.Add( "gluatest_run_tests", function()
-    GLuaTest.runAllTests()
-end, nil, "Run all tests in the tests/ directory", FCVAR_PROTECTED )
+--- @diagnostic disable-next-line: param-type-mismatch
+concommand.Add( "gluatest_run_tests", GLuaTest.runAllTests, nil, "Run all tests in the tests/ directory", FCVAR_PROTECTED )

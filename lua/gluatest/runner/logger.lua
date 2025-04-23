@@ -322,6 +322,7 @@ function ResultLogger.logFailureSummary( allResults )
 
         for _, failure in ipairs( failures ) do
             ResultLogger.LogTestResult( failure, false )
+            ResultLogger.LogTestFailureDetails( failure )
         end
 
         MsgC( "\n" )
