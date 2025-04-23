@@ -1,11 +1,5 @@
 local RED = Color( 255, 0, 0 )
 
--- Fixes some weird LuaLS complaint
--- FCVAR_PROTECTED = 32
-local protected = 32
--- FCVAR_ARCHIVE = 128
-local archive = 128
-
 --- @type VersionTools
 local VersionTools = include( "utils/version.lua" )
 
@@ -38,8 +32,10 @@ if GLuaTest.RUN_CLIENTSIDE then
     AddCSLuaFile( "gluatest/runner/msgc_wrapper.lua" )
 end
 
-local shouldRun = CreateConVar( "gluatest_enable", "1", archive + protected, "Should GLuaTest run?" )
-local shouldSelfTest = CreateConVar( "gluatest_selftest_enable", "0", archive + protected, "Should GLuaTest run its own tests?" )
+--- @diagnostic disable-next-line: param-type-mismatch
+local shouldRun = CreateConVar( "gluatest_enable", "1", FCVAR_ARCHIVE + FCVAR_PROTECTED, "Should GLuaTest run?" )
+--- @diagnostic disable-next-line: param-type-mismatch
+local shouldSelfTest = CreateConVar( "gluatest_selftest_enable", "0", FCVAR_ARCHIVE + FCVAR_PROTECTED, "Should GLuaTest run its own tests?" )
 
 --- @param loader GLuaTest_Loader
 --- @param projectName string
@@ -106,6 +102,5 @@ hook.Add( "Tick", "GLuaTest_Runner", function()
     GLuaTest.runAllTests()
 end )
 
-concommand.Add( "gluatest_run_tests", function()
-    GLuaTest.runAllTests()
-end, nil, "Run all tests in the tests/ directory", protected )
+--- @diagnostic disable-next-line: param-type-mismatch
+concommand.Add( "gluatest_run_tests", GLuaTest.runAllTests, nil, "Run all tests in the tests/ directory", FCVAR_PROTECTED )
