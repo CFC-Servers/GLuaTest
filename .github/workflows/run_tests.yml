@@ -103,6 +103,12 @@ on:
         description: "If enabled it will skip the override directory step"
         default: "false"
 
+      logs-as-artifact:
+        type: string
+        required: false
+        description: "If enabled, it will upload the server logs as an artifact"
+        default: "false"
+
 jobs:
   test:
     name: "Run tests"
@@ -267,3 +273,17 @@ jobs:
           if [ $exitstatus -ne 0 ]; then
             exit $exitstatus
           fi
+
+      - name: Capture Docker Logs
+        if: always() && inputs.logs-as-artifact == 'true'
+        run: |
+          cd $GITHUB_WORKSPACE/gluatest/docker
+          docker compose logs runner > $GITHUB_WORKSPACE/gluatest-log-${{ inputs.branch }}.log
+
+      - name: Upload Test Log Artifact
+        if: always() && inputs.logs-as-artifact == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gluatest-log-${{ inputs.branch }}
+          path: ${{ github.workspace }}/gluatest-log-${{ inputs.branch }}.log
+          retention-days: 3
