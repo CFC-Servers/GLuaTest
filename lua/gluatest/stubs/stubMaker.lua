@@ -1,5 +1,5 @@
 --- @alias StubFunction fun(tbl: table, key: any): GLuaTest_Stub
---- @alias GLuaTest_StubMaker fun(): StubFunction, fun()
+--- @alias GLuaTest_StubMaker fun(): StubFunction, fun(): nil
 
 return function()
     --- @type GLuaTest_Stub[]

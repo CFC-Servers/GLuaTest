@@ -3,10 +3,12 @@ local isfunction = isfunction
 --- @type GLuaTest_RunnerHelpers
 local Helpers = include( "gluatest/runner/helpers.lua" )
 
---- case.when should evaluate to `true` if the test should run
+--- case.when should be/evaluate to `true` if the test should run (may also be a table of values that are/evaluate to `true`)
 --- case.skip should evaluate to `true` if the test should be skipped
 --- (case.skip takes precedence over case.when)
+--- (passing this a nil value will not skip the test - we can't know if that means the value wasn't provided, or if it was provided and nil)
 --- @param case GLuaTest_RunnableTestCase
+--- @return boolean Whether the test should be skipped (true for yes, false for no)
 local function checkShouldSkip( case )
     -- skip
     local skip = case.skip
@@ -20,11 +22,18 @@ local function checkShouldSkip( case )
     if condition == nil then return false end
     if condition == false then return true end
 
-    if isfunction( condition ) then
-        return condition() ~= true
+    local conditions = istable( condition ) and condition or { condition }
+
+    for _, cond in ipairs( conditions --[[ @as (boolean | GLuaTest_WhenFunction)[] ]] ) do
+        if cond == false then return true end
+
+        -- Function conditions are expected to return true
+        if isfunction( cond ) then
+            if cond() ~= true then return true end
+        end
     end
 
-    return condition ~= true
+    return false
 end
 
 --- @param TestGroupRunner GLuaTest_TestGroupRunner
@@ -146,8 +155,12 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
             expectationFailure = true
         end
 
-        local asyncEnv, asyncCleanupFunc = Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
-        asyncCleanup = asyncCleanupFunc
+        local asyncEnv, asyncCleanupFuncs = Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
+        asyncCleanup = function()
+            for _, func in ipairs( asyncCleanupFuncs ) do
+                func()
+            end
+        end
 
         local beforeEach = group.beforeEach
         if beforeEach then
@@ -155,6 +168,15 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
             beforeEach( case.state )
             setfenv( beforeEach, defaultEnv )
         end
+
+        local function setTimedOut()
+            TestGroupRunner:SetTimedOut( case )
+            testComplete()
+        end
+
+        -- If the test ran successfully, start the case-specific timeout timer
+        local timeout = case.timeout or 5
+        timer.Create( "GLuaTest_AsyncTimeout_" .. case.id, timeout, 1, setTimedOut )
 
         setfenv( case.func, asyncEnv )
         local success, errInfo = xpcall( case.func, Helpers.FailCallback, case.state )
@@ -168,19 +190,6 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
 
             return
         end
-
-        -- If the async case actually operated synchronously
-        -- (i.e. called done() or fail() before we got here)
-        -- then we don't need to set a timeout
-        if isDone then return end
-
-        -- If the test ran successfully, start the case-specific timeout timer
-        local timeout = case.timeout or 5
-
-        timer.Create( "GLuaTest_AsyncTimeout_" .. case.id, timeout, 1, function()
-            TestGroupRunner:SetTimedOut( case )
-            testComplete()
-        end )
     end
 
     --- Run the test case

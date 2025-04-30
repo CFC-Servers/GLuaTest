@@ -124,36 +124,30 @@ function Helpers.makeTestTools()
         expect = expect,
     }
 
-    local function cleanup()
-        stubCleanup()
-    end
-
-    return tools, cleanup
+    return tools, stubCleanup
 end
 
 --- Creates a new environment for a test to run in
 --- @return table testEnv The test environment
---- @return fun(): nil cleanup The cleanup function
+--- @return (fun(): nil)[] cleanup The cleanup functions
 function Helpers.makeTestEnv()
     local testEnv, envCleanup = Helpers.makeTestLibStubs()
     local testTools, toolsCleanup = Helpers.makeTestTools()
 
-    local function cleanup()
-        envCleanup()
-        toolsCleanup()
-    end
+    local cleanup = {
+        envCleanup,
+        toolsCleanup
+    }
 
-    local env = setmetatable(
-        testTools,
-        {
-            __index = function( _, idx )
-                return testEnv[idx] or _G[idx]
-            end,
-        }
-    )
+    local meta = {
+        __index = function( _, idx )
+            return testEnv[idx] or _G[idx]
+        end,
+    }
 
-    hook.Run( "GLuaTest_EnvCreated", env )
+    hook.Run( "GLuaTest_EnvCreated", testTools, meta, cleanup )
 
+    local env = setmetatable( testTools, meta )
     return env, cleanup
 end
 
@@ -246,16 +240,18 @@ end
 --- @param done fun(): nil The function called by the test to signal completion
 --- @param fail fun( reason: string ): nil The function called by the test to signal failure
 --- @param onFailedExpectation fun( errInfo: GLuaTest_FailCallbackInfo ): nil The function called when an expectation fails
+--- @return table testEnv The test environment
+--- @return (fun(): nil)[] cleanup The cleanup functions
 function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
     -- TODO: How can we make Stubs safer in Async environments?
     local stub, stubCleanup = stubMaker()
     local testEnv, envCleanup = Helpers.makeTestLibStubs()
 
-    --- Function that cleans up all actions taken by the test
-    local function cleanup()
-        envCleanup()
-        stubCleanup()
-    end
+    --- Functions that clean up all actions taken by the test
+    local cleanup = {
+        envCleanup,
+        stubCleanup
+    }
 
     --- @class GLuaTest_AsyncEnv
     local asyncEnv = {
@@ -298,17 +294,15 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
         stub = stub,
     }
 
-    local env = setmetatable(
-        asyncEnv,
-        {
-            __index = function( _, idx )
-                return testEnv[idx] or _G[idx]
-            end
-        }
-    )
+    local meta = {
+        __index = function( _, idx )
+            return testEnv[idx] or _G[idx]
+        end
+    }
 
-    hook.Run( "GLuaTest_AsyncEnvCreated", env )
+    hook.Run( "GLuaTest_AsyncEnvCreated", asyncEnv, meta, cleanup )
 
+    local env = setmetatable( asyncEnv, meta )
     return env, cleanup
 end
 
@@ -319,7 +313,7 @@ end
 --- @param state GLuaTest_TestState The state to pass to the test
 --- @return GLuaTest_CaseRunResult The result of the test
 function Helpers.SafeRunWithEnv( defaultEnv, before, func, state )
-    local testEnv, cleanup = Helpers.makeTestEnv()
+    local testEnv, cleanupFuncs = Helpers.makeTestEnv()
     local ranExpect = false
 
     local ogExpect = testEnv.expect
@@ -329,17 +323,22 @@ function Helpers.SafeRunWithEnv( defaultEnv, before, func, state )
         return ogExpect( ... )
     end
 
+    -- Before
     if before then
         setfenv( before, testEnv )
         before( state )
         setfenv( before, defaultEnv )
     end
 
+    -- Run
     setfenv( func, testEnv )
     local success, output = xpcall( func, Helpers.FailCallback, state )
     setfenv( func, defaultEnv )
 
-    cleanup()
+    -- Cleanup
+    for _, cleanup in ipairs( cleanupFuncs ) do
+        cleanup()
+    end
 
     if success then
         -- If it succeeded but never ran `expect`, it's an empty test
@@ -363,17 +362,23 @@ end
 --- The state is unique to each case, but has a group-level passthrough
 --- @return GLuaTest_TestState
 function Helpers.CreateCaseState( testGroupState )
-    return setmetatable( {}, {
+    local state = {}
+    local meta = {
         __index = function( self, idx )
             if testGroupState[idx] ~= nil then
                 return testGroupState[idx]
             end
 
-            if rawget( self, idx ) ~= nil then
-                return rawget( self, idx )
+            local val = rawget( self, idx )
+            if val ~= nil then
+                return val
             end
         end
-    } )
+    }
+
+    hook.Run( "GLuaTest_CaseStateCreated", state, meta, testGroupStatee )
+
+    return setmetatable( state, meta )
 end
 
 return Helpers

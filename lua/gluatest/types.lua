@@ -3,6 +3,10 @@
 --- @class GLuaTest_TestState
 --- @field [any] any The state of the test
 
+--- @alias GLuaTest_WhenFunction (fun(): boolean)
+--- @alias GLuaTest_When boolean | GLuaTest_WhenFunction
+--- @alias GLuaTest_WhenCondition (GLuaTest_When) | (GLuaTest_When)[]
+
 --- @class GLuaTest_TestCase
 --- @field name string The human-readable name of the test
 --- @field func fun(state: GLuaTest_TestState): nil The test function
@@ -10,7 +14,7 @@
 --- @field coroutine? boolean Whether the test requires coroutine handling
 --- @field timeout? number The maximum time (in seconds) the test can run before being considered failed
 --- @field cleanup? fun(state: GLuaTest_TestState): nil A function to run after the test, regardless of the test outcome
---- @field when? boolean|fun(): boolean Only run this test case when this condition is met
+--- @field when? GLuaTest_WhenCondition: boolean Only run this test case when this condition (or set of conditions) is/are met
 --- @field skip? boolean|fun(): boolean Skip this test case when this condition is met
 --- @field clientside? boolean (Not fully supported) Whether the test is clientside
 --- @field shared? boolean (Not fully supported) Whether the test is shared

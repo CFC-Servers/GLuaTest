@@ -30,7 +30,11 @@ function TestRunner:Complete( testGroups )
     local duration = SysTime() - self.startTime
 
     hook.Run( "GLuaTest_Finished", testGroups, self.results, duration )
-    LogTestsComplete( testGroups, self.results, duration )
+
+    -- Some logs may be printed after our completion message, we need to wait a bit
+    timer.Simple( 0.1, function()
+        LogTestsComplete( testGroups, self.results, duration )
+    end )
 end
 
 --- Runs all given test groups
