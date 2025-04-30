@@ -4,6 +4,8 @@ local RED = Color( 255, 0, 0 )
 local VersionTools = include( "utils/version.lua" )
 
 local conVarFlags = bit.bor( FCVAR_ARCHIVE, FCVAR_PROTECTED )
+
+local isHotload = GLuaTest ~= nil
 --- @class GLuaTest
 GLuaTest = {
     RunServersideConVar = CreateConVar( "gluatest_server_enable",   "1", conVarFlags, "Should GLuaTest run automatically on the server side?" ),
@@ -147,10 +149,13 @@ GLuaTest.runAllTests = function()
     runner:Run( testFiles )
 end
 
-hook.Add( "Tick", "GLuaTest_Runner", function()
-    hook.Remove( "Tick", "GLuaTest_Runner" )
-    GLuaTest.runAllTests()
-end )
+-- Automatically run tests when loading into a map
+if not isHotload then
+    hook.Add( "Tick", "GLuaTest_Runner", function()
+        hook.Remove( "Tick", "GLuaTest_Runner" )
+        GLuaTest.runAllTests()
+    end )
+end
 
 --- @diagnostic disable-next-line: param-type-mismatch
 concommand.Add( "gluatest_run_tests", GLuaTest.runAllTests, nil, "Run all tests in the tests/ directory", FCVAR_PROTECTED )
