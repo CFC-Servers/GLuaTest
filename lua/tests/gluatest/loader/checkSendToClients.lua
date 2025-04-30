@@ -15,12 +15,12 @@ return {
         },
 
         {
-            name = "Sends clientside cases when RUN_CLIENTSIDE is enabled",
+            name = "Sends clientside cases when the gluatest_client_enable ConVar is enabled",
             func = function( state )
                 local Loader = state.Loader
-                state.currentRunClientside = GLuaTest.RUN_CLIENTSIDE
+                state.currentRunClientside = GLuaTest.RunClientsideConVar:GetBool()
 
-                GLuaTest.RUN_CLIENTSIDE = true
+                GLuaTest.RunClientsideConVar:SetBool( true )
                 local AddCSLuaFileStub = stub( _G, "AddCSLuaFile" )
 
                 local cases = { { clientside = true } }
@@ -28,17 +28,17 @@ return {
                 expect( AddCSLuaFileStub ).was.called()
             end,
             cleanup = function( state )
-                GLuaTest.RUN_CLIENTSIDE = state.currentRunClientside
+                GLuaTest.RunClientsideConVar:SetBool( state.currentRunClientside )
             end
         },
 
         {
-            name = "Does not send clientside cases if RUN_CLIENTSIDE is disabled",
+            name = "Does not send clientside cases if the gluatest_client_enable ConVar is disabled",
             func = function( state )
                 local Loader = state.Loader
-                state.currentRunClientside = GLuaTest.RUN_CLIENTSIDE
+                state.currentRunClientside = GLuaTest.RunClientsideConVar:GetBool()
 
-                GLuaTest.RUN_CLIENTSIDE = false
+                GLuaTest.RunClientsideConVar:SetBool( false )
                 local AddCSLuaFileStub = stub( _G, "AddCSLuaFile" )
 
                 local cases = { { clientside = true } }
@@ -47,17 +47,17 @@ return {
             end,
 
             cleanup = function( state )
-                GLuaTest.RUN_CLIENTSIDE = state.currentRunClientside
+                GLuaTest.RunClientsideConVar:SetBool( state.currentRunClientside )
             end
         },
 
         {
-            name = "Does not send non-clientside cases when RUN_CLIENTSIDE is enabled",
+            name = "Does not send non-clientside cases when the gluatest_client_enable ConVar is enabled",
             func = function( state )
                 local Loader = state.Loader
-                state.currentRunClientside = GLuaTest.RUN_CLIENTSIDE
+                state.currentRunClientside = GLuaTest.RunClientsideConVar:GetBool()
 
-                GLuaTest.RUN_CLIENTSIDE = true
+                GLuaTest.RunClientsideConVar:SetBool( true )
                 local AddCSLuaFileStub = stub( _G, "AddCSLuaFile" )
 
                 local cases = { { clientside = false } }
@@ -66,7 +66,7 @@ return {
             end,
 
             cleanup = function( state )
-                GLuaTest.RUN_CLIENTSIDE = state.currentRunClientside
+                GLuaTest.RunClientsideConVar:SetBool( state.currentRunClientside )
             end
         }
     }

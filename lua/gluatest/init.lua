@@ -3,10 +3,12 @@ local RED = Color( 255, 0, 0 )
 --- @type VersionTools
 local VersionTools = include( "utils/version.lua" )
 
+local conVarFlags = bit.bor( FCVAR_ARCHIVE, FCVAR_PROTECTED )
 --- @class GLuaTest
 GLuaTest = {
-    -- If, for some reason, you need to run GLuaTest clientside, set this to true (not very well supported)
-    RUN_CLIENTSIDE = false,
+    RunServersideConVar = CreateConVar( "gluatest_server_enable",   "1", conVarFlags, "Should GLuaTest run automatically on the server side?" ),
+    RunClientsideConVar = CreateConVar( "gluatest_client_enable",   "0", conVarFlags, "Should GLuaTest run automatically on the client side?" ),
+    SelfTestConVar      = CreateConVar( "gluatest_selftest_enable", "0", conVarFlags, "Should GLuaTest run its own tests?" ),
 
     DeprecatedNotice = function( old, new )
         local msg = [[GLuaTest: (DEPRECATION NOTICE) "]] .. old .. [[" is deprecated, use "]] .. new .. [[" instead.]]
@@ -14,35 +16,71 @@ GLuaTest = {
     end
 }
 
-if GLuaTest.RUN_CLIENTSIDE then
-    AddCSLuaFile()
-    AddCSLuaFile( "gluatest/loader.lua" )
+--[[ Set Up Client Testing ]] do
+    if SERVER then
+        util.AddNetworkString( "GLuaTest_RunClientTests" )
 
-    AddCSLuaFile( "gluatest/expectations/expect.lua" )
-    AddCSLuaFile( "gluatest/expectations/positive.lua" )
-    AddCSLuaFile( "gluatest/expectations/negative.lua" )
+        -- /*
+        AddCSLuaFile( "gluatest/init.lua" )
+        AddCSLuaFile( "gluatest/loader.lua" )
+        AddCSLuaFile( "gluatest/types.lua" )
 
+        -- /util/*
+        AddCSLuaFile( "gluatest/utils/git_tools.lua" )
+        AddCSLuaFile( "gluatest/utils/version.lua" )
+
+        -- /stubs/*
         AddCSLuaFile( "gluatest/stubs/stub_maker.lua" )
 
-    AddCSLuaFile( "gluatest/runner/runner.lua" )
-    AddCSLuaFile( "gluatest/runner/colors.lua" )
-    AddCSLuaFile( "gluatest/runner/logger.lua" )
-    AddCSLuaFile( "gluatest/runner/helpers.lua" )
-    AddCSLuaFile( "gluatest/runner/log_helpers.lua" )
-    AddCSLuaFile( "gluatest/runner/msgc_wrapper.lua" )
-end
+        -- /runner/*
+        AddCSLuaFile( "gluatest/runner/colors.lua" )
+        AddCSLuaFile( "gluatest/runner/helpers.lua" )
+        AddCSLuaFile( "gluatest/runner/log_helpers.lua" )
+        AddCSLuaFile( "gluatest/runner/logger.lua" )
+        AddCSLuaFile( "gluatest/runner/runner.lua" )
+        AddCSLuaFile( "gluatest/runner/test_case_runner.lua" )
+        AddCSLuaFile( "gluatest/runner/test_group_runner.lua" )
 
---- @diagnostic disable-next-line: param-type-mismatch
-local shouldRun = CreateConVar( "gluatest_enable", "1", FCVAR_ARCHIVE + FCVAR_PROTECTED, "Should GLuaTest run?" )
---- @diagnostic disable-next-line: param-type-mismatch
-local shouldSelfTest = CreateConVar( "gluatest_selftest_enable", "0", FCVAR_ARCHIVE + FCVAR_PROTECTED, "Should GLuaTest run its own tests?" )
+        -- /expectations/*
+        AddCSLuaFile( "gluatest/expectations/expect.lua" )
+        AddCSLuaFile( "gluatest/expectations/negative.lua" )
+        AddCSLuaFile( "gluatest/expectations/positive.lua" )
+
+        -- /expectations/utils/*
+        AddCSLuaFile( "gluatest/expectations/utils/table_diff.lua" )
+
+        -- When the server finishes its tests, notify clients to start theirs
+        -- While it is possible to run client and server tests in parallel, that may lead to
+        -- undesirable side-effects or conflicts.
+        hook.Add( "GLuaTest_Finished", "GLuaTest_RunClientTests", function()
+            -- Give the server tests a moment to finish so the console messages on local servers don't get mixed together
+            timer.Simple( 0.1, function()
+                if GLuaTest.RunClientsideConVar:GetBool() then
+                    net.Start( "GLuaTest_RunClientTests" )
+                    net.Broadcast()
+                end
+            end )
+        end)
+    end
+
+    if CLIENT then
+        -- Run clientside tests when the server asks 
+        net.Receive( "GLuaTest_RunClientTests", function( _, _ )
+            if not GLuaTest then
+                error( "[GLuaTest] Client tests are attempting to run before GLuaTest has initialized" )
+            end
+
+            GLuaTest.runAllTests()
+        end )
+    end
+end
 
 --- @param loader GLuaTest_Loader
 --- @param projectName string
 --- @param path string
 --- @param testFiles GLuaTest_TestGroup[]
 local function addTestFiles( loader, projectName, path, testFiles )
-    if projectName == "gluatest" and not shouldSelfTest:GetBool() then
+    if projectName == "gluatest" and not GLuaTest.SelfTestConVar:GetBool() then
         return
     end
 
@@ -65,8 +103,20 @@ end
 
 --- Loads and runs all tests in the tests/ directory
 GLuaTest.runAllTests = function()
-    if not shouldRun:GetBool() then
-        print( "[GLuaTest] Test runs are disabled. Enable them with: gluatest_enable 1" )
+    local shouldRunServerside = GLuaTest.RunServersideConVar:GetBool()
+    local shouldRunClientside = GLuaTest.RunClientsideConVar:GetBool()
+
+    if SERVER and not shouldRunServerside then
+        -- Alert the client immediately if we are skipping server tests and are still running client tests
+        if shouldRunClientside then
+            net.Start( "GLuaTest_RunClientTests" )
+            net.Broadcast()
+        end
+
+        if not shouldRunClientside then
+            print( "[GLuaTest] Test runs are disabled clientside and serverside. Enable them with gluatest_server_enable 1 and/or gluatest_client_enable 1" )
+        end
+
         return
     end
 

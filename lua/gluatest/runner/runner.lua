@@ -40,7 +40,7 @@ end
 --- Runs all given test groups
 --- @param testGroups GLuaTest_RunnableTestGroup[]
 function TestRunner:Run( testGroups )
-    if CLIENT and not GLuaTest.RUN_CLIENTSIDE then return end
+    if CLIENT and not GLuaTest.RunClientsideConVar:GetBool() then return end
 
     PlainLogStart()
 
