@@ -22,7 +22,7 @@ if GLuaTest.RUN_CLIENTSIDE then
     AddCSLuaFile( "gluatest/expectations/positive.lua" )
     AddCSLuaFile( "gluatest/expectations/negative.lua" )
 
-    AddCSLuaFile( "gluatest/stubs/stubMaker.lua" )
+        AddCSLuaFile( "gluatest/stubs/stub_maker.lua" )
 
     AddCSLuaFile( "gluatest/runner/runner.lua" )
     AddCSLuaFile( "gluatest/runner/colors.lua" )
