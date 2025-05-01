@@ -5,7 +5,7 @@ local Loader = {}
 --- @param filePath string
 --- @param cases GLuaTest_TestCase[]
 function Loader.checkSendToClients( filePath, cases )
-    if not GLuaTest.RUN_CLIENTSIDE then return end
+    if not GLuaTest.RunClientsideConVar:GetBool() then return end
 
     for _, case in ipairs( cases ) do
         if case.clientside then

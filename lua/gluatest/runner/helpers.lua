@@ -8,7 +8,7 @@ local Helpers = {
 local expect = include( "gluatest/expectations/expect.lua" )
 
 --- @type GLuaTest_StubMaker
-local stubMaker = include( "gluatest/stubs/stubMaker.lua" )
+local stubMaker = include( "gluatest/stubs/stub_maker.lua" )
 
 --- Gets a unique case ID
 --- @return string
@@ -376,7 +376,7 @@ function Helpers.CreateCaseState( testGroupState )
         end
     }
 
-    hook.Run( "GLuaTest_CaseStateCreated", state, meta, testGroupStatee )
+    hook.Run( "GLuaTest_CaseStateCreated", state, meta, testGroupState )
 
     return setmetatable( state, meta )
 end

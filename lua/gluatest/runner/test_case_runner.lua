@@ -28,8 +28,8 @@ local function checkShouldSkip( case )
         if cond == false then return true end
 
         -- Function conditions are expected to return true
-        if isfunction( cond ) then
-            if cond() ~= true then return true end
+        if isfunction( cond ) and cond() ~= true then
+            return true
         end
     end
 

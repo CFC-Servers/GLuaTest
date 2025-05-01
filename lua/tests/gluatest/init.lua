@@ -1,3 +1,4 @@
+--- @type GLuaTest_TestGroup
 return {
     groupName = "Initialization",
 
@@ -20,7 +21,8 @@ return {
         {
             name = "Convars exist",
             func = function()
-                expect( ConVarExists( "gluatest_enable" ) ).to.beTrue()
+                expect( ConVarExists( "gluatest_server_enable" ) ).to.beTrue()
+                expect( ConVarExists( "gluatest_client_enable" ) ).to.beTrue()
                 expect( ConVarExists( "gluatest_selftest_enable" ) ).to.beTrue()
             end
         },
@@ -28,8 +30,11 @@ return {
         {
             name = "Convars have correct defaults",
             func = function()
-                local gluatest_enable = GetConVar( "gluatest_enable" )
-                expect( gluatest_enable:GetDefault() ).to.equal( "1" )
+                local gluatest_server_enable = GetConVar( "gluatest_server_enable" )
+                expect( gluatest_server_enable:GetDefault() ).to.equal( "1" )
+
+                local gluatest_client_enable = GetConVar( "gluatest_client_enable" )
+                expect( gluatest_client_enable:GetDefault() ).to.equal( "0" )
 
                 local gluatest_selftest_enable = GetConVar( "gluatest_selftest_enable" )
                 expect( gluatest_selftest_enable:GetDefault() ).to.equal( "0" )
