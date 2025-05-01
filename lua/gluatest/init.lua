@@ -65,7 +65,7 @@ GLuaTest = {
                     net.Broadcast()
                 end
             end )
-        end)
+        end )
     end
 
     if CLIENT then

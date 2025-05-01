@@ -376,7 +376,7 @@ function Helpers.CreateCaseState( testGroupState )
         end
     }
 
-    hook.Run( "GLuaTest_CaseStateCreated", state, meta, testGroupStatee )
+    hook.Run( "GLuaTest_CaseStateCreated", state, meta, testGroupState )
 
     return setmetatable( state, meta )
 end
