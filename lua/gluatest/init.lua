@@ -135,6 +135,9 @@ GLuaTest.runAllTests = function()
         return
     end
 
+    -- Re-load extensions to make extension development easier
+    GLuaTest.Loader.loadExtensions( "gluatest/extensions" )
+
     GLuaTest.VERSION = VersionTools.getVersion()
 
     local testPaths = {
