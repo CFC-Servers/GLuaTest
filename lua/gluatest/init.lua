@@ -15,11 +15,19 @@ GLuaTest = {
     --- @diagnostic disable-next-line: param-type-mismatch
     SelfTestConVar      = CreateConVar( "gluatest_selftest_enable", "0", conVarFlags, "Should GLuaTest run its own tests?" ),
 
+    --- @type GLuaTest_Loader
+    Loader = include( "gluatest/loader.lua" ),
+
     DeprecatedNotice = function( old, new )
         local msg = [[GLuaTest: (DEPRECATION NOTICE) "]] .. old .. [[" is deprecated, use "]] .. new .. [[" instead.]]
         if SERVER then MsgC( RED, msg .. "\n" ) end
     end
 }
+
+--[[ Extensions ]] do
+    -- Because extensions do their own AddCSLuaFile calls, we need to load them immediately so local server clients receive them
+    GLuaTest.Loader.loadExtensions( "gluatest/extensions" )
+end
 
 --[[ Set Up Client Testing ]] do
     if SERVER then
@@ -127,10 +135,6 @@ GLuaTest.runAllTests = function()
 
     GLuaTest.VERSION = VersionTools.getVersion()
 
-    --- @type GLuaTest_Loader
-    local Loader = include( "gluatest/loader.lua" )
-    Loader.loadExtensions( "gluatest/extensions" )
-
     local testPaths = {
         "tests",
         GAMEMODE.FolderName .. "/gamemode/tests"
@@ -142,7 +146,7 @@ GLuaTest.runAllTests = function()
 
     for i = 1, #testPaths do
         local path = testPaths[i]
-        loadAllProjectsFrom( Loader, path, testFiles )
+        loadAllProjectsFrom( GLuaTest.Loader, path, testFiles )
     end
 
     hook.Run( "GLuaTest_RunTestFiles", testFiles )
