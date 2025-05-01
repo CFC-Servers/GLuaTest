@@ -25,11 +25,13 @@ GLuaTest = {
 }
 
 --[[ Extensions ]] do
+
     -- Because extensions do their own AddCSLuaFile calls, we need to load them immediately so local server clients receive them
     GLuaTest.Loader.loadExtensions( "gluatest/extensions" )
 end
 
 --[[ Set Up Client Testing ]] do
+
     if SERVER then
         util.AddNetworkString( "GLuaTest_RunClientTests" )
 
