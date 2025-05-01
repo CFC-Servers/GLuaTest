@@ -8,8 +8,11 @@ local conVarFlags = bit.bor( FCVAR_ARCHIVE, FCVAR_PROTECTED )
 local isHotload = GLuaTest ~= nil
 --- @class GLuaTest
 GLuaTest = {
+    --- @diagnostic disable-next-line: param-type-mismatch
     RunServersideConVar = CreateConVar( "gluatest_server_enable",   "1", conVarFlags, "Should GLuaTest run automatically on the server side?" ),
+    --- @diagnostic disable-next-line: param-type-mismatch
     RunClientsideConVar = CreateConVar( "gluatest_client_enable",   "0", conVarFlags, "Should GLuaTest run automatically on the client side?" ),
+    --- @diagnostic disable-next-line: param-type-mismatch
     SelfTestConVar      = CreateConVar( "gluatest_selftest_enable", "0", conVarFlags, "Should GLuaTest run its own tests?" ),
 
     DeprecatedNotice = function( old, new )
