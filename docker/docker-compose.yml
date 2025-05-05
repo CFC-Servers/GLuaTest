@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   runner:
     image: ghcr.io/cfc-servers/gluatest:latest
