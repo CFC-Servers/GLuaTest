@@ -74,6 +74,7 @@ runs:
           --include-bin "/usr/bin/cp" \
           --include-bin "/usr/bin/gzip" \
           --include-bin "/home/steam/gmodserver/bin/libbass.so" \
+          --include-bin "/home/steam/gmodserver/bin/linux64/libbass.so" \
           --tag $BASE:$rawVersionTag \
           --tag $BASE:gamebuild-$id
 
