@@ -3,6 +3,7 @@ local TypeID = TypeID
 local IsValid = IsValid
 local isstring = isstring
 local string_format = string.format
+local Arg = include( "arg.lua" )
 local GetDiff = include( "utils/table_diff.lua" )
 
 -- Inverse checks
