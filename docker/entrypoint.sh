@@ -167,6 +167,7 @@ if [ -s "$server/data/gluatest_failures.json" ]; then
     echo "::warning:: Test failures detected - Failing workflow"
     exit 1
 else
-    echo "::notice:: No test failures detected"
+    # We don't use ::notice:: since there is no point in adding a annotation as we only succeed if nothing went wrong and in all other cases we fail.
+    echo "No test failures detected"
     exit 0
 fi
