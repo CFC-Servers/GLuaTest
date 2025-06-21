@@ -4,7 +4,7 @@ local Helpers = {
     caseIdPrefix = "case_" .. os.time() .. "_",
 }
 
---- @type GLuaTest_Expect
+--- @type fun(subject: any, ...: any): GLuaTest_Expect
 local expect = include( "gluatest/expectations/expect.lua" )
 
 --- @type GLuaTest_StubMaker
