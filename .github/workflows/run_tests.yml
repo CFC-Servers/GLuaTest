@@ -192,7 +192,7 @@ jobs:
 
       - name: Download artifact (Github)
         if: inputs.download-artifact != '' && !(startsWith(inputs.download-artifact, 'https://') || startsWith(inputs.download-artifact, 'http://'))
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/
           name: "${{ inputs.download-artifact }}"
