@@ -28,7 +28,7 @@ jobs:
       any_update_needed: ${{ steps.needs_update.outputs.any }}
     steps:
       - name: Checkout Full Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           path: full_repo
@@ -93,7 +93,7 @@ jobs:
           echo "prerelease=$prerelease" >> $GITHUB_OUTPUT
 
       - name: Checkout last build branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: build/last-build-versions
           path: build_versions
@@ -176,7 +176,7 @@ jobs:
 
     steps:
       - name: Checkout Full Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: full_repo
 
@@ -198,7 +198,7 @@ jobs:
 
     steps:
       - name: Checkout last build branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: build/last-build-versions
           path: build_versions
