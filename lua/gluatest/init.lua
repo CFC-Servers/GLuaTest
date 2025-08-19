@@ -14,6 +14,8 @@ GLuaTest = {
     RunClientsideConVar = CreateConVar( "gluatest_client_enable",   "0", conVarFlags, "Should GLuaTest run automatically on the client side?" ),
     --- @diagnostic disable-next-line: param-type-mismatch
     SelfTestConVar      = CreateConVar( "gluatest_selftest_enable", "0", conVarFlags, "Should GLuaTest run its own tests?" ),
+    --- @diagnostic disable-next-line: param-type-mismatch
+    HttpHelloConVar     = CreateConVar( "gluatest_http_hello", "1", conVarFlags, "Should GLuaTest ping the GLuaTest hello endpoint?" ),
 
     DeprecatedNotice = function( old, new )
         local msg = [[GLuaTest: (DEPRECATION NOTICE) "]] .. old .. [[" is deprecated, use "]] .. new .. [[" instead.]]
@@ -78,6 +80,33 @@ GLuaTest = {
             GLuaTest.runAllTests()
         end )
     end
+end
+
+--- Encodes a string for use in a URL param
+--- @param str string
+local function urlEncode( str )
+    if not str then return "" end
+
+    str = string.gsub( str, "([^%w%-%._~])", function( c )
+        return string.format( "%%%02X", string.byte( c ) )
+    end )
+
+    return str
+end
+
+--- Runs a simple ping against the GLuatest Hello endpoint
+--- (Helps us get a rough idea of how many people use GLuaTest, as well as preserving HTTP during container minification)
+--- @param version string
+local function httpHello( version )
+    local shouldRun = GLuaTest.HttpHello:GetBool()
+    if not shouldRun then return end
+
+    HTTP( {
+        method = "GET",
+        url = "https://hello.gluatest.com?version=" .. urlEncode( version ),
+        success = function() end,
+        failed = function() end,
+    } )
 end
 
 --- @param loader GLuaTest_Loader
