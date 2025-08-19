@@ -109,6 +109,10 @@ on:
         description: "If enabled, it will upload the server logs as an artifact"
         default: "false"
 
+    secrets:
+      secret-startup-args:
+        required: false
+
 jobs:
   test:
     name: "Run tests"
@@ -253,7 +257,7 @@ jobs:
           REQUIREMENTS: "${{ github.workspace }}/project/${{ inputs.requirements }}"
           CUSTOM_SERVER_CONFIG: "${{ github.workspace }}/project/${{ inputs.server-cfg }}"
           PROJECT_DIR: "${{ github.workspace }}/garrysmod_override"
-          EXTRA_STARTUP_ARGS: "${{ inputs.extra-startup-args }}"
+          EXTRA_STARTUP_ARGS: "${{ inputs.extra-startup-args }} ${{ secrets.secret-startup-args }}"
           GAMEMODE: "${{ inputs.gamemode }}"
           MAP: "${{ inputs.map }}"
           COLLECTION_ID: "${{ inputs.collection }}"
@@ -286,6 +290,9 @@ jobs:
 
           # Remove all the ANSI color codes
           cat "$filename.pre" | ansi2txt > "$filename"
+
+          # Remove secrets
+          sed -i '/${{ secrets.secret-startup-args }}/d' "$filename"
 
       - name: Upload Test Log Artifact
         if: always() && inputs.logs-as-artifact == 'true'
