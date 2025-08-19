@@ -6,7 +6,7 @@ ARG GLUATEST_REPO=https://github.com/CFC-Servers/GLuaTest.git
 
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt update && apt install -y --no-install-recommends --no-install-suggests git python3-minimal expect rsync openssh-client gdb && apt autoremove
+RUN apt update && apt install -y --no-install-recommends --no-install-suggests git python3-minimal expect rsync openssh-client gdb libncurses5 && apt autoremove
 
 ARG home=/home/steam
 ARG gmodroot=$home/gmodserver
