@@ -167,6 +167,6 @@ if [ -s "$server/data/gluatest_failures.json" ]; then
     echo "::warning:: Test failures detected - Failing workflow"
     exit 1
 else
-    echo "::notice:: No test failures detected"
+    echo "No test failures detected"
     exit 0
 fi
