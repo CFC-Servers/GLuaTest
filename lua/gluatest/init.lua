@@ -176,6 +176,8 @@ GLuaTest.runAllTests = function()
 
     hook.Run( "GLuaTest_RunTestFiles", testFiles )
 
+    httpHello( GLuaTest.VERSION )
+
     --- @type GLuaTest_TestRunner
     local runner = include( "gluatest/runner/runner.lua" )
     runner:Run( testFiles )
