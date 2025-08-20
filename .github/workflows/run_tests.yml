@@ -112,6 +112,8 @@ on:
     secrets:
       secret-startup-args:
         required: false
+      secret-additional-setup:
+        required: false
 
 jobs:
   test:
@@ -208,10 +210,10 @@ jobs:
           wget -O artifact.tar.gz ${{ inputs.download-artifact }} # No matter what, we expect it as a .tar.gz
 
       - name: Run Additional Setup
-        if: inputs.additional-setup != ''
         run: |
           cd ${{ github.workspace }}
           ${{ inputs.additional-setup }}
+          ${{ secrets.secret-additional-setup }}
 
       - name: Pull GLuaTest Runner
         if: inputs.dockerbuild != 'true'
