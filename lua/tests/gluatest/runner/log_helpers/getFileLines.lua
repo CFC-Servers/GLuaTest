@@ -107,7 +107,7 @@ return {
                 local filePath = "addons/testaddon/lua/tests/non_existent.txt"
 
                 stub( file, "Open" ).returns( nil )
-                expect( getFileLines, filePath ).to.err()
+                expect( getFileLines( filePath ) ).to.beNil()
             end
         }
     }
