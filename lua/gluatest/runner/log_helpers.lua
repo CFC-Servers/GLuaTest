@@ -61,7 +61,7 @@ LogHelpers.fileLinesCache = {
 --- Reads a given file path and returns the contents split by newline
 --- Cached for future calls
 --- @param filePath string
---- @return string[]
+--- @return string[]?
 function LogHelpers.getFileLines( filePath )
     local cached = LogHelpers.fileLinesCache:get( filePath )
     if cached then return cached end
