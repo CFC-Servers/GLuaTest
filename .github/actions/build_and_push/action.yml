@@ -49,16 +49,7 @@ runs:
       run: |
         cd ${{ inputs.path }}/docker
 
-        if [ "${{ inputs.gmod_branch }}" = "x86-64" ]; then
-          BASE=ghcr.io/cfc-servers/gluatest/64bit
-        elif [ "${{ inputs.gmod_branch }}" = "dev" ]; then
-          BASE=ghcr.io/cfc-servers/gluatest/dev
-        elif [ "${{ inputs.gmod_branch }}" = "prerelease" ]; then
-          BASE=ghcr.io/cfc-servers/gluatest/prerelease
-        else
-          BASE=ghcr.io/cfc-servers/gluatest
-        fi
-
+        BASE=ghcr.io/cfc-servers/gluatest
         rawVersionTag=${{ inputs.tag_name }}
         id=${{ inputs.game_version }}
         $GITHUB_WORKSPACE/docker-slim build \
@@ -76,7 +67,8 @@ runs:
           --include-bin "/home/steam/gmodserver/bin/libbass.so" \
           --include-bin "/home/steam/gmodserver/bin/linux64/libbass.so" \
           --tag $BASE:$rawVersionTag \
-          --tag $BASE:gamebuild-$id
+          --tag $BASE:gamebuild-$id \
+          --tag $BASE:${{ inputs.gmod_branch }}
 
         # Tag image with "0.27" if we push tag "0.27.5"
         # but not if we push tag "0.27-pre5"
@@ -101,14 +93,4 @@ runs:
     - name: Tag and push slim image
       shell: bash
       run: |
-        if [ "${{ inputs.gmod_branch }}" = "x86-64" ]; then
-          BASE=ghcr.io/cfc-servers/gluatest/64bit
-        elif [ "${{ inputs.gmod_branch }}" = "dev" ]; then
-          BASE=ghcr.io/cfc-servers/gluatest/dev
-        elif [ "${{ inputs.gmod_branch }}" = "prerelease" ]; then
-          BASE=ghcr.io/cfc-servers/gluatest/prerelease
-        else
-          BASE=ghcr.io/cfc-servers/gluatest
-        fi
-
-        docker push "$BASE" --all-tags
+        docker push "ghcr.io/cfc-servers/gluatest" --all-tags
