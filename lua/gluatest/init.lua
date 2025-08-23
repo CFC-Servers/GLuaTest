@@ -1,3 +1,12 @@
+local fh = file.Open( "garrysmod.ver", "rb", "MOD" ) --[[@as File]]
+if fh then
+    fh:ReadLine() -- Version Date
+    fh:ReadLine() -- Forgot idk
+    BRANCH = fh:ReadLine() -- prerelease shows unknown instead of prerelease as BRANCH. Not useful for tests.
+    BRANCH = string.Trim( BRANCH )
+    fh:Close()
+end
+
 local RED = Color( 255, 0, 0 )
 
 --- @type VersionTools
