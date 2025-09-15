@@ -1,3 +1,10 @@
+local fileHandle = file.Open( "garrysmod_branch.txt", "rb", "MOD" ) --[[@as File]]
+if fileHandle then -- NOTE: This file is created in our docker file / BRANCH will only be accurate inside of the Docker images
+    BRANCH = fileHandle:ReadLine() -- prerelease shows unknown instead of prerelease as BRANCH. Not useful for tests.
+    BRANCH = string.Trim( BRANCH )
+    fileHandle:Close()
+end
+
 local RED = Color( 255, 0, 0 )
 
 --- @type VersionTools

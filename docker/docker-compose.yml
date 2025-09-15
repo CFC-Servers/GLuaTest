@@ -1,6 +1,6 @@
 services:
   runner:
-    image: ghcr.io/cfc-servers/gluatest:latest
+    image: ghcr.io/cfc-servers/gluatest/$GMOD_BRANCH:latest
     build: .
     container_name: gluatest_runner
     stop_grace_period: 2s
