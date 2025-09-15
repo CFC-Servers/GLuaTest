@@ -49,15 +49,7 @@ runs:
       run: |
         cd ${{ inputs.path }}/docker
 
-        if [ "${{ inputs.gmod_branch }}" = "x86-64" ]; then
-          BASE=ghcr.io/cfc-servers/gluatest/64bit
-        elif [ "${{ inputs.gmod_branch }}" = "dev" ]; then
-          BASE=ghcr.io/cfc-servers/gluatest/dev
-        elif [ "${{ inputs.gmod_branch }}" = "prerelease" ]; then
-          BASE=ghcr.io/cfc-servers/gluatest/prerelease
-        else
-          BASE=ghcr.io/cfc-servers/gluatest
-        fi
+        BASE=ghcr.io/cfc-servers/gluatest/${{ inputs.gmod_branch }}
 
         rawVersionTag=${{ inputs.tag_name }}
         id=${{ inputs.game_version }}
@@ -101,14 +93,6 @@ runs:
     - name: Tag and push slim image
       shell: bash
       run: |
-        if [ "${{ inputs.gmod_branch }}" = "x86-64" ]; then
-          BASE=ghcr.io/cfc-servers/gluatest/64bit
-        elif [ "${{ inputs.gmod_branch }}" = "dev" ]; then
-          BASE=ghcr.io/cfc-servers/gluatest/dev
-        elif [ "${{ inputs.gmod_branch }}" = "prerelease" ]; then
-          BASE=ghcr.io/cfc-servers/gluatest/prerelease
-        else
-          BASE=ghcr.io/cfc-servers/gluatest
-        fi
+        BASE=ghcr.io/cfc-servers/gluatest/${{ inputs.gmod_branch }}
 
         docker push "$BASE" --all-tags

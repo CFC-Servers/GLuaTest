@@ -1,6 +1,6 @@
 FROM ghcr.io/cfc-servers/steamcmd:latest
 
-ARG GMOD_BRANCH=live
+ARG GMOD_BRANCH=public
 ARG GLUATEST_REF=main
 ARG GLUATEST_REPO=https://github.com/CFC-Servers/GLuaTest.git
 
@@ -13,19 +13,8 @@ ARG gmodroot=$home/gmodserver
 ARG server=$home/gmodserver/garrysmod
 
 USER steam
-RUN if [ "$GMOD_BRANCH" = "x86-64" ]; then \
-    echo "Downloading x86-64 branch"; \
-    ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta x86-64 validate +quit; \
-elif [ "$GMOD_BRANCH" = "dev" ]; then \
-    echo "Downloading dev branch"; \
-    ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta dev validate +quit; \
-elif [ "$GMOD_BRANCH" = "prerelease" ]; then \
-    echo "Downloading prerelease branch"; \
-    ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta prerelease validate +quit; \
-else \
-    echo "Downloading live branch"; \
-    ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 validate +quit; \
-fi
+RUN echo "Downloading $GMOD_BRANCH branch"; \
+./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta $GMOD_BRANCH validate +quit;
 
 # Initial server config
 RUN touch $gmodroot/custom_server.cfg && \
@@ -70,5 +59,6 @@ RUN git clone --depth 1 $GLUATEST_REPO $server/addons/gluatest && \
 RUN mkdir --parents --verbose $server/data
 RUN mkdir --parents --verbose $server/addons/gluatest/data_static
 RUN echo "$GLUATEST_REF" > $server/addons/gluatest/data_static/gluatest_version.txt
+RUN echo "$GMOD_BRANCH" > $server/garrysmod_branch.txt
 
 ENTRYPOINT ["/home/steam/gmodserver/entrypoint.sh"]
