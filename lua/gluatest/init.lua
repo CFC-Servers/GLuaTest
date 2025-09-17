@@ -76,7 +76,7 @@ GLuaTest = {
     end
 
     if CLIENT then
-        -- Run clientside tests when the server asks 
+        -- Run clientside tests when the server asks
         net.Receive( "GLuaTest_RunClientTests", function( _, _ )
             if not GLuaTest then
                 error( "[GLuaTest] Client tests are attempting to run before GLuaTest has initialized" )
@@ -113,8 +113,60 @@ local function loadAllProjectsFrom( loader, path, testFiles )
     end
 end
 
---- Loads and runs all tests in the tests/ directory
-GLuaTest.runAllTests = function()
+--- filters a list of test groups based on targets
+--- @param allTestGroups GLuaTest_RunnableTestGroup[] The list of all loaded test groups
+--- @param targets string[] The list of targets to filter by
+--- @return GLuaTest_RunnableTestGroup[] groupsToRun The filtered list of groups that match the targets
+--- @return string[] unmatchedTargets The list of targets that did not match any group
+local function filterTestGroupsByTargets( allTestGroups, targets )
+    print( "[GLuaTest] Filtering loaded tests based on targets..." )
+
+    --- @type table<string, GLuaTest_RunnableTestGroup>
+    local groupLookupByIdentifier = {}
+    for _, group in ipairs( allTestGroups ) do
+        local identifiers = { group.project .. "/" .. group.fileName }
+
+        if group.groupName then
+            table.insert( identifiers, group.groupName )
+            table.insert( identifiers, group.project .. "/" .. group.groupName )
+        end
+
+        for _, id in ipairs( identifiers ) do
+            groupLookupByIdentifier[id] = group
+        end
+    end
+
+    --- @type GLuaTest_RunnableTestGroup[]
+    local groupsToRun = {}
+    local groupsAddedLookup = {}
+    local foundTargetsLookup = {}
+    local unmatchedTargets = {}
+
+    for _, target in ipairs( targets ) do
+        local matchedGroup = groupLookupByIdentifier[target]
+        if matchedGroup then
+            if not groupsAddedLookup[matchedGroup] then
+                table.insert( groupsToRun, matchedGroup )
+                groupsAddedLookup[matchedGroup] = true
+            end
+            foundTargetsLookup[target] = true
+        end
+    end
+
+    for _, originalTarget in ipairs( targets ) do
+        if not foundTargetsLookup[originalTarget] then
+            table.insert( unmatchedTargets, originalTarget )
+        end
+    end
+
+    return groupsToRun, unmatchedTargets
+end
+
+
+
+--- Loads and runs tests, optionally filtering by targets
+--- @param targets? string[] Optional list of targets (group names or project/file paths)
+GLuaTest.runAllTests = function( targets )
     local shouldRunServerside = GLuaTest.RunServersideConVar:GetBool()
     local shouldRunClientside = GLuaTest.RunClientsideConVar:GetBool()
 
@@ -145,18 +197,46 @@ GLuaTest.runAllTests = function()
     hook.Run( "GLuaTest_AddTestPaths", testPaths )
 
     --- @type GLuaTest_TestGroup[]
-    local testFiles = {}
-
-    for i = 1, #testPaths do
-        local path = testPaths[i]
-        loadAllProjectsFrom( Loader, path, testFiles )
+    local allTestGroups = {}
+    for _, path in ipairs( testPaths ) do
+        loadAllProjectsFrom( Loader, path, allTestGroups )
     end
 
-    hook.Run( "GLuaTest_RunTestFiles", testFiles )
+    hook.Run( "GLuaTest_RunTestFiles", allTestGroups )
 
-    --- @type GLuaTest_TestRunner
-    local runner = include( "gluatest/runner/runner.lua" )
-    runner:Run( testFiles )
+    --- @type GLuaTest_RunnableTestGroup[]
+    local groupsToRun
+    --- @type string[]
+    local unmatchedTargets = {}
+
+    if targets and #targets > 0 then
+        groupsToRun, unmatchedTargets = filterTestGroupsByTargets( allTestGroups, targets )
+    else
+        groupsToRun = allTestGroups
+    end
+
+    if #unmatchedTargets > 0 then
+        local missed = ( #unmatchedTargets == #targets )
+        local messagePrefix = missed and
+            "No test groups matched the specified target( s ): '" or
+            "The following specified target( s ) did not match any test groups: '"
+        MsgC(
+            RED,
+            messagePrefix,
+            table.concat( unmatchedTargets, "', '" ),
+            "'\n"
+         )
+    end
+
+    if #groupsToRun > 0 then
+        --- @type GLuaTest_TestRunner
+        local runner = include( "gluatest/runner/runner.lua" )
+        runner:Run( groupsToRun )
+    elseif targets and #targets > 0 then
+        print( "[GLuaTest] No tests selected to run after filtering." )
+    else
+        print( "[GLuaTest] No tests found to run." )
+    end
 end
 
 -- Automatically run tests when loading into a map
@@ -167,5 +247,45 @@ if not isHotload then
     end )
 end
 
+
+--- Parses the argument string into a list of targets
+--- @param args string? The raw argument string (  e.g., "group1, project2/file.lua , group3"  )
+--- @return string[]? A list of trimmed target identifiers, or nil if args is empty
+local function parseTargets( args )
+    if not args or args == "" then return nil end
+
+    local rawTargets = string.Split( args, "," )
+    local targets = {}
+    for _, target in ipairs( rawTargets ) do
+        local trimmed = string.Trim( target )
+        if trimmed ~= "" then
+            table.insert( targets, trimmed )
+        end
+    end
+
+    return #targets > 0 and targets or nil
+end
+
+--- @param _ Player?
+--- @param __ string
+--- @param ___ string[]
+--- @param argsStr string The full argument string
+local function runTestsCommand( _, __, ___, argsStr ) -- Luals doesn't like duplicate parameters (  e.g _  )
+    local targets = parseTargets( argsStr )
+    if targets then
+        local targetList = table.concat( targets, "', '" )
+        print( "[GLuaTest] Running specific targets: '" .. targetList .. "'" )
+    else
+        print( "[GLuaTest] Running all tests." )
+    end
+    GLuaTest.runAllTests( targets )
+end
+
 --- @diagnostic disable-next-line: param-type-mismatch
-concommand.Add( "gluatest_run_tests", GLuaTest.runAllTests, nil, "Run all tests in the tests/ directory", FCVAR_PROTECTED )
+concommand.Add(
+    "gluatest_run_tests",
+    runTestsCommand,
+    nil,
+    "Run tests. Optionally specify comma separated group names or project/file paths (e.g., 'group1, myproject/mytest.lua')",
+    FCVAR_PROTECTED
+)
