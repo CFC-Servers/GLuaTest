@@ -216,6 +216,11 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/gluatest/docker
 
+          # RaphaelIT7: Backwards compatibility since I broke it
+          if [ "$GMOD_BRANCH" = "live" ]; then
+            export GMOD_BRANCH="public"
+          fi
+
           docker compose pull
 
       - name: Build GLuaTest
@@ -248,6 +253,11 @@ jobs:
           GMOD_BRANCH: "${{ inputs.branch }}"
         run: |
           cd $GITHUB_WORKSPACE/gluatest/docker
+
+          # RaphaelIT7: Backwards compatibility since I broke it
+          if [ "$GMOD_BRANCH" = "live" ]; then
+            export GMOD_BRANCH="public"
+          fi
 
           # RaphaelIT7: Setting up the core pattern here as inside the docker image it's a read-only filesystem
           echo "core" | sudo tee /proc/sys/kernel/core_pattern
