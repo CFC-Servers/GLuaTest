@@ -117,7 +117,7 @@ jobs:
     steps:
       - name: "Check out the repo"
         if: ${{ inputs.no-checkout != 'true' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: project
 
