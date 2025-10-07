@@ -13,10 +13,18 @@ local ResultLogger = {}
 
 
 function ResultLogger.prefixLog( ... )
-    local prefixColor = SERVER and colors.server or colors.client
+    local prefixColor
+    local prefixText = "GLuaTest"
+    if SERVER then
+        prefixText = "sv_" .. prefixText
+        prefixColor = colors.server
+    else
+        prefixText = "cl_" .. prefixText
+        prefixColor = colors.client
+    end
 
     MsgC( colors.darkgrey, "[" )
-    MsgC( prefixColor, "GLuaTest" )
+    MsgC( prefixColor, prefixText )
     MsgC( colors.darkgrey, "] " )
     MsgC( ... )
 end
