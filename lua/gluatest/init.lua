@@ -42,7 +42,7 @@ GLuaTest = {
         AddCSLuaFile( "gluatest/utils/version.lua" )
 
         -- /stubs/*
-        AddCSLuaFile( "gluatest/stubs/stub_maker.lua" )
+        AddCSLuaFile( "gluatest/stubs/stubMaker.lua" )
 
         -- /runner/*
         AddCSLuaFile( "gluatest/runner/colors.lua" )
