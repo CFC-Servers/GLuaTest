@@ -4,6 +4,7 @@ local IsValid = IsValid
 local isstring = isstring
 local string_format = string.format
 local GetDiff = include( "utils/table_diff.lua" )
+local DoPCallWithSubject = include( "utils/caller_recovery.lua" )
 
 -- Positive checks
 return function( subject, ... )
@@ -177,7 +178,7 @@ return function( subject, ... )
     function expectations.succeed()
         assert( TypeID( subject ) == TYPE_FUNCTION, ".succeed expects a function" )
 
-        local success, err = pcall( subject, unpack( args ) )
+        local success, err = DoPCallWithSubject( subject, unpack( args ) )
 
         if success == false then
             i.expected( "to succeed, got: %s", err )
@@ -188,7 +189,7 @@ return function( subject, ... )
     function expectations.err()
         assert( TypeID( subject ) == TYPE_FUNCTION, ".err expects a function" )
 
-        local success = pcall( subject, unpack( args ) )
+        local success = DoPCallWithSubject( subject, unpack( args ) )
 
         if success == true then
             i.expected( "to error" )
@@ -201,7 +202,7 @@ return function( subject, ... )
         assert( TypeID( subject ) == TYPE_FUNCTION, ".errWith expects a function" )
         assert( TypeID( comparison ) == TYPE_STRING, ".errWith expects a string" )
 
-        local success, err = pcall( subject, unpack( args ) )
+        local success, err = DoPCallWithSubject( subject, unpack( args ) )
 
         if success == true then
             i.expected( "to error with '%s'", comparison )
