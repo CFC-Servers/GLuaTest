@@ -14,6 +14,7 @@ ARG server=$home/gmodserver/garrysmod
 
 USER steam
 RUN echo "Downloading $GMOD_BRANCH branch"; \
+./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta $GMOD_BRANCH validate +quit; \
 ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta $GMOD_BRANCH validate +quit;
 
 # Initial server config
