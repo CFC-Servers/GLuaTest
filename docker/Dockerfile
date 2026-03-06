@@ -38,6 +38,31 @@ RUN ssh-keyscan github.com >> $home/github_known_hosts
 # Enable core dumps
 RUN ulimit -c unlimited
 
+# Cleanup
+RUN cd $server/ && \
+    rm -f sv.db && \
+    rm -f console.log && \
+    rm -f stats.txt && \
+    rm -rf scenes && \
+    rm -rf logs && \
+    rm -rf downloadlists && \
+    rm -f fallbacks_000.vpk && \
+    rm -rf fallbacks_dir.vpk && \
+    cd ../ && \
+    rm -rf sourceengine/scripts && \
+    rm -f sourceengine/content_cstrike_dir.vpk && \
+    rm -f sourceengine/hl2_sound_vo_english_dir.vpk && \
+    rm -f sourceengine/hl2_sound_misc_dir.vpk && \
+    rm -f sourceengine/hl2_textures_dir.vpk && \
+    rm -f sourceengine/content_hl2_005.vpk && \
+    rm -f sourceengine/content_hl2_dir.vpk && \
+    rm -f /usr/lib/x86_64-linux-gnu/libicudata.so.72.1 && \
+    rm -f /usr/lib/x86_64-linux-gnu/libicudata.so.72 && \
+    rm -f /usr/lib/x86_64-linux-gnu/libicui18n.so.72.1 && \
+    rm -f /usr/lib/x86_64-linux-gnu/libicui18n.so.72 && \
+    rm -f /usr/lib/x86_64-linux-gnu/libicuuc.so.72.1 && \
+    rm -f /usr/lib/x86_64-linux-gnu/libicuuc.so.72
+
 # Entrypoint
 COPY entrypoint.sh $gmodroot/entrypoint.sh
 RUN chown --recursive steam:steam \
