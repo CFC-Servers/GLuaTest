@@ -55,13 +55,7 @@ RUN cd $server/ && \
     rm -f sourceengine/hl2_sound_misc_dir.vpk && \
     rm -f sourceengine/hl2_textures_dir.vpk && \
     rm -f sourceengine/content_hl2_005.vpk && \
-    rm -f sourceengine/content_hl2_dir.vpk && \
-    rm -f /usr/lib/x86_64-linux-gnu/libicudata.so.72.1 && \
-    rm -f /usr/lib/x86_64-linux-gnu/libicudata.so.72 && \
-    rm -f /usr/lib/x86_64-linux-gnu/libicui18n.so.72.1 && \
-    rm -f /usr/lib/x86_64-linux-gnu/libicui18n.so.72 && \
-    rm -f /usr/lib/x86_64-linux-gnu/libicuuc.so.72.1 && \
-    rm -f /usr/lib/x86_64-linux-gnu/libicuuc.so.72
+    rm -f sourceengine/content_hl2_dir.vpk
 
 # Entrypoint
 COPY entrypoint.sh $gmodroot/entrypoint.sh
