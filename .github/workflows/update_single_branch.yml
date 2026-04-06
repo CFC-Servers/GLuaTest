@@ -1,0 +1,60 @@
+# NOTE: This workflow is mainly used by an automated trigger that calls this when a gmod branch receives an update.
+name: Build Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Forces the specified branch to be updated.'
+        required: false
+        type: string
+        default: "public"
+      game_version:
+        description: 'ID used for the Docker tag. Should be the time of the build'
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  trigger_build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Full Repo
+        uses: actions/checkout@v4
+        with:
+          path: full_repo
+
+      - name: Get Latest Tag
+        id: latest_tag
+        run: |
+          cd "$GITHUB_WORKSPACE/full_repo"
+          # Robust tag matching for semver-like tags
+          latest_tag=$(git tag --list --sort=-v:refname '[0-9]*.[0-9]*' '[0-9]*.[0-9]*.[0-9]*' | grep -v '[^0-9.]' | head -n 1)
+
+          if [ -z "$latest_tag" ]; then
+            echo "Could not find a suitable latest tag."
+            exit 1
+          fi
+
+          echo "Latest tag: $latest_tag"
+          echo "tag_name=$latest_tag" >> $GITHUB_OUTPUT
+
+      - name: Update ${{ inputs.branch }} Build
+        uses: ./full_repo/.github/actions/build_and_push
+        with:
+          gmod_branch: ${{ inputs.branch }}
+          game_version: ${{ inputs.game_version }}
+          tag_name: ${{ steps.latest_tag.outputs.tag_name }}
+          release: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          path: $GITHUB_WORKSPACE/full_repo
+
+      - name: Dispatch gmod_tests # Yes we shouldn't normally depend on this, though it really doesn't hurt.
+        run: |
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GH_API_KEY }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/CFC-Servers/gmod_tests/actions/workflows/single_branch_test.yml/dispatches \
+            -d '{"ref":"main","inputs":{"branch":"${{ inputs.branch }}"}}'
