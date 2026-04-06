@@ -85,7 +85,8 @@ function Loader.processFile( dir, fileName, groups )
         afterEach = testGroup.afterEach,
 
         fileName = fileName,
-        project = Loader.getProjectName( filePath )
+        project = Loader.getProjectName( filePath ),
+        includeError = fileOutput.includeError,
     }
 
     hook.Run( "GLuaTest_TestGroupLoaded", group, testGroup )
