@@ -117,7 +117,7 @@ jobs:
     steps:
       - name: "Check out the repo"
         if: ${{ inputs.no-checkout != 'true' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: project
 
@@ -192,7 +192,7 @@ jobs:
 
       - name: Download artifact (Github)
         if: inputs.download-artifact != '' && !(startsWith(inputs.download-artifact, 'https://') || startsWith(inputs.download-artifact, 'http://'))
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/
           name: "${{ inputs.download-artifact }}"
@@ -284,7 +284,7 @@ jobs:
 
       - name: Upload Test Log Artifact
         if: always() && inputs.logs-as-artifact == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gluatest-log-${{ inputs.branch }}
           path: ${{ github.workspace }}/gluatest-log-${{ inputs.branch }}.log
