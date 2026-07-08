@@ -28,12 +28,13 @@ end
 --- @param testGroups GLuaTest_TestGroup[]
 function TestRunner:Complete( testGroups )
     local duration = SysTime() - self.startTime
+    local results = self.results
 
-    hook.Run( "GLuaTest_Finished", testGroups, self.results, duration )
+    hook.Run( "GLuaTest_Finished", testGroups, results, duration )
 
     -- Some logs may be printed after our completion message, we need to wait a bit
     timer.Simple( 0.1, function()
-        LogTestsComplete( testGroups, self.results, duration )
+        LogTestsComplete( testGroups, results, duration )
     end )
 end
 
@@ -46,6 +47,7 @@ function TestRunner:Run( testGroups )
 
     hook.Run( "GLuaTest_StartedTestRun", testGroups )
     self.startTime = SysTime()
+    self.results = {}
 
     --- @type GLuaTest_TestGroupRunner[]
     local runners = {}
@@ -55,9 +57,11 @@ function TestRunner:Run( testGroups )
         table.insert( runners, runner )
     end
 
+    local runnerIndex = 1
     local function runNext()
         --- @type GLuaTest_TestGroupRunner
-        local nextRunner = table.remove( runners )
+        local nextRunner = runners[runnerIndex]
+        runnerIndex = runnerIndex + 1
 
         if not nextRunner then
             return self:Complete( testGroups )

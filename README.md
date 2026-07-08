@@ -21,7 +21,7 @@ GLuaTest takes a lot of inspiration from both Ruby's [RSpec](https://rspec.info/
  - [Troubleshooting](#troubleshooting-)
  - [Developers](#developers-)
 
-![GLuaLint](https://github.com/CFC-Servers/GLuaTest/actions/workflows/glualint.yml/badge.svg)
+![GLuaLint](https://github.com/CFC-Servers/GLuaTest/actions/workflows/lint.yml/badge.svg)
 
 ---
 _(Are you an impatient software developer? Check out the [quickstart](https://github.com/CFC-Servers/GLuaTest/blob/main/QUICKSTART.md) guide to go fast)_
@@ -340,8 +340,8 @@ jobs:
 | `branch`             | Which GMod branch to run your tests on                                                                                 | `public`|`prerelease`|`dev`|`x86-64`                                                                      |
 | `gluatest-ref`       | Which tag/branch of GLuaTest to run                                                                                    | `main`|`feature/new-feature-branch`                                                                     |
 | `custom-overrides`   | An absolute path with custom files to copy to the server directly. Structure should match the contents of `garrysmod/` | `$GITHUB_WORKSPACE/my_overrides`                                                                        |
-| `download-artifact`  | A URL path to a .tar.gz file that will be unpacked in the root directory                                               | `https://github.com/RaphaelIT7/gmod-holylib/releases/download/Release0.7/gmsv_holylib_linux_packed.zip` |
-| `additional-setup`   | If specificed, executes the given string as a script after all setup is complete, allowing additional setup            | `echo "Hello, this is a test!"`                                                                         |
+| `download-artifact`  | A URL path to a .tar.gz file that will be unpacked in the root directory                                               | `https://example.com/my-artifact.tar.gz`                                                                |
+| `additional-setup`   | If specified, executes the given string as a script after all setup is complete, allowing additional setup             | `echo "Hello, this is a test!"`                                                                         |
 
 </summary>
 </details>
@@ -405,13 +405,21 @@ You can do that with simple environment variables, i.e.:
 export REQUIREMENTS=/absolute/path/to/requirements.txt
 export CUSTOM_SERVER_CONFIG=/absolute/path/to/server.cfg
 export PROJECT_DIR=/home/me/Code/my_project
+export GMOD_BRANCH="public"
+export GMOD_ARTIFACT_DIR=/tmp/gluatest-artifacts
 export GAMEMODE="sandbox"
 export COLLECTION_ID="12345"
 export SSH_PRIVATE_KEY="the-entire-private-key"
 export GITHUB_TOKEN="a-personal-access-token"
 ```
 
- - You can skip the `REQUIREMENTS` and `CUSTOM_SERVER_CONFIG` if you don't need them, but you must set the `PROJECT_DIR` variable.
+ - The `REQUIREMENTS` and `CUSTOM_SERVER_CONFIG` files can be empty, but Docker Compose needs them to exist.
+
+ - The `PROJECT_DIR` variable must point to the project or override directory you want copied into the test server.
+
+ - The `GMOD_BRANCH` variable selects the Docker image tag. Use `public` unless you need `x86-64`, `prerelease`, or `dev`.
+
+ - The `GMOD_ARTIFACT_DIR` variable must point to an existing directory. It can be empty.
 
  - The `GAMEMODE` variable defaults to `"sandbox"`, so you can omit it if that's appropriate for your tests.
 
@@ -514,6 +522,8 @@ Each Test Case is a table with the following keys:
 
 <br>
 
+`clientside` and `shared` are also supported for test cases that should run on clients when `gluatest_client_enable 1` is set.
+
 ### The `expect` function
 The heart of a test is the _expectation_. You did a thing, and now you expect a result.
 
@@ -541,7 +551,7 @@ There are a number of different expectations you can use.
 | **`deepEqual`**      | Expects that two tables are deeply equal                      | `expect( {{ Entity(1) }} ).to.deepEqual( {{ Entity(1) }} )`     |
 | **`beLessThan`**     | Basic `<` comparison                                          | `expect( 5 ).to.beLessThan( 6 )`                                |
 | **`beGreaterThan`**  | Basic `>` comparison                                          | `expect( 10 ).to.beGreaterThan( 1 )`                            |
-| **`beBetween`**      | Expects the subject to be less than min, and greater than max | `expect( 5 ).to.beBetween( 3, 7 )`                              |
+| **`beBetween`**      | Expects the subject to be between the lower and upper bounds  | `expect( 5 ).to.beBetween( 3, 7 )`                              |
 | **`beTrue`**         | Expects the subject to literally be `true`                    | `expect( Entity( 1 ):IsPlayer() ).to.beTrue()`                  |
 | **`beFalse`**        | Expects the subject to literally be `false`                   | `expect( istable( "test" ) ).to.beFalse()`                      |
 | **`beValid`**        | Expects `IsValid( value )` to return `true`                   | `expect( ply ).to.beValid()`                                    |
@@ -593,7 +603,7 @@ For example, to run your test case only on the `x86-64` branch:
 Skipping is also handy if you want to disable a test but keep the code:
 ```lua
 {
-    name = "Broken test (but I'll definitely fix it some day 100%),
+    name = "Broken test (but I'll definitely fix it some day 100%)",
     skip = true,
     func = function() error() end
 }
@@ -722,7 +732,7 @@ return {
         },
         {
             name = "Should check if user exists in database",
-            func = function()
+            func = function( state )
                 local dbCheck = stub( MyProject, "UserExistsInDatabase" ).returns( true )
 
                 MyProject.CheckUser( state.validUser )

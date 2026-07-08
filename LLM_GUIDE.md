@@ -9,7 +9,7 @@ Your job when writing tests: read the code under test first, then produce test f
 - Test files live at `lua/tests/<project>/` (any name for `<project>`, e.g. your addon's name). Subdirectories are scanned recursively; every `.lua` file found is loaded as one test group.
 - Files placed directly in `lua/tests/` (not inside a project folder) are **not** loaded.
 - Each test file must `return` a single test group table. A file whose returned table has no `cases` field is ignored with a warning. File-local helpers and constants above the `return` are fine.
-- Tests run **serverside**.
+- Tests run serverside by default. Cases marked `clientside = true` or `shared = true` can run on clients when `gluatest_client_enable 1` is set.
 
 Minimal runnable skeleton:
 
@@ -56,6 +56,8 @@ This is the complete list of case fields:
 | `cleanup` | `function( state )` | — | Runs after the case, **even if it failed or errored** |
 | `when` | boolean, function, or list of either | — | Case runs only if every condition is/returns `true` |
 | `skip` | boolean or function | — | Case is skipped if `true`/returns `true`; takes precedence over `when` |
+| `clientside` | boolean | `false` | Run on clients when clientside tests are enabled |
+| `shared` | boolean | `false` | Run serverside and on clients when clientside tests are enabled |
 
 Notes:
 - `when = false` (or a function returning anything but `true`) skips the case. A list form is supported: `when = { system.IsLinux(), function() return game.IsDedicated() end }`.

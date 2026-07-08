@@ -8,7 +8,7 @@ local GetDiff = include( "utils/table_diff.lua" )
 -- Positive checks
 return function( subject, ... )
     -- Args that are passed after the subject, i.e. expect( subject, arg1, arg2 )
-    local args = { ... }
+    local args = { n = select( "#", ... ), ... }
 
     -- Wrap the subject in quotes if if's a string
     local fmtPrefix = "Expectation Failed: Expected %s "
@@ -69,6 +69,7 @@ return function( subject, ... )
     --- @param tolerance? number Tolerance for the comparison
     function expectations.aboutEqual( comparison, tolerance )
         assert( TypeID( subject ) == TYPE_NUMBER, ".aboutEqual expects a number" )
+        assert( TypeID( comparison ) == TYPE_NUMBER, ".aboutEqual expects a number" )
 
         tolerance = tolerance or 0.00001
         local difference = math.abs( subject - comparison )
@@ -169,7 +170,7 @@ return function( subject, ... )
         local class = type( subject )
 
         if class ~= comparison then
-            i.expected( "to not be an '%s'", comparison )
+            i.expected( "to be an '%s'", comparison )
         end
     end
 
@@ -177,7 +178,7 @@ return function( subject, ... )
     function expectations.succeed()
         assert( TypeID( subject ) == TYPE_FUNCTION, ".succeed expects a function" )
 
-        local success, err = pcall( subject, unpack( args ) )
+        local success, err = pcall( subject, unpack( args, 1, args.n ) )
 
         if success == false then
             i.expected( "to succeed, got: %s", err )
@@ -188,7 +189,7 @@ return function( subject, ... )
     function expectations.err()
         assert( TypeID( subject ) == TYPE_FUNCTION, ".err expects a function" )
 
-        local success = pcall( subject, unpack( args ) )
+        local success = pcall( subject, unpack( args, 1, args.n ) )
 
         if success == true then
             i.expected( "to error" )
@@ -201,7 +202,7 @@ return function( subject, ... )
         assert( TypeID( subject ) == TYPE_FUNCTION, ".errWith expects a function" )
         assert( TypeID( comparison ) == TYPE_STRING, ".errWith expects a string" )
 
-        local success, err = pcall( subject, unpack( args ) )
+        local success, err = pcall( subject, unpack( args, 1, args.n ) )
 
         if success == true then
             i.expected( "to error with '%s'", comparison )
@@ -231,7 +232,7 @@ return function( subject, ... )
                 i.expected( "to have been called at least once " )
             end
         else
-            if callCount < n then
+            if callCount ~= n then
                 i.expected( "to have been called exactly %d times, got: %d", n, callCount )
             end
         end

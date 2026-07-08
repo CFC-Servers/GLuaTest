@@ -5,10 +5,11 @@ local Loader = {}
 --- @param filePath string
 --- @param cases GLuaTest_TestCase[]
 function Loader.checkSendToClients( filePath, cases )
+    if not SERVER then return end
     if not GLuaTest.RunClientsideConVar:GetBool() then return end
 
     for _, case in ipairs( cases ) do
-        if case.clientside then
+        if case.clientside or case.shared then
             return AddCSLuaFile( filePath )
         end
     end
@@ -26,8 +27,12 @@ end
 --- @param filePath string
 --- @return table
 function Loader.simpleError( reason, filePath )
+    reason = tostring( reason or "file did not return a test group" )
+    local linePrefixStart = string.find( reason, ":%d+:" )
+    if linePrefixStart then reason = string.sub( reason, linePrefixStart + 1 ) end
+
     return {
-        reason = string.sub( reason, string.find( reason, ":" ) + 1 ),
+        reason = reason,
         sourceFile = filePath,
         lineNumber = -1,
         locals = {}
@@ -44,6 +49,10 @@ function Loader.processFile( dir, fileName, groups )
     local filePath = dir .. "/" .. fileName
     local success, result = pcall( function( givenFilePath )
         local fileContent = file.Read( givenFilePath, "LUA" )
+        if not fileContent then
+            return Loader.simpleError( "Unable to read file: " .. givenFilePath, givenFilePath )
+        end
+
         local compiled = CompileString( fileContent, "lua/" .. givenFilePath, false )
 
         if not isfunction( compiled ) then

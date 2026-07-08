@@ -71,8 +71,8 @@ function expect( subject, ... )
 end
 
 --- Create a stub function
---- @param tbl table The table to stub
---- @param key any The key to stub
+--- @param tbl? table The table to stub
+--- @param key? any The key to stub
 --- @return GLuaTest_Stub
 function stub( tbl, key )
     -- _ is used to make the GLuaLinter happy, as else it'll complain that the variables are unused.

@@ -8,7 +8,7 @@ local GetDiff = include( "utils/table_diff.lua" )
 -- Inverse checks
 return function( subject, ... )
     -- Args that are passed after the subject, i.e. expect( subject, arg1, arg2 )
-    local args = { ... }
+    local args = { n = select( "#", ... ), ... }
 
     -- Wrap the subject in quotes if if's a string
     local fmtPrefix = "Expectation Failed: Expected %s "
@@ -178,7 +178,7 @@ return function( subject, ... )
     function expectations.succeed()
         assert( TypeID( subject ) == TYPE_FUNCTION, ".succeed expects a function" )
 
-        local success = pcall( subject, unpack( args ) )
+        local success = pcall( subject, unpack( args, 1, args.n ) )
 
         if success ~= false then
             i.expected( "to not succeed" )
@@ -189,7 +189,7 @@ return function( subject, ... )
     function expectations.err()
         assert( TypeID( subject ) == TYPE_FUNCTION, ".err expects a function" )
 
-        local success = pcall( subject, unpack( args ) )
+        local success = pcall( subject, unpack( args, 1, args.n ) )
 
         if success ~= true then
             i.expected( "to not error" )
@@ -202,10 +202,10 @@ return function( subject, ... )
         assert( TypeID( subject ) == TYPE_FUNCTION, ".errWith expects a function" )
         assert( isstring( comparison ), "errWith expects a string" )
 
-        local success, err = pcall( subject, unpack( args ) )
+        local success, err = pcall( subject, unpack( args, 1, args.n ) )
 
         if success == true then
-            i.expected( "to error" )
+            return
         else
             if string.StartsWith( err, "lua/" ) or string.StartsWith( err, "addons/" ) then
                 local _, endOfPath = string.find( err, ":%d+: ", 1 )
@@ -225,6 +225,8 @@ return function( subject, ... )
     --- the Positive expectation lets you specify how many times it
     --- should have been called, but this one does not
     function expectations.called()
+        assert( subject.IsStub, ".called expects a stub" )
+
         local callCount = subject.callCount
         if callCount > 0 then
             i.expected( "to not have been called, got: %d", callCount )

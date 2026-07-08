@@ -1,4 +1,4 @@
---- @alias StubFunction fun(tbl: table, key: any): GLuaTest_Stub
+--- @alias StubFunction fun(tbl?: table, key?: any): GLuaTest_Stub
 --- @alias GLuaTest_StubMaker fun(): StubFunction, fun(): nil
 
 return function()
@@ -60,9 +60,9 @@ return function()
         function stubTbl.returns( ... )
             assert( stubTbl.stubbedFunc == nil, "Stub already set" )
 
-            local args = { ... }
+            local args = { n = select( "#", ... ), ... }
             stubTbl.stubbedFunc = function()
-                return unpack( args )
+                return unpack( args, 1, args.n )
             end
 
             return stubTbl

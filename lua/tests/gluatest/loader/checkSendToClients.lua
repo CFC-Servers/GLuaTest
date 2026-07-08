@@ -68,6 +68,25 @@ return {
             cleanup = function( state )
                 GLuaTest.RunClientsideConVar:SetBool( state.currentRunClientside )
             end
+        },
+
+        {
+            name = "Sends shared cases when the gluatest_client_enable ConVar is enabled",
+            func = function( state )
+                local Loader = state.Loader
+                state.currentRunClientside = GLuaTest.RunClientsideConVar:GetBool()
+
+                GLuaTest.RunClientsideConVar:SetBool( true )
+                local AddCSLuaFileStub = stub( _G, "AddCSLuaFile" )
+
+                local cases = { { shared = true } }
+                Loader.checkSendToClients( "test.lua", cases )
+                expect( AddCSLuaFileStub ).was.called()
+            end,
+
+            cleanup = function( state )
+                GLuaTest.RunClientsideConVar:SetBool( state.currentRunClientside )
+            end
         }
     }
 }

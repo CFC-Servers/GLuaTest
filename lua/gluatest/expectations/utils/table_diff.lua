@@ -12,7 +12,7 @@ local function stringifyKey( key )
         key = "\"" .. key:gsub( "\"", "\\\"" ) .. "\""
     end
 
-    return "[" .. key .. "]"
+    return "[" .. tostring( key ) .. "]"
 end
 
 local function GetDiff( t1, t2, path )
