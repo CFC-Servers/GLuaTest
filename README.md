@@ -386,9 +386,9 @@ All of your tests will run when the server starts up and you can view the output
 <summary><strong>Running your tests locally without a server</strong></summary>
 <br>
 
-You can run your project's whole test suite in Docker with one command — the same runner CI uses.
+You can run your project's whole test suite in Docker with one command, using the same runner CI uses.
 
-**Requirements:** [Docker](https://docs.docker.com/get-docker/) with the compose plugin (Docker Desktop includes it). Linux, macOS, or Windows via WSL2 (Docker Desktop's WSL backend — Git Bash is not supported).
+**Requirements:** [Docker](https://docs.docker.com/get-docker/) with the compose plugin (Docker Desktop includes it). Linux, macOS, or Windows via WSL2 (Docker Desktop's WSL backend; Git Bash is not supported).
 
 
 ### Quick start
@@ -401,17 +401,17 @@ cd /path/to/your/project
 /path/to/GLuaTest/docker/run_local.sh
 ```
 
-That's it. The wrapper detects your project layout (addon, gamemode, or server repo), stages it for the test server, pulls the latest runner image, and runs your tests. It exits `0` when all tests pass — the same pass/fail you'd get from CI.
+That's it. The wrapper detects your project layout (addon, gamemode, or server repo), stages it for the test server, pulls the latest runner image, and runs your tests. It exits `0` when all tests pass, the same pass/fail you'd get from CI.
 
 > [!NOTE]
 > The first run downloads a multi-gigabyte GMod server image, so it takes a while to start. Later runs reuse the cached image.
 
 > [!IMPORTANT]
-> **Apple Silicon:** the default `public` branch server is 32-bit and crashes under emulation — run with `--branch x86-64` (and expect it to be slower; a higher `--timeout` may help).
+> **Apple Silicon:** the default `public` branch server is 32-bit and crashes under emulation, so run with `--branch x86-64` (and expect it to be slower; a higher `--timeout` may help).
 
-If `gluatest_requirements.txt` or `gluatest_custom.cfg` exist in your project root, they're picked up automatically — the same files the GitHub Action uses.
+If `gluatest_requirements.txt` or `gluatest_custom.cfg` exist in your project root, they're picked up automatically. These are the same files the GitHub Action uses.
 
-Every run writes the full server log to `gluatest-run.log` in your current directory. Pass `--quiet` to suppress the live server stream (handy for scripts and coding agents) — you still get the verdict and the log file.
+Every run writes the full server log to `gluatest-run.log` in your current directory. Pass `--quiet` to suppress the live server stream (handy for scripts and coding agents) and you'll still get the verdict and the log file.
 
 Tip: symlink the script onto your PATH to run it as `gluatest` from anywhere:
 ```sh
@@ -420,7 +420,7 @@ ln -s /path/to/GLuaTest/docker/run_local.sh /usr/local/bin/gluatest
 
 
 ### Options
-All optional — the common case needs no flags:
+All optional; the common case needs no flags:
 
 | Flag | Description | Default |
 |:-----|:------------|:--------|
@@ -435,7 +435,7 @@ All optional — the common case needs no flags:
 
 
 ### Advanced: running compose directly (CI parity)
-If you want the same raw interface CI uses, you can drive `docker compose` yourself. Every variable has a safe default — see `docker/.env.example` for the full list:
+If you want the same raw interface CI uses, you can drive `docker compose` yourself. Every variable has a safe default (see `docker/.env.example` for the full list):
 
 ```sh
 export REQUIREMENTS=/absolute/path/to/requirements.txt
@@ -450,7 +450,7 @@ cd /path/to/GLuaTest/docker
 docker compose up --pull always --no-log-prefix --exit-code-from runner
 ```
 
-- `PROJECT_DIR` must already be laid out like the contents of `garrysmod/` (e.g. your addon under `addons/<name>/`) — unlike the wrapper, compose does no staging.
+- `PROJECT_DIR` must already be laid out like the contents of `garrysmod/` (e.g. your addon under `addons/<name>/`). Unlike the wrapper, compose does no staging.
 
 - The `GAMEMODE` variable defaults to `"sandbox"`, so you can omit it if that's appropriate for your tests.
 
