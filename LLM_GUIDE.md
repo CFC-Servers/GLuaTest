@@ -289,6 +289,22 @@ Use `state` for fixtures and for anything `cleanup` must undo. Do not pass data 
 4. Make each case self-contained: fixtures in `beforeEach`/`state`, teardown of entities/files/globals in `cleanup`.
 5. Use `async` + `done()` + a tight `timeout` only where the code is actually asynchronous.
 6. Before finishing, verify every field and expectation you wrote appears in the tables above, and that every case calls `expect`.
+7. If Docker is available, prove the suite passes by running it (see "Running your tests" below). Reading tests is not running them: a real run catches load errors, typo'd expectation names, async cases that never call `done()`, and behavior you guessed wrong.
+
+## Running your tests
+
+GLuaTest ships a local runner that boots a real GMod server in Docker and runs the suite — the same runner CI uses. Clone the GLuaTest repo if you don't have it, then run from the project you're testing:
+
+```sh
+cd /path/to/your/project
+/path/to/GLuaTest/docker/run_local.sh --quiet
+```
+
+- Always pass `--quiet`: the live server stream is thousands of lines. You still get progress notes and the verdict. Use `--project /path/to/project` to run from elsewhere.
+- **Exit code is the verdict:** `0` = every test passed. `124` = the server hit the time limit before finishing — retry with `--timeout 5`. Anything else = a test failed or the server crashed.
+- Every run writes the complete server log to `gluatest-run.log` in the directory you invoked from. Do not read it whole (it contains the full server boot); search it: `FAIL` marks failed cases and `Test failures:` heads the failure detail section with stack traces.
+- On Apple Silicon hosts add `--branch x86-64` — the default branch's 32-bit server crashes under emulation.
+- The first run downloads a multi-gigabyte server image and is slow; later runs reuse it. If your project needs other addons, list them in `gluatest_requirements.txt` (`Owner/Repo` per line) in the project root — the runner picks it up automatically.
 
 ## Worked examples
 
