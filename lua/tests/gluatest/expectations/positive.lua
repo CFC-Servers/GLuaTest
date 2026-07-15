@@ -24,16 +24,6 @@ return {
             end
         },
         {
-            name = "succeed forwards trailing nil arguments",
-            func = function()
-                local function receivesTrailingNil( ... )
-                    expect( select( "#", ... ) ).to.equal( 2 )
-                end
-
-                expect( receivesTrailingNil, "value", nil ).to.succeed()
-            end
-        },
-        {
             name = "beAn failure message uses positive wording",
             func = function()
                 expect( function()

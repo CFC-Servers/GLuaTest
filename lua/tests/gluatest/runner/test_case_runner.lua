@@ -39,7 +39,7 @@ return {
 
     cases = {
         {
-            name = "Records sync beforeEach errors as failures",
+            name = "Fails the case when beforeEach errors",
             func = function()
                 local caseRan = false
                 local group = {
@@ -66,7 +66,7 @@ return {
             end
         },
         {
-            name = "Records async beforeEach errors as failures",
+            name = "Fails the async case when beforeEach errors",
             func = function()
                 local caseRan = false
                 local group = {

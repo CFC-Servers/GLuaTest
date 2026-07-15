@@ -8,7 +8,7 @@ local GetDiff = include( "utils/table_diff.lua" )
 -- Inverse checks
 return function( subject, ... )
     -- Args that are passed after the subject, i.e. expect( subject, arg1, arg2 )
-    local args = { n = select( "#", ... ), ... }
+    local args = { ... }
 
     -- Wrap the subject in quotes if if's a string
     local fmtPrefix = "Expectation Failed: Expected %s "
@@ -178,7 +178,7 @@ return function( subject, ... )
     function expectations.succeed()
         assert( TypeID( subject ) == TYPE_FUNCTION, ".succeed expects a function" )
 
-        local success = pcall( subject, unpack( args, 1, args.n ) )
+        local success = pcall( subject, unpack( args ) )
 
         if success ~= false then
             i.expected( "to not succeed" )
@@ -189,7 +189,7 @@ return function( subject, ... )
     function expectations.err()
         assert( TypeID( subject ) == TYPE_FUNCTION, ".err expects a function" )
 
-        local success = pcall( subject, unpack( args, 1, args.n ) )
+        local success = pcall( subject, unpack( args ) )
 
         if success ~= true then
             i.expected( "to not error" )
@@ -202,11 +202,9 @@ return function( subject, ... )
         assert( TypeID( subject ) == TYPE_FUNCTION, ".errWith expects a function" )
         assert( isstring( comparison ), "errWith expects a string" )
 
-        local success, err = pcall( subject, unpack( args, 1, args.n ) )
+        local success, err = pcall( subject, unpack( args ) )
 
-        if success == true then
-            return
-        else
+        if success == false then
             if string.StartsWith( err, "lua/" ) or string.StartsWith( err, "addons/" ) then
                 local _, endOfPath = string.find( err, ":%d+: ", 1 )
                 assert( endOfPath, "Could not find end of path in error message: " .. err )

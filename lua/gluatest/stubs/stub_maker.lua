@@ -60,9 +60,9 @@ return function()
         function stubTbl.returns( ... )
             assert( stubTbl.stubbedFunc == nil, "Stub already set" )
 
-            local args = { n = select( "#", ... ), ... }
+            local args = { ... }
             stubTbl.stubbedFunc = function()
-                return unpack( args, 1, args.n )
+                return unpack( args )
             end
 
             return stubTbl
