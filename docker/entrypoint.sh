@@ -19,8 +19,8 @@ echo "Copying serverfiles overrides..."
 rsync --verbose --archive $home/garrysmod_override/ $server/
 
 # Any additional files
-if [ -n "$(ls -A $home/_gluatest_artifacts/_gluatest_artifacts/)" ]; then # Only execute if there are any artifacts or else tar will complain
-    cp $home/_gluatest_artifacts/_gluatest_artifacts/* $gmodroot/
+if [ -n "$(ls -A $home/_gluatest_artifacts/)" ]; then # Only execute if there are any artifacts or else tar will complain
+    cp $home/_gluatest_artifacts/* $gmodroot/
 
     for file in $gmodroot/*.tar.gz; do \
         tar --extract --verbose --ungzip --file="$file" --directory="$gmodroot" && \

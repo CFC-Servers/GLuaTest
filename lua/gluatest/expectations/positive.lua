@@ -69,6 +69,7 @@ return function( subject, ... )
     --- @param tolerance? number Tolerance for the comparison
     function expectations.aboutEqual( comparison, tolerance )
         assert( TypeID( subject ) == TYPE_NUMBER, ".aboutEqual expects a number" )
+        assert( TypeID( comparison ) == TYPE_NUMBER, ".aboutEqual expects a number" )
 
         tolerance = tolerance or 0.00001
         local difference = math.abs( subject - comparison )
@@ -169,7 +170,7 @@ return function( subject, ... )
         local class = type( subject )
 
         if class ~= comparison then
-            i.expected( "to not be an '%s'", comparison )
+            i.expected( "to be an '%s'", comparison )
         end
     end
 
@@ -231,7 +232,7 @@ return function( subject, ... )
                 i.expected( "to have been called at least once " )
             end
         else
-            if callCount < n then
+            if callCount ~= n then
                 i.expected( "to have been called exactly %d times, got: %d", n, callCount )
             end
         end

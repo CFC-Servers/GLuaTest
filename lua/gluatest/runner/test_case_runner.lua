@@ -96,10 +96,17 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
     --- @param cb fun(): nil The function to run once the test is complete
     function TCR:RunAsync( cb )
         local isDone = false
-        local expectationFailure = false
+        local resultRecorded = false
 
         local asyncCleanup = function()
             ErrorNoHaltWithStack( "Running an empty Async Cleanup func" )
+        end
+
+        local function recordFailure( errInfo )
+            if resultRecorded then return end
+
+            TestGroupRunner:SetFailed( case, errInfo )
+            resultRecorded = true
         end
 
         local function testComplete()
@@ -123,8 +130,9 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
         local function done()
             if isDone then return end
 
-            if not expectationFailure then
+            if not resultRecorded then
                 TestGroupRunner:SetSucceeded( case )
+                resultRecorded = true
             end
 
             testComplete()
@@ -136,7 +144,7 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
         local function fail( reason )
             if isDone then return end
 
-            TestGroupRunner:SetFailed( case, { reason = reason or "fail() called" } )
+            recordFailure( { reason = reason or "fail() called" } )
             testComplete()
         end
 
@@ -149,10 +157,8 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
         --- @param errInfo GLuaTest_FailCallbackInfo
         local function onFailedExpectation( errInfo )
             if isDone then return end
-            if expectationFailure then return end
 
-            TestGroupRunner:SetFailed( case, errInfo )
-            expectationFailure = true
+            recordFailure( errInfo )
         end
 
         local asyncEnv, asyncCleanupFuncs = Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
@@ -165,12 +171,18 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
         local beforeEach = group.beforeEach
         if beforeEach then
             setfenv( beforeEach, asyncEnv )
-            beforeEach( case.state )
+            local beforeSuccess, beforeErrInfo = xpcall( beforeEach, Helpers.FailCallback, case.state )
             setfenv( beforeEach, defaultEnv )
+
+            if not beforeSuccess then
+                recordFailure( beforeErrInfo )
+                testComplete()
+                return
+            end
         end
 
         local function setTimedOut()
-            TestGroupRunner:SetTimedOut( case )
+            recordFailure( { reason = "Timeout" } )
             testComplete()
         end
 
@@ -185,7 +197,7 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
         -- (Async expectation failures handled in asyncEnv.expect)
         -- (Async unhandled failures handled with timeouts)
         if not success then
-            TestGroupRunner:SetFailed( case, errInfo )
+            recordFailure( errInfo )
             testComplete()
 
             return

@@ -30,7 +30,7 @@ function Helpers.makeHookTable()
         if not trackedHooks[event] then trackedHooks[event] = {} end
         table.insert( trackedHooks[event], name )
 
-        if not isfunction( func ) and func.IsStub then
+        if istable( func ) and func.IsStub then
             local givenStub = func
             func = function( ... )
                 givenStub( ... )
@@ -183,10 +183,10 @@ function Helpers.findStackInfo()
     -- Step up through the stacks to find the error we care about
 
     for stack = 1, 12 do
-        local info = debug.getinfo( stack, "lnS" )
+        local info = debug.getinfo( stack, "lnSn" )
         if not info then break end
 
-        local emptyName = #info.namewhat == 0
+        local emptyName = #( info.namewhat or "" ) == 0
         local notGluatest = not string.match( info.short_src, "/lua/gluatest/" )
 
         if emptyName and notGluatest then
@@ -259,32 +259,35 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
         -- they're called in an async function
         expect = function( ... )
             local built = expect( ... )
-            local expected = built.to.expected
-            local recordedFailure = false
 
-            -- Wrap the error-throwing function
-            -- and handle the error with the correct context
-            -- (and to only record the first failure)
-            built.to.expected = function( ... )
-                if recordedFailure then return end
+            local function wrapExpected( expectations )
+                local expected = expectations.expected
+                local recordedFailure = false
 
-                local stack = debug.getinfo( 3, "lnS" )
-                local locals = Helpers.getLocals( 4 )
+                expectations.expected = function( ... )
+                    if recordedFailure then return end
 
-                local _, errInfo = xpcall( expected, Helpers.FailCallback, ... )
-                assert( errInfo )
+                    local stack = debug.getinfo( 3, "lnS" )
+                    local locals = Helpers.getLocals( 4 )
 
-                local final = {
-                    reason = errInfo.reason,
-                    sourceFile = stack.short_src,
-                    lineNumber = stack.currentline,
-                    locals = locals
-                }
+                    local _, errInfo = xpcall( expected, Helpers.FailCallback, ... )
+                    assert( errInfo )
 
-                onFailedExpectation( final --[[@as GLuaTest_FailCallbackInfo]] )
+                    local final = {
+                        reason = errInfo.reason,
+                        sourceFile = stack.short_src,
+                        lineNumber = stack.currentline,
+                        locals = locals
+                    }
 
-                recordedFailure = true
+                    onFailedExpectation( final --[[@as GLuaTest_FailCallbackInfo]] )
+
+                    recordedFailure = true
+                end
             end
+
+            wrapExpected( built.to )
+            wrapExpected( built.notTo )
 
             return built
         end,
@@ -323,22 +326,34 @@ function Helpers.SafeRunWithEnv( defaultEnv, before, func, state )
         return ogExpect( ... )
     end
 
-    -- Before
+    local function cleanup()
+        for _, cleanupFunc in ipairs( cleanupFuncs ) do
+            cleanupFunc()
+        end
+    end
+
+    local function runWithEnv( funcToRun )
+        setfenv( funcToRun, testEnv )
+        local success, output = xpcall( funcToRun, Helpers.FailCallback, state )
+        setfenv( funcToRun, defaultEnv )
+
+        return success, output
+    end
+
     if before then
-        setfenv( before, testEnv )
-        before( state )
-        setfenv( before, defaultEnv )
+        local beforeSuccess, beforeOutput = runWithEnv( before )
+        if not beforeSuccess then
+            cleanup()
+
+            return {
+                result = "failure",
+                errInfo = beforeOutput
+            }
+        end
     end
 
-    -- Run
-    setfenv( func, testEnv )
-    local success, output = xpcall( func, Helpers.FailCallback, state )
-    setfenv( func, defaultEnv )
-
-    -- Cleanup
-    for _, cleanup in ipairs( cleanupFuncs ) do
-        cleanup()
-    end
+    local success, output = runWithEnv( func )
+    cleanup()
 
     if success then
         -- If it succeeded but never ran `expect`, it's an empty test

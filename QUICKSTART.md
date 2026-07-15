@@ -80,4 +80,4 @@ jobs:
 
 That's it! You have a working automated test runner for your project.
 
-Check out the README for more details about [before/after functions](https://github.com/CFC-Servers/GLuaTest/blob/main/README.md#before--after-functions) and [how to make async tests](https://github.com/CFC-Servers/GLuaTest/blob/main/README.md#async-tests-and-the-done-function).
+Check out the README for more details about [before/after functions](https://github.com/CFC-Servers/GLuaTest/blob/main/README.md#before--after-functions) and [how to make async tests](https://github.com/CFC-Servers/GLuaTest/blob/main/README.md#async-tests-and-the-donefail-functions).

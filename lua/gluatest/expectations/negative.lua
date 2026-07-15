@@ -204,9 +204,7 @@ return function( subject, ... )
 
         local success, err = pcall( subject, unpack( args ) )
 
-        if success == true then
-            i.expected( "to error" )
-        else
+        if success == false then
             if string.StartsWith( err, "lua/" ) or string.StartsWith( err, "addons/" ) then
                 local _, endOfPath = string.find( err, ":%d+: ", 1 )
                 assert( endOfPath, "Could not find end of path in error message: " .. err )
@@ -225,6 +223,8 @@ return function( subject, ... )
     --- the Positive expectation lets you specify how many times it
     --- should have been called, but this one does not
     function expectations.called()
+        assert( subject.IsStub, ".called expects a stub" )
+
         local callCount = subject.callCount
         if callCount > 0 then
             i.expected( "to not have been called, got: %d", callCount )
