@@ -283,10 +283,12 @@ jobs:
 ```
 
 Acceptable options are:
-- `live` (Main GMod version - this is the default)
+- `public` (Main GMod version - this is the default)
 - `x86-64`
 - `prerelease`
 - `dev`
+
+(`live` is accepted as a deprecated alias for `public`.)
 
 </summary>
 </details>
@@ -335,7 +337,7 @@ jobs:
 | `ssh-private-key`    | The Private SSH key to use when cloning the dependencies                                                               | `-----BEGIN OPENSSH PRIVATE KEY-----\n...`                                                              |
 | `github-token`       | A GitHub Personal Access Token, used when cloning dependencies                                                         |                                                                                                         |
 | `timeout`            | How many minutes to let the job run before killing the server                                                          | `10`                                                                                                    |
-| `branch`             | Which GMod branch to run your tests on                                                                                 | `live`|`prerelease`|`dev`|`x86-64`                                                                      |
+| `branch`             | Which GMod branch to run your tests on                                                                                 | `public`|`prerelease`|`dev`|`x86-64`                                                                      |
 | `gluatest-ref`       | Which tag/branch of GLuaTest to run                                                                                    | `main`|`feature/new-feature-branch`                                                                     |
 | `custom-overrides`   | An absolute path with custom files to copy to the server directly. Structure should match the contents of `garrysmod/` | `$GITHUB_WORKSPACE/my_overrides`                                                                        |
 | `download-artifact`  | A URL path to a .tar.gz file that will be unpacked in the root directory                                               | `https://github.com/RaphaelIT7/gmod-holylib/releases/download/Release0.7/gmsv_holylib_linux_packed.zip` |
@@ -714,7 +716,8 @@ return {
             func = function( state )
                 stub( MyProject, "UserExistsInDatabase" ).returns( true )
 
-                expect( MyProject.CheckUser, state.validUser ).to.beTrue()
+                local isValid = MyProject.CheckUser( state.validUser )
+                expect( isValid ).to.beTrue()
             end
         },
         {
@@ -724,7 +727,7 @@ return {
 
                 MyProject.CheckUser( state.validUser )
 
-                expect( dbCheck ).to.haveBeenCalled()
+                expect( dbCheck ).was.called()
             end
         }
     }
@@ -752,7 +755,7 @@ You can use the Stub like normal. This is particularly useful for functions that
 
         MyProject.RunCallback( myStub )
 
-        expect( myStub ).to.haveBeenCalled()
+        expect( myStub ).was.called()
     end
 }
 ```
@@ -805,7 +808,7 @@ If your test fails for some reason before it can call `done()`, it'll be marked 
 
 If you know the maximum amount of time your test will take, you can include the `timeout` key on the test with the number of seconds to wait until failing the test.
 
-If you don't include a `timeout` on your Test Case, you'll have to wait for the default 60-second timer before the test can complete. So if speed is important to you, consider setting a conservative `timeout` value for your async tests.
+If you don't include a `timeout` on your Test Case, you'll have to wait for the default 5-second timer before the test can complete. So if speed is important to you, consider setting a conservative `timeout` value for your async tests.
 
 
 For example, say we were trying to test this code:
@@ -946,7 +949,7 @@ The `beforeEach` function created a brand-new Tickle Monster before every test, 
 You'll notice the `state` variable in that example. The `state` parameter is just a table that's shared between the before/after funcs and the Test Case function.
 
 
-You also have access to `beforeAll` and `afterAll`, which are self-explanatory. Please note that these two functions **do not** take a `state` table.
+You also have access to `beforeAll` and `afterAll`, which are self-explanatory. These two functions receive the group-level `state` table; each Test Case's `state` can read everything set on it, but writes made inside a case stay isolated to that case.
 
 <br>
 
