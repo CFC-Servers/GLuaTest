@@ -13,7 +13,7 @@ on:
 
 jobs:
   check_updates:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       latest_tag: ${{ steps.latest_tag.outputs.tag_name }}
       latest_public: ${{ steps.latest_versions.outputs.public }}
@@ -30,7 +30,7 @@ jobs:
       any_update_needed: ${{ steps.needs_update.outputs.any }}
     steps:
       - name: Checkout Full Repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           path: full_repo
@@ -98,7 +98,7 @@ jobs:
           echo "network_test=$network_test" >> $GITHUB_OUTPUT
 
       - name: Checkout last build branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: build/last-build-versions
           path: build_versions
@@ -166,7 +166,7 @@ jobs:
 
   trigger_builds:
     needs: check_updates
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: needs.check_updates.outputs.any_update_needed == 'true'
     strategy:
       fail-fast: false
@@ -191,7 +191,7 @@ jobs:
 
     steps:
       - name: Checkout Full Repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: full_repo
 
@@ -207,13 +207,13 @@ jobs:
           path: $GITHUB_WORKSPACE/full_repo
 
   update_last_versions:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [check_updates, trigger_builds]
     if: always() && needs.check_updates.outputs.any_update_needed == 'true'
 
     steps:
       - name: Checkout last build branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: build/last-build-versions
           path: build_versions

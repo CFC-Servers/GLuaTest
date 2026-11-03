@@ -36,6 +36,9 @@ runs:
         mv dist_linux/* $GITHUB_WORKSPACE
         rm -rfv ds.tar.gz dist_linux/
 
+        # Lets also give some information on docker
+        docker version
+
     - name: Build starter image
       shell: bash
       run: |

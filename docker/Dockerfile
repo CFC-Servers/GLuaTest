@@ -44,6 +44,24 @@ RUN ssh-keyscan github.com >> $home/github_known_hosts
 # Enable core dumps
 RUN ulimit -c unlimited
 
+# Cleanup
+RUN rm -rf \
+        $server/sv.db \
+        $server/console.log \
+        $server/stats.txt \
+        $server/scenes \
+        $server/logs \
+        $server/downloadlists \
+        $server/fallbacks_000.vpk \
+        $server/fallbacks_dir.vpk \
+        $gmodroot/sourceengine/scripts \
+        $gmodroot/sourceengine/content_cstrike_dir.vpk \
+        $gmodroot/sourceengine/hl2_sound_vo_english_dir.vpk \
+        $gmodroot/sourceengine/hl2_sound_misc_dir.vpk \
+        $gmodroot/sourceengine/hl2_textures_dir.vpk \
+        $gmodroot/sourceengine/content_hl2_005.vpk \
+        $gmodroot/sourceengine/content_hl2_dir.vpk
+
 # Entrypoint
 COPY entrypoint.sh $gmodroot/entrypoint.sh
 RUN chown --recursive steam:steam \
