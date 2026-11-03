@@ -1,37 +1,37 @@
 services:
   runner:
-    image: ghcr.io/cfc-servers/gluatest/$GMOD_BRANCH:latest
+    image: ghcr.io/cfc-servers/gluatest/${GMOD_BRANCH:-public}:latest
     build: .
     container_name: gluatest_runner
     stop_grace_period: 2s
     volumes:
       - type: bind
-        source: $REQUIREMENTS
+        source: ${REQUIREMENTS:-./local/requirements.txt}
         target: /home/steam/gmodserver/custom_requirements.txt
         read_only: true
 
       - type: bind
-        source: $CUSTOM_SERVER_CONFIG
+        source: ${CUSTOM_SERVER_CONFIG:-./local/server.cfg}
         target: /home/steam/gmodserver/custom_server.cfg
         read_only: true
 
       - type: bind
-        source: $PROJECT_DIR
+        source: ${PROJECT_DIR:-./local/override}
         target: /home/steam/garrysmod_override
         read_only: true
 
+      # Default "." (this docker/ dir) is load-bearing: CI leaves GMOD_ARTIFACT_DIR unset and relies on the old empty-source behavior of mounting the project dir, where it pre-creates _gluatest_artifacts/
       - type: bind
-        source: $GMOD_ARTIFACT_DIR
+        source: ${GMOD_ARTIFACT_DIR:-.}
         target: /home/steam/_gluatest_artifacts
         read_only: true
 
     environment:
-      - GAMEMODE=$GAMEMODE
-      - COLLECTION_ID=$COLLECTION_ID
-      - SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
-      - GITHUB_TOKEN=$GITHUB_TOKEN
-      - TIMEOUT=$TIMEOUT
-      - GAMEMODE=$GAMEMODE
-      - MAP=$MAP
-      - EXTRA_STARTUP_ARGS=$EXTRA_STARTUP_ARGS
-      - GMOD_BRANCH=$GMOD_BRANCH
+      - GAMEMODE=${GAMEMODE:-}
+      - COLLECTION_ID=${COLLECTION_ID:-}
+      - SSH_PRIVATE_KEY=${SSH_PRIVATE_KEY:-}
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      - TIMEOUT=${TIMEOUT:-}
+      - MAP=${MAP:-}
+      - EXTRA_STARTUP_ARGS=${EXTRA_STARTUP_ARGS:-}
+      - GMOD_BRANCH=${GMOD_BRANCH:-public}

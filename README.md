@@ -386,59 +386,82 @@ All of your tests will run when the server starts up and you can view the output
 <summary><strong>Running your tests locally without a server</strong></summary>
 <br>
 
-Sounds weird, right? Well it's really not all that different from running GLuaTest on GitHub.
+You can run your project's whole test suite in Docker with one command, using the same runner CI uses.
 
-In fact, many of the steps are the same.
-
-
-### Requirements / Server Configs
-If your project depends on other projects, you can have GLuaTest automatically acquire them for you.
-
-Take a quick skim through the [GitHub Action setup instructions](#automated-testing-on-pull-requests) for the relevant sections on how to set this up.
+**Requirements:** [Docker](https://docs.docker.com/get-docker/) with the compose plugin (Docker Desktop includes it). Linux, macOS, or Windows via WSL2 (Docker Desktop's WSL backend; Git Bash is not supported).
 
 
-### Environment setup
-When running GLuaTest without a server, you need to tell it where to find your project and custom files.
+### Quick start
+Clone GLuaTest anywhere, then run the wrapper from your project's directory:
 
-You can do that with simple environment variables, i.e.:
+```sh
+git clone https://github.com/CFC-Servers/GLuaTest.git
+
+cd /path/to/your/project
+/path/to/GLuaTest/docker/run_local.sh
+```
+
+That's it. The wrapper detects your project layout (addon, gamemode, or server repo), stages it for the test server, pulls the latest runner image, and runs your tests. It exits `0` when all tests pass, the same pass/fail you'd get from CI.
+
+> [!NOTE]
+> The first run downloads a multi-gigabyte GMod server image, so it takes a while to start. Later runs reuse the cached image.
+
+> [!IMPORTANT]
+> **Apple Silicon:** the default `public` branch server is 32-bit and crashes under emulation, so run with `--branch x86-64` (and expect it to be slower; a higher `--timeout` may help).
+
+If `gluatest_requirements.txt` or `gluatest_custom.cfg` exist in your project root, they're picked up automatically. These are the same files the GitHub Action uses.
+
+Every run writes the full server log to `gluatest-run.log` in your current directory. Pass `--quiet` to suppress the live server stream (handy for scripts and coding agents) and you'll still get the verdict and the log file.
+
+Tip: symlink the script onto your PATH to run it as `gluatest` from anywhere:
+```sh
+ln -s /path/to/GLuaTest/docker/run_local.sh /usr/local/bin/gluatest
+```
+
+
+### Options
+All optional; the common case needs no flags:
+
+| Flag | Description | Default |
+|:-----|:------------|:--------|
+| `--project <path>` | Project directory to test | current directory |
+| `--branch <name>` | GMod branch: `public`, `x86-64`, `prerelease`, `dev` | `public` |
+| `--gamemode <name>` | Gamemode for the test server | `sandbox` |
+| `--map <name>` | Map for the test server | `gm_construct` |
+| `--collection <id>` | Workshop collection ID for the server to mount | none |
+| `--timeout <minutes>` | Minutes before the server is killed | `2` |
+| `--build` | Build the runner image locally instead of pulling | off |
+| `--quiet` | Suppress the live server output (verdict + log still produced) | off |
+
+
+### Advanced: running compose directly (CI parity)
+If you want the same raw interface CI uses, you can drive `docker compose` yourself. Every variable has a safe default (see `docker/.env.example` for the full list):
+
 ```sh
 export REQUIREMENTS=/absolute/path/to/requirements.txt
 export CUSTOM_SERVER_CONFIG=/absolute/path/to/server.cfg
-export PROJECT_DIR=/home/me/Code/my_project
+export PROJECT_DIR=/absolute/path/to/garrysmod_override
 export GAMEMODE="sandbox"
 export COLLECTION_ID="12345"
 export SSH_PRIVATE_KEY="the-entire-private-key"
 export GITHUB_TOKEN="a-personal-access-token"
+
+cd /path/to/GLuaTest/docker
+docker compose up --pull always --no-log-prefix --exit-code-from runner
 ```
 
- - You can skip the `REQUIREMENTS` and `CUSTOM_SERVER_CONFIG` if you don't need them, but you must set the `PROJECT_DIR` variable.
+- `PROJECT_DIR` must already be laid out like the contents of `garrysmod/` (e.g. your addon under `addons/<name>/`). Unlike the wrapper, compose does no staging.
 
- - The `GAMEMODE` variable defaults to `"sandbox"`, so you can omit it if that's appropriate for your tests.
+- The `GAMEMODE` variable defaults to `"sandbox"`, so you can omit it if that's appropriate for your tests.
 
- - The `COLLECTION_ID` variable allows you to pass a workshop collection ID for the server to grab before starting.
+- The `COLLECTION_ID` variable allows you to pass a workshop collection ID for the server to grab before starting.
 
- - The `SSH_PRIVATE_KEY` variable is used when one or more of your Requirements are hosted on a Private Repository.
+- The `SSH_PRIVATE_KEY` variable is used when one or more of your Requirements are hosted on a Private Repository.
 
- - The `GITHUB_TOKEN` variable, like the `SSH_PRIVATE_KEY` is also used to grant access to private repositories. Personal Access Tokens are a simpler (but ultimately worse) alternative to a full SSH keypair.
+- The `GITHUB_TOKEN` variable, like the `SSH_PRIVATE_KEY` is also used to grant access to private repositories. Personal Access Tokens are a simpler (but ultimately worse) alternative to a full SSH keypair.
 
 
 _(Read more about privately-hosted project requirements: https://github.com/CFC-Servers/GLuaTest/wiki/Private-Requirements )_
-
-
-### Running in Docker
-Now you'll need docker-compose. I'll leave it to you to figure out how to install it: https://docs.docker.com/compose/install/
-
-Once that's done, you just need to run the `docker-compose` file in the `docker/` directory.
-
-
-On Linux/OSX, this looks like:
-```
-docker-compose up
-```
-
-
-And.. that's it! It'll pull the latest Runner, start the server, and run your tests.
-You can even follow the test output live.
 
 </details>
 
