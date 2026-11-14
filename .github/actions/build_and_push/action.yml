@@ -59,6 +59,7 @@ runs:
         $GITHUB_WORKSPACE/docker-slim build \
           --target gluatest_fat:latest \
           --http-probe-off \
+          --env GLUATEST_SLIM_PROBE=true \
           --continue-after 30 \
           --show-clogs --show-blogs \
           --include-bin "/usr/bin/date" \

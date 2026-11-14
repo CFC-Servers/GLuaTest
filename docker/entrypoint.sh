@@ -136,8 +136,18 @@ base_srcds_args=(
 )
 srcds_args="$EXTRA_STARTUP_ARGS ${base_srcds_args[@]}"
 
-if [ -x "$gmodroot/srcds_run_x64" ]; then
+cd "$gmodroot" # srcds_run64 uses relative paths unlike srcds_run. Annoying...
+
+if [ "$GLUATEST_SLIM_PROBE" = "true" ] && [ -x "$gmodroot/srcds_run64" ]; then
+    # docker-slim only keeps files that were touched soo for dev 64x we also touch it :3
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run64 "${srcds_args//27015/27016}" &
+fi
+
+if [ "$USE_64BIT" = "true" ]; then
     echo "Starting 64-bit server"
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run64 "$srcds_args"
+elif [ -x "$gmodroot/srcds_run_x64" ]; then
+    echo "Starting x86-64-bit server"
     unbuffer timeout "$timeout" "$gmodroot"/srcds_run_x64 "$srcds_args"
 else
     echo "Starting 32-bit server"
