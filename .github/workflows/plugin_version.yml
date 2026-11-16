@@ -1,0 +1,30 @@
+name: Plugin version check
+
+on:
+  pull_request:
+    paths:
+      - "skills/**"
+      - "docker/run_local.sh"
+      - "docker/docker-compose.yml"
+      - ".claude-plugin/**"
+
+jobs:
+  version-bumped:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Require a new version in .claude-plugin/plugin.json
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          manifest=".claude-plugin/plugin.json"
+          head_version="$(jq -r .version "$manifest")"
+          base_version="$(git show "origin/$BASE_REF:$manifest" 2> /dev/null | jq -r .version || true)"
+
+          if [ "$head_version" = "$base_version" ]; then
+            echo "::error file=$manifest::This pull request changes files that ship in the agent plugin, but \"version\" is still $head_version. Installed plugins only update when the version changes, so bump it."
+            exit 1
+          fi

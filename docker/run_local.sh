@@ -35,9 +35,17 @@ Options:
 
 Every run writes the full server log to gluatest-run.log in the directory
 you invoked from. Exit code 0 = all tests passed; 124 = server hit the
---timeout limit; anything else = test failure or server error.
+--timeout limit; 69 = Docker is missing or not running; anything else = test
+failure or server error.
+
+Each run checks GitHub for a newer version of this runner and its agent
+skill, and prints a notice if one exists. Set GLUATEST_NO_UPDATE_CHECK=1 to skip the check.
 EOF
 }
+
+EXIT_DOCKER_UNAVAILABLE=69
+UPDATE_CHECK_URL="https://raw.githubusercontent.com/CFC-Servers/GLuaTest/main/.claude-plugin/plugin.json"
+UPDATE_CHECK_TIMEOUT_SECONDS=3
 
 err() {
     echo "run_local.sh: error: $*" >&2
@@ -46,6 +54,41 @@ err() {
 
 note() {
     echo "==> $*"
+}
+
+docker_unavailable() {
+    echo "run_local.sh: error: $*" >&2
+    echo "AI agents: stop here and pass this message to the user. Do not install or start Docker yourself, and do not run the tests another way." >&2
+    exit "$EXIT_DOCKER_UNAVAILABLE"
+}
+
+manifest_version() {
+    sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1
+}
+
+notify_if_outdated() {
+    [ -z "${GLUATEST_NO_UPDATE_CHECK:-}" ] || return 0
+    command -v curl > /dev/null 2>&1 || return 0
+
+    local repo_root="$SCRIPT_DIR/.."
+    local manifest="$repo_root/.claude-plugin/plugin.json"
+    [ -f "$manifest" ] || return 0
+
+    local installed latest newest
+    installed="$(manifest_version < "$manifest")"
+    latest="$(curl -fsS --max-time "$UPDATE_CHECK_TIMEOUT_SECONDS" "$UPDATE_CHECK_URL" 2> /dev/null | manifest_version || true)"
+    [ -n "$installed" ] && [ -n "$latest" ] || return 0
+
+    newest="$(printf '%s\n%s\n' "$installed" "$latest" | sort -V | tail -n 1)"
+    [ "$latest" != "$installed" ] && [ "$newest" = "$latest" ] || return 0
+
+    local update_command="claude plugin update gluatest@gluatest (then run /reload-plugins or restart Claude Code)"
+    if [ -d "$repo_root/.git" ]; then
+        update_command="git -C \"$(cd "$repo_root" && pwd)\" pull --ff-only"
+    fi
+
+    note "A newer GLuaTest runner and agent skill is available ($latest, this copy is $installed). Update with: $update_command"
+    note "AI agents: mention this update and its command to the user when you report the test results."
 }
 
 # --- Flags -------------------------------------------------------------------
@@ -83,14 +126,35 @@ case "$TIMEOUT" in
 esac
 
 # --- Preflight ----------------------------------------------------------------
-command -v docker > /dev/null 2>&1 || err "docker is not on your PATH.
-Install Docker Desktop (macOS / Windows+WSL2) or Docker Engine (Linux): https://docs.docker.com/get-docker/"
+COMPOSE_INSTALL_URL="https://docs.docker.com/compose/install/"
 
-docker compose version > /dev/null 2>&1 || err "the Docker Compose plugin is not available ('docker compose version' failed).
-Install it: https://docs.docker.com/compose/install/"
+if [ "$(uname -s)" = "Darwin" ]; then
+    docker_install_hint="Install Docker Desktop for Mac: https://docs.docker.com/desktop/"
+    compose_install_hint="Docker Desktop includes Compose. Start Docker Desktop, or update it if it is already running."
+    docker_start_hint="Start Docker Desktop and wait for it to finish starting."
+elif grep -qi microsoft /proc/version 2> /dev/null; then
+    docker_install_hint="If Docker Desktop is already installed on Windows, start it and enable this distro under Settings > Resources > WSL integration.
+Otherwise install Docker Desktop (https://docs.docker.com/desktop/) or Docker Engine inside this distro (https://docs.docker.com/engine/install/)."
+    compose_install_hint="If you use Docker Desktop, start it and enable this distro under Settings > Resources > WSL integration.
+If Docker Engine is installed inside this distro, install the Compose plugin: $COMPOSE_INSTALL_URL"
+    docker_start_hint="Start Docker Desktop on Windows, or if Docker Engine is installed inside this distro, run 'sudo service docker start'."
+else
+    docker_install_hint="Install Docker Engine: https://docs.docker.com/engine/install/"
+    compose_install_hint="Install the Compose plugin: $COMPOSE_INSTALL_URL"
+    docker_start_hint="Start it with 'sudo systemctl start docker'. If Docker reported a permission error, add your user to the docker group: https://docs.docker.com/engine/install/linux-postinstall/"
+fi
 
-docker info > /dev/null 2>&1 || err "the Docker daemon is not reachable ('docker info' failed).
-Start Docker Desktop (or the docker service) and try again."
+command -v docker > /dev/null 2>&1 || docker_unavailable "GLuaTest runs its test server in Docker, and Docker is not installed (no 'docker' on your PATH).
+$docker_install_hint"
+
+docker compose version > /dev/null 2>&1 || docker_unavailable "the Docker Compose plugin is not available ('docker compose version' failed).
+$compose_install_hint"
+
+if ! docker_info_error="$(docker info 2>&1 > /dev/null)"; then
+    docker_unavailable "Docker is installed but not running or not reachable.
+Docker reported: $(echo "$docker_info_error" | grep -v -e "^WARNING" -e "errors pretty printing" | head -n 3)
+$docker_start_hint"
+fi
 
 arch="$(uname -m)"
 if [ "$arch" = "arm64" ] || [ "$arch" = "aarch64" ]; then
@@ -255,5 +319,7 @@ else
         echo "The server hit the ${TIMEOUT}-minute time limit before finishing - retry with a higher limit, e.g. --timeout $(( 10#$TIMEOUT * 2 ))." >&2
     fi
 fi
+
+notify_if_outdated || true
 
 exit "$status"
