@@ -1151,7 +1151,7 @@ https://github.com/CFC-Servers/GLuaTest/wiki/I-set-up-GLuaTest...-now-what
 <summary><strong>Using GLuaTest with AI coding agents</strong></summary>
 <br>
 
-GLuaTest is a Claude Code plugin, and an installable skill for other agents that support the [Agent Skills](https://agentskills.io) format. Once installed, your coding agent can write and run GLuaTest tests locally or experiment with code in a real GMod environment.
+GLuaTest offers a Claude Code plugin, and an installable skill for other agents that support the [Agent Skills](https://agentskills.io) format. Once installed, your coding agent can write and run GLuaTest tests locally or experiment with code in a real GMod environment.
 
 **Claude Code:**
 
