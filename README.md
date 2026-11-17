@@ -19,6 +19,7 @@ GLuaTest takes a lot of inspiration from both Ruby's [RSpec](https://rspec.info/
  - [Usage](#usage)
  - [Writing Tests](#writing-tests-%EF%B8%8F)
  - [Troubleshooting](#troubleshooting-)
+ - [Using GLuaTest with AI coding agents](#using-gluatest-with-ai-coding-agents)
  - [Developers](#developers-)
 
 ![GLuaLint](https://github.com/CFC-Servers/GLuaTest/actions/workflows/glualint.yml/badge.svg)
@@ -334,14 +335,28 @@ jobs:
 | `map`                | The direct name of the map you want the server to startup with                                                         | `gm_bigcity_improved_lite`                                                                              |
 | `collection`         | The workshop ID of the collection for the test server to use                                                           | `1629732176`                                                                                            |
 | `extra-startup-args` | Additional startup arguments to add to the srcds startup                                                               | `-tickrate 16 -usegh`                                                                                   |
-| `ssh-private-key`    | The Private SSH key to use when cloning the dependencies                                                               | `-----BEGIN OPENSSH PRIVATE KEY-----\n...`                                                              |
-| `github-token`       | A GitHub Personal Access Token, used when cloning dependencies                                                         |                                                                                                         |
 | `timeout`            | How many minutes to let the job run before killing the server                                                          | `10`                                                                                                    |
 | `branch`             | Which GMod branch to run your tests on                                                                                 | `public`|`prerelease`|`dev`|`x86-64`                                                                      |
 | `gluatest-ref`       | Which tag/branch of GLuaTest to run                                                                                    | `main`|`feature/new-feature-branch`                                                                     |
 | `custom-overrides`   | An absolute path with custom files to copy to the server directly. Structure should match the contents of `garrysmod/` | `$GITHUB_WORKSPACE/my_overrides`                                                                        |
 | `download-artifact`  | A URL path to a .tar.gz file that will be unpacked in the root directory                                               | `https://github.com/RaphaelIT7/gmod-holylib/releases/download/Release0.7/gmsv_holylib_linux_packed.zip` |
 | `additional-setup`   | If specificed, executes the given string as a script after all setup is complete, allowing additional setup            | `echo "Hello, this is a test!"`                                                                         |
+
+Credentials for private requirements go in a `secrets:` block next to `with:`, because GitHub does not allow the `secrets` context inside `with:`:
+
+```yml
+jobs:
+  run-tests:
+    uses: CFC-Servers/GLuaTest/.github/workflows/run_tests.yml@main
+    secrets:
+      ssh-private-key: "${{ secrets.GLUATEST_PRIVATE_KEY }}"
+      github-token: "${{ secrets.GLUATEST_TOKEN }}"
+```
+
+| **Secret**        | **Description**                                                  |
+|-------------------|------------------------------------------------------------------|
+| `ssh-private-key` | The private SSH key to use when cloning private requirements     |
+| `github-token`    | A GitHub Personal Access Token to use when cloning private requirements |
 
 </summary>
 </details>
@@ -430,8 +445,26 @@ All optional; the common case needs no flags:
 | `--map <name>` | Map for the test server | `gm_construct` |
 | `--collection <id>` | Workshop collection ID for the server to mount | none |
 | `--timeout <minutes>` | Minutes before the server is killed | `2` |
+| `--filter <terms>` | Only run test groups whose path or group name contains one of these space-separated terms | none |
 | `--build` | Build the runner image locally instead of pulling | off |
 | `--quiet` | Suppress the live server output (verdict + log still produced) | off |
+
+
+### Running a subset of your tests
+A filter is one or more space-separated terms. A test group runs when its path under `tests/` (such as `myaddon/ranks/getRank.lua`) or its `groupName` contains any of the terms. Matching ignores case.
+
+```sh
+gluatest --filter ranks              # every test group under a ranks/ directory
+gluatest --filter "getRank.lua buy"  # two specific files
+```
+
+The same filter is available on a running server. Pass terms to the concommand for a single run, or set the `gluatest_filter` convar to filter every run, including the automatic one at startup:
+```
+gluatest_run_tests ranks
+gluatest_filter "getRank.lua buy"
+```
+
+A filter that matches no test groups fails the local run. The `--filter` flag needs a runner image built from a GLuaTest release that includes filtering. On an older image the runner prints a notice and runs every test.
 
 
 ### Advanced: running compose directly (CI parity)
@@ -577,6 +610,7 @@ There are a number of different expectations you can use.
 | **`err`**            | Expects the subject function to throw an error                | `expect( error ).to.err()`                                      |
 | **`errWith`**        | Expects the subject function to throw the given error         | `expect( badFunc, param ).to.errWith( "error message" )`        |
 | **`called`**         | Expects the subject Stub have been called                     | `expect( myStub ).was.called()`                                 |
+| **`calledWith`**     | Expects the subject Stub have been called with the given args | `expect( myStub ).was.calledWith( "a", Arg.Number )`            |
 
 <br>
 
@@ -598,6 +632,32 @@ Primarily this is syntax sugar for the `called` expectation. Technically these t
 expect( func ).to.called()
 expect( func ).was.called()
 ```
+
+#### Argument matchers
+`calledWith` passes when at least one call received exactly the given arguments, in order. Table arguments are compared by their contents.
+
+When you only care about part of a call, use an `Arg` matcher in place of a value:
+```lua
+expect( myStub ).was.calledWith( "save", Arg.Any, Arg.Number )
+expect( myStub ).was.calledWith( Arg.Entity, Arg.Type( "CTakeDamageInfo" ) )
+
+local positive = Arg.New( "a positive number", function( n ) return n > 0 end )
+expect( myStub ).was.calledWith( positive )
+```
+
+| Matcher                    | Matches                                                          |
+|----------------------------|------------------------------------------------------------------|
+| **`Arg.Any`**              | Anything, including `nil`                                        |
+| **`Arg.String`**           | Any string                                                       |
+| **`Arg.Number`**           | Any number                                                       |
+| **`Arg.Boolean`**          | `true` or `false`                                                |
+| **`Arg.Table`**            | Any table                                                        |
+| **`Arg.Function`**         | Any function                                                     |
+| **`Arg.Entity`**           | Any entity, including Players, Weapons, Vehicles, and NPCs       |
+| **`Arg.Type( name )`**     | Anything whose `type()` is exactly `name`, the same check as `beA` |
+| **`Arg.New( name, check )`** | Anything for which `check( value )` returns `true`             |
+
+Matchers only work as direct arguments to `calledWith`. They are not recognised inside a table argument.
 
 #### `when` and `skip`
 These fields can be used to control your test invocation.
@@ -1142,6 +1202,32 @@ But... now what?
 Check out this wiki page addressing that very question:
 
 https://github.com/CFC-Servers/GLuaTest/wiki/I-set-up-GLuaTest...-now-what
+
+<br>
+
+# Using GLuaTest with AI coding agents
+<details>
+<summary><strong>Using GLuaTest with AI coding agents</strong></summary>
+<br>
+
+GLuaTest offers a Claude Code plugin, and an installable skill for other agents that support the [Agent Skills](https://agentskills.io) format. Once installed, your coding agent can write and run GLuaTest tests locally or experiment with code in a real GMod environment.
+
+**Claude Code:**
+
+```
+/plugin install gluatest --marketplace CFC-Servers/GLuaTest
+```
+
+**Other agents (Cursor, Codex, etc.):**
+
+```
+npx skills add CFC-Servers/GLuaTest
+```
+
+This adds a `gluatest` skill that the agent loads whenever it works with GLua.
+Your agent will know how to make & run GLuaTest suites and run throwaway tests to verify functionality or check that certain code behaves as expected.
+
+</details>
 
 <br>
 

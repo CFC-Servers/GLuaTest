@@ -43,12 +43,12 @@ on:
       ssh-private-key:
         type: string
         required: false
-        description: "The Private SSH key to use when cloning the dependencies"
+        description: "Deprecated, pass ssh-private-key as a secret instead"
 
       github-token:
         type: string
         required: false
-        description: "A GitHub Personal Access Token"
+        description: "Deprecated, pass github-token as a secret instead"
 
       timeout:
         type: string
@@ -114,6 +114,21 @@ on:
         required: false
         description: "If enabled, it will upload the server logs as an artifact"
         default: "false"
+
+    secrets:
+      secret-startup-args:
+        required: false
+
+      secret-additional-setup:
+        required: false
+
+      ssh-private-key:
+        required: false
+        description: "The private SSH key to use when cloning private requirements"
+
+      github-token:
+        required: false
+        description: "A GitHub Personal Access Token to use when cloning private requirements"
 
 jobs:
   test:
@@ -210,10 +225,10 @@ jobs:
           wget -O artifact.tar.gz ${{ inputs.download-artifact }} # No matter what, we expect it as a .tar.gz
 
       - name: Run Additional Setup
-        if: inputs.additional-setup != ''
         run: |
           cd ${{ github.workspace }}
           ${{ inputs.additional-setup }}
+          ${{ secrets.secret-additional-setup }}
 
       - name: Pull GLuaTest Runner
         if: inputs.dockerbuild != 'true'
@@ -249,12 +264,12 @@ jobs:
           REQUIREMENTS: "${{ github.workspace }}/project/${{ inputs.requirements }}"
           CUSTOM_SERVER_CONFIG: "${{ github.workspace }}/project/${{ inputs.server-cfg }}"
           PROJECT_DIR: "${{ github.workspace }}/garrysmod_override"
-          EXTRA_STARTUP_ARGS: "${{ inputs.extra-startup-args }}"
+          EXTRA_STARTUP_ARGS: "${{ inputs.extra-startup-args }} ${{ secrets.secret-startup-args }}"
           GAMEMODE: "${{ inputs.gamemode }}"
           MAP: "${{ inputs.map }}"
           COLLECTION_ID: "${{ inputs.collection }}"
-          SSH_PRIVATE_KEY: "${{ inputs.ssh-private-key }}"
-          GITHUB_TOKEN: "${{ inputs.github-token }}"
+          SSH_PRIVATE_KEY: "${{ secrets.ssh-private-key || inputs.ssh-private-key }}"
+          GITHUB_TOKEN: "${{ secrets.github-token || inputs.github-token }}"
           TIMEOUT: "${{ inputs.timeout }}"
           GMOD_BRANCH: "${{ inputs.branch }}"
           USE_64BIT: "${{ inputs.use-64bit }}"
@@ -288,6 +303,13 @@ jobs:
 
           # Remove all the ANSI color codes
           cat "$filename.pre" | ansi2txt > "$filename"
+
+          # Remove secrets
+          secret_startup_args='${{ secrets.secret-startup-args }}'
+          if [ -n "$secret_startup_args" ]; then
+            grep --invert-match --fixed-strings -- "$secret_startup_args" "$filename" > "$filename.clean" || true
+            mv "$filename.clean" "$filename"
+          fi
 
       - name: Upload Test Log Artifact
         if: always() && inputs.logs-as-artifact == 'true'

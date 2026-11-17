@@ -3,6 +3,7 @@ local TypeID = TypeID
 local IsValid = IsValid
 local isstring = isstring
 local string_format = string.format
+local CalledWith = include( "utils/called_with.lua" )
 local GetDiff = include( "utils/table_diff.lua" )
 
 -- Inverse checks
@@ -231,9 +232,22 @@ return function( subject, ... )
         end
     end
 
+    --- @deprecated
     function expectations.haveBeenCalled()
         GLuaTest.DeprecatedNotice( "to.haveBeenCalled()", "was.called()" )
         return expectations.called()
+    end
+
+    --- Expects the subject stub to have never been called with the given arguments
+    --- @param ... any Literal values or Arg matchers
+    function expectations.calledWith( ... )
+        assert( subject.IsStub, ".calledWith expects a stub" )
+        --- @cast subject GLuaTest_Stub
+
+        local expected = { ... }
+        if not CalledWith.wasCalledWith( subject, expected ) then return end
+
+        i.expected( "to not have been called with %s", CalledWith.formatArgs( expected ) )
     end
 
     return expectations
