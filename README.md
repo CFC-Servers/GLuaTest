@@ -19,6 +19,7 @@ GLuaTest takes a lot of inspiration from both Ruby's [RSpec](https://rspec.info/
  - [Usage](#usage)
  - [Writing Tests](#writing-tests-%EF%B8%8F)
  - [Troubleshooting](#troubleshooting-)
+ - [Using GLuaTest with AI coding agents](#using-gluatest-with-ai-coding-agents)
  - [Developers](#developers-)
 
 ![GLuaLint](https://github.com/CFC-Servers/GLuaTest/actions/workflows/glualint.yml/badge.svg)
@@ -1142,6 +1143,32 @@ But... now what?
 Check out this wiki page addressing that very question:
 
 https://github.com/CFC-Servers/GLuaTest/wiki/I-set-up-GLuaTest...-now-what
+
+<br>
+
+# Using GLuaTest with AI coding agents
+<details>
+<summary><strong>Using GLuaTest with AI coding agents</strong></summary>
+<br>
+
+GLuaTest offers a Claude Code plugin, and an installable skill for other agents that support the [Agent Skills](https://agentskills.io) format. Once installed, your coding agent can write and run GLuaTest tests locally or experiment with code in a real GMod environment.
+
+**Claude Code:**
+
+```
+/plugin install gluatest --marketplace CFC-Servers/GLuaTest
+```
+
+**Other agents (Cursor, Codex, etc.):**
+
+```
+npx skills add CFC-Servers/GLuaTest
+```
+
+This adds a `gluatest` skill that the agent loads whenever it works with GLua.
+Your agent will know how to make & run GLuaTest suites and run throwaway tests to verify functionality or check that certain code behaves as expected.
+
+</details>
 
 <br>
 
