@@ -12,8 +12,14 @@ ARG home=/home/steam
 ARG gmodroot=$home/gmodserver
 ARG server=$home/gmodserver/garrysmod
 
+# HACK! Fix this once you know how!
+# We have no idea why, but the first steamcmd call updates Steam BUT then randomly fails the install:
+# > ERROR! Failed to install app '4020' (Missing configuration)
+#
+# So as a workaround, we call it a second time, where it then decides to just magically work... pure magic.
 USER steam
 RUN echo "Downloading $GMOD_BRANCH branch"; \
+./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta $GMOD_BRANCH validate +quit; \
 ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta $GMOD_BRANCH validate +quit;
 
 # Initial server config
@@ -37,6 +43,24 @@ RUN ssh-keyscan github.com >> $home/github_known_hosts
 
 # Enable core dumps
 RUN ulimit -c unlimited
+
+# Cleanup
+RUN rm -rf \
+        $server/sv.db \
+        $server/console.log \
+        $server/stats.txt \
+        $server/scenes \
+        $server/logs \
+        $server/downloadlists \
+        $server/fallbacks_000.vpk \
+        $server/fallbacks_dir.vpk \
+        $gmodroot/sourceengine/scripts \
+        $gmodroot/sourceengine/content_cstrike_dir.vpk \
+        $gmodroot/sourceengine/hl2_sound_vo_english_dir.vpk \
+        $gmodroot/sourceengine/hl2_sound_misc_dir.vpk \
+        $gmodroot/sourceengine/hl2_textures_dir.vpk \
+        $gmodroot/sourceengine/content_hl2_005.vpk \
+        $gmodroot/sourceengine/content_hl2_dir.vpk
 
 # Entrypoint
 COPY entrypoint.sh $gmodroot/entrypoint.sh
