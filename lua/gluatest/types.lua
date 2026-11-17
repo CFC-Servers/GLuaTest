@@ -81,3 +81,7 @@ function stub( tbl, key )
 
     return _G.fake --[[@as GLuaTest_Stub]]
 end
+
+--- Argument matchers for use with the `calledWith` expectation
+--- @type GLuaTest_ArgMatchers
+Arg = _G.fake

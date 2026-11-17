@@ -1,8 +1,8 @@
 # GLuaTest
 <p align="left">
     <a href="https://discord.gg/5JUqZjzmYJ" alt="Discord Invite"><img src="https://img.shields.io/discord/981394195812085770?style=flat-square&logo=discord&logoColor=white&label=Support" /></a>
-    <a href="https://github.com/CFC-Servers/GLuaTests/actions/workflows/self_tests.yml" alt="GLuaTest Status"><img src="https://img.shields.io/github/actions/workflow/status/CFC-Servers/GLuaTest/self_tests.yml?branch=main&logo=lua&logoColor=white&style=flat-square&label=Self%20Tests" /></a>
-    <a href="https://github.com/CFC-Servers/GLuaTests/actions/workflows/self_tests.yml" alt="GLuaTest Status"><img src="https://img.shields.io/github/v/tag/CFC-Servers/GLuaTest?sort=semver&style=flat-square&logo=github&logoColor=white&label=Version" /></a>
+    <a href="https://github.com/CFC-Servers/GLuaTest/actions/workflows/self_tests.yml" alt="GLuaTest Status"><img src="https://img.shields.io/github/actions/workflow/status/CFC-Servers/GLuaTest/self_tests.yml?branch=main&logo=lua&logoColor=white&style=flat-square&label=Self%20Tests" /></a>
+    <a href="https://github.com/CFC-Servers/GLuaTest/actions/workflows/self_tests.yml" alt="GLuaTest Status"><img src="https://img.shields.io/github/v/tag/CFC-Servers/GLuaTest?sort=semver&style=flat-square&logo=github&logoColor=white&label=Version" /></a>
 </p>
 
 🎉 <strong>The missing test framework for GMod</strong> 🎉
@@ -19,6 +19,7 @@ GLuaTest takes a lot of inspiration from both Ruby's [RSpec](https://rspec.info/
  - [Usage](#usage)
  - [Writing Tests](#writing-tests-%EF%B8%8F)
  - [Troubleshooting](#troubleshooting-)
+ - [Using GLuaTest with AI coding agents](#using-gluatest-with-ai-coding-agents)
  - [Developers](#developers-)
 
 ![GLuaLint](https://github.com/CFC-Servers/GLuaTest/actions/workflows/glualint.yml/badge.svg)
@@ -283,10 +284,12 @@ jobs:
 ```
 
 Acceptable options are:
-- `live` (Main GMod version - this is the default)
+- `public` (Main GMod version - this is the default)
 - `x86-64`
 - `prerelease`
 - `dev`
+
+(`live` is accepted as a deprecated alias for `public`.)
 
 </summary>
 </details>
@@ -335,7 +338,7 @@ jobs:
 | `ssh-private-key`    | The Private SSH key to use when cloning the dependencies                                                               | `-----BEGIN OPENSSH PRIVATE KEY-----\n...`                                                              |
 | `github-token`       | A GitHub Personal Access Token, used when cloning dependencies                                                         |                                                                                                         |
 | `timeout`            | How many minutes to let the job run before killing the server                                                          | `10`                                                                                                    |
-| `branch`             | Which GMod branch to run your tests on                                                                                 | `live`|`prerelease`|`dev`|`x86-64`                                                                      |
+| `branch`             | Which GMod branch to run your tests on                                                                                 | `public`|`prerelease`|`dev`|`x86-64`                                                                      |
 | `gluatest-ref`       | Which tag/branch of GLuaTest to run                                                                                    | `main`|`feature/new-feature-branch`                                                                     |
 | `custom-overrides`   | An absolute path with custom files to copy to the server directly. Structure should match the contents of `garrysmod/` | `$GITHUB_WORKSPACE/my_overrides`                                                                        |
 | `download-artifact`  | A URL path to a .tar.gz file that will be unpacked in the root directory                                               | `https://github.com/RaphaelIT7/gmod-holylib/releases/download/Release0.7/gmsv_holylib_linux_packed.zip` |
@@ -384,59 +387,100 @@ All of your tests will run when the server starts up and you can view the output
 <summary><strong>Running your tests locally without a server</strong></summary>
 <br>
 
-Sounds weird, right? Well it's really not all that different from running GLuaTest on GitHub.
+You can run your project's whole test suite in Docker with one command, using the same runner CI uses.
 
-In fact, many of the steps are the same.
-
-
-### Requirements / Server Configs
-If your project depends on other projects, you can have GLuaTest automatically acquire them for you.
-
-Take a quick skim through the [GitHub Action setup instructions](#automated-testing-on-pull-requests) for the relevant sections on how to set this up.
+**Requirements:** [Docker](https://docs.docker.com/get-docker/) with the compose plugin (Docker Desktop includes it). Linux, macOS, or Windows via WSL2 (Docker Desktop's WSL backend; Git Bash is not supported).
 
 
-### Environment setup
-When running GLuaTest without a server, you need to tell it where to find your project and custom files.
+### Quick start
+Clone GLuaTest anywhere, then run the wrapper from your project's directory:
 
-You can do that with simple environment variables, i.e.:
+```sh
+git clone https://github.com/CFC-Servers/GLuaTest.git
+
+cd /path/to/your/project
+/path/to/GLuaTest/docker/run_local.sh
+```
+
+That's it. The wrapper detects your project layout (addon, gamemode, or server repo), stages it for the test server, pulls the latest runner image, and runs your tests. It exits `0` when all tests pass, the same pass/fail you'd get from CI.
+
+> [!NOTE]
+> The first run downloads a multi-gigabyte GMod server image, so it takes a while to start. Later runs reuse the cached image.
+
+> [!IMPORTANT]
+> **Apple Silicon:** the default `public` branch server is 32-bit and crashes under emulation, so run with `--branch x86-64` (and expect it to be slower; a higher `--timeout` may help).
+
+If `gluatest_requirements.txt` or `gluatest_custom.cfg` exist in your project root, they're picked up automatically. These are the same files the GitHub Action uses.
+
+Every run writes the full server log to `gluatest-run.log` in your current directory. Pass `--quiet` to suppress the live server stream (handy for scripts and coding agents) and you'll still get the verdict and the log file.
+
+Tip: symlink the script onto your PATH to run it as `gluatest` from anywhere:
+```sh
+ln -s /path/to/GLuaTest/docker/run_local.sh /usr/local/bin/gluatest
+```
+
+
+### Options
+All optional; the common case needs no flags:
+
+| Flag | Description | Default |
+|:-----|:------------|:--------|
+| `--project <path>` | Project directory to test | current directory |
+| `--branch <name>` | GMod branch: `public`, `x86-64`, `prerelease`, `dev` | `public` |
+| `--gamemode <name>` | Gamemode for the test server | `sandbox` |
+| `--map <name>` | Map for the test server | `gm_construct` |
+| `--collection <id>` | Workshop collection ID for the server to mount | none |
+| `--timeout <minutes>` | Minutes before the server is killed | `2` |
+| `--filter <terms>` | Only run test groups whose path or group name contains one of these space-separated terms | none |
+| `--build` | Build the runner image locally instead of pulling | off |
+| `--quiet` | Suppress the live server output (verdict + log still produced) | off |
+
+
+### Running a subset of your tests
+A filter is one or more space-separated terms. A test group runs when its path under `tests/` (such as `myaddon/ranks/getRank.lua`) or its `groupName` contains any of the terms. Matching ignores case.
+
+```sh
+gluatest --filter ranks              # every test group under a ranks/ directory
+gluatest --filter "getRank.lua buy"  # two specific files
+```
+
+The same filter is available on a running server. Pass terms to the concommand for a single run, or set the `gluatest_filter` convar to filter every run, including the automatic one at startup:
+```
+gluatest_run_tests ranks
+gluatest_filter "getRank.lua buy"
+```
+
+A filter that matches no test groups fails the local run. The `--filter` flag needs a runner image built from a GLuaTest release that includes filtering. On an older image the runner prints a notice and runs every test.
+
+
+### Advanced: running compose directly (CI parity)
+If you want the same raw interface CI uses, you can drive `docker compose` yourself. Every variable has a safe default (see `docker/.env.example` for the full list):
+
 ```sh
 export REQUIREMENTS=/absolute/path/to/requirements.txt
 export CUSTOM_SERVER_CONFIG=/absolute/path/to/server.cfg
-export PROJECT_DIR=/home/me/Code/my_project
+export PROJECT_DIR=/absolute/path/to/garrysmod_override
 export GAMEMODE="sandbox"
 export COLLECTION_ID="12345"
 export SSH_PRIVATE_KEY="the-entire-private-key"
 export GITHUB_TOKEN="a-personal-access-token"
+
+cd /path/to/GLuaTest/docker
+docker compose up --pull always --no-log-prefix --exit-code-from runner
 ```
 
- - You can skip the `REQUIREMENTS` and `CUSTOM_SERVER_CONFIG` if you don't need them, but you must set the `PROJECT_DIR` variable.
+- `PROJECT_DIR` must already be laid out like the contents of `garrysmod/` (e.g. your addon under `addons/<name>/`). Unlike the wrapper, compose does no staging.
 
- - The `GAMEMODE` variable defaults to `"sandbox"`, so you can omit it if that's appropriate for your tests.
+- The `GAMEMODE` variable defaults to `"sandbox"`, so you can omit it if that's appropriate for your tests.
 
- - The `COLLECTION_ID` variable allows you to pass a workshop collection ID for the server to grab before starting.
+- The `COLLECTION_ID` variable allows you to pass a workshop collection ID for the server to grab before starting.
 
- - The `SSH_PRIVATE_KEY` variable is used when one or more of your Requirements are hosted on a Private Repository.
+- The `SSH_PRIVATE_KEY` variable is used when one or more of your Requirements are hosted on a Private Repository.
 
- - The `GITHUB_TOKEN` variable, like the `SSH_PRIVATE_KEY` is also used to grant access to private repositories. Personal Access Tokens are a simpler (but ultimately worse) alternative to a full SSH keypair.
+- The `GITHUB_TOKEN` variable, like the `SSH_PRIVATE_KEY` is also used to grant access to private repositories. Personal Access Tokens are a simpler (but ultimately worse) alternative to a full SSH keypair.
 
 
 _(Read more about privately-hosted project requirements: https://github.com/CFC-Servers/GLuaTest/wiki/Private-Requirements )_
-
-
-### Running in Docker
-Now you'll need docker-compose. I'll leave it to you to figure out how to install it: https://docs.docker.com/compose/install/
-
-Once that's done, you just need to run the `docker-compose` file in the `docker/` directory.
-
-
-On Linux/OSX, this looks like:
-```
-docker-compose up
-```
-
-
-And.. that's it! It'll pull the latest Runner, start the server, and run your tests.
-You can even follow the test output live.
 
 </details>
 
@@ -552,6 +596,7 @@ There are a number of different expectations you can use.
 | **`err`**            | Expects the subject function to throw an error                | `expect( error ).to.err()`                                      |
 | **`errWith`**        | Expects the subject function to throw the given error         | `expect( badFunc, param ).to.errWith( "error message" )`        |
 | **`called`**         | Expects the subject Stub have been called                     | `expect( myStub ).was.called()`                                 |
+| **`calledWith`**     | Expects the subject Stub have been called with the given args | `expect( myStub ).was.calledWith( "a", Arg.Number )`            |
 
 <br>
 
@@ -573,6 +618,32 @@ Primarily this is syntax sugar for the `called` expectation. Technically these t
 expect( func ).to.called()
 expect( func ).was.called()
 ```
+
+#### Argument matchers
+`calledWith` passes when at least one call received exactly the given arguments, in order. Table arguments are compared by their contents.
+
+When you only care about part of a call, use an `Arg` matcher in place of a value:
+```lua
+expect( myStub ).was.calledWith( "save", Arg.Any, Arg.Number )
+expect( myStub ).was.calledWith( Arg.Entity, Arg.Type( "CTakeDamageInfo" ) )
+
+local positive = Arg.New( "a positive number", function( n ) return n > 0 end )
+expect( myStub ).was.calledWith( positive )
+```
+
+| Matcher                    | Matches                                                          |
+|----------------------------|------------------------------------------------------------------|
+| **`Arg.Any`**              | Anything, including `nil`                                        |
+| **`Arg.String`**           | Any string                                                       |
+| **`Arg.Number`**           | Any number                                                       |
+| **`Arg.Boolean`**          | `true` or `false`                                                |
+| **`Arg.Table`**            | Any table                                                        |
+| **`Arg.Function`**         | Any function                                                     |
+| **`Arg.Entity`**           | Any entity, including Players, Weapons, Vehicles, and NPCs       |
+| **`Arg.Type( name )`**     | Anything whose `type()` is exactly `name`, the same check as `beA` |
+| **`Arg.New( name, check )`** | Anything for which `check( value )` returns `true`             |
+
+Matchers only work as direct arguments to `calledWith`. They are not recognised inside a table argument.
 
 #### `when` and `skip`
 These fields can be used to control your test invocation.
@@ -714,7 +785,8 @@ return {
             func = function( state )
                 stub( MyProject, "UserExistsInDatabase" ).returns( true )
 
-                expect( MyProject.CheckUser, state.validUser ).to.beTrue()
+                local isValid = MyProject.CheckUser( state.validUser )
+                expect( isValid ).to.beTrue()
             end
         },
         {
@@ -724,7 +796,7 @@ return {
 
                 MyProject.CheckUser( state.validUser )
 
-                expect( dbCheck ).to.haveBeenCalled()
+                expect( dbCheck ).was.called()
             end
         }
     }
@@ -752,7 +824,7 @@ You can use the Stub like normal. This is particularly useful for functions that
 
         MyProject.RunCallback( myStub )
 
-        expect( myStub ).to.haveBeenCalled()
+        expect( myStub ).was.called()
     end
 }
 ```
@@ -805,7 +877,7 @@ If your test fails for some reason before it can call `done()`, it'll be marked 
 
 If you know the maximum amount of time your test will take, you can include the `timeout` key on the test with the number of seconds to wait until failing the test.
 
-If you don't include a `timeout` on your Test Case, you'll have to wait for the default 60-second timer before the test can complete. So if speed is important to you, consider setting a conservative `timeout` value for your async tests.
+If you don't include a `timeout` on your Test Case, you'll have to wait for the default 5-second timer before the test can complete. So if speed is important to you, consider setting a conservative `timeout` value for your async tests.
 
 
 For example, say we were trying to test this code:
@@ -946,7 +1018,7 @@ The `beforeEach` function created a brand-new Tickle Monster before every test, 
 You'll notice the `state` variable in that example. The `state` parameter is just a table that's shared between the before/after funcs and the Test Case function.
 
 
-You also have access to `beforeAll` and `afterAll`, which are self-explanatory. Please note that these two functions **do not** take a `state` table.
+You also have access to `beforeAll` and `afterAll`, which are self-explanatory. These two functions receive the group-level `state` table; each Test Case's `state` can read everything set on it, but writes made inside a case stay isolated to that case.
 
 <br>
 
@@ -1116,6 +1188,32 @@ But... now what?
 Check out this wiki page addressing that very question:
 
 https://github.com/CFC-Servers/GLuaTest/wiki/I-set-up-GLuaTest...-now-what
+
+<br>
+
+# Using GLuaTest with AI coding agents
+<details>
+<summary><strong>Using GLuaTest with AI coding agents</strong></summary>
+<br>
+
+GLuaTest offers a Claude Code plugin, and an installable skill for other agents that support the [Agent Skills](https://agentskills.io) format. Once installed, your coding agent can write and run GLuaTest tests locally or experiment with code in a real GMod environment.
+
+**Claude Code:**
+
+```
+/plugin install gluatest --marketplace CFC-Servers/GLuaTest
+```
+
+**Other agents (Cursor, Codex, etc.):**
+
+```
+npx skills add CFC-Servers/GLuaTest
+```
+
+This adds a `gluatest` skill that the agent loads whenever it works with GLua.
+Your agent will know how to make & run GLuaTest suites and run throwaway tests to verify functionality or check that certain code behaves as expected.
+
+</details>
 
 <br>
 

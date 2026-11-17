@@ -18,7 +18,7 @@ return function( subject, ... )
         wasNot = negative
     }
 
-    hook.Run( "GLuaTest_CreateExpect", expect )
+    hook.Run( "GLuaTest_CreateExpect", subject, expect )
 
     return expect
 end

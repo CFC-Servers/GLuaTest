@@ -13,18 +13,10 @@ local ResultLogger = {}
 
 
 function ResultLogger.prefixLog( ... )
-    local prefixColor
-    local prefixText = "GLuaTest"
-    if SERVER then
-        prefixText = "sv_" .. prefixText
-        prefixColor = colors.server
-    else
-        prefixText = "cl_" .. prefixText
-        prefixColor = colors.client
-    end
+    local prefixColor = SERVER and colors.server or colors.client
 
     MsgC( colors.darkgrey, "[" )
-    MsgC( prefixColor, prefixText )
+    MsgC( prefixColor, "GLuaTest" )
     MsgC( colors.darkgrey, "] " )
     MsgC( ... )
 end
@@ -115,6 +107,10 @@ function ResultLogger.logCodeContext( errInfo )
             ResultLogger.drawLine( lineContent, lineNumStr )
             MsgC( "\n" )
         end
+    end
+
+    if lineCount == 0 then
+        MsgC( colors.grey,  "     | ", colors.red, "No source code found!\n" )
     end
 
     if lineNumber == -1 then
