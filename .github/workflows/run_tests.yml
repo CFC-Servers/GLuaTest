@@ -118,9 +118,11 @@ on:
     secrets:
       secret-startup-args:
         required: false
+        description: "Like `extra-startup-args`, for arguments that contain secrets. Log lines containing them are removed from the log artifact"
 
       secret-additional-setup:
         required: false
+        description: "Like `additional-setup`, for scripts that contain secrets. Runs after `additional-setup`"
 
       ssh-private-key:
         required: false
@@ -293,6 +295,8 @@ jobs:
 
       - name: Capture Docker Logs
         if: always() && inputs.logs-as-artifact == 'true'
+        env:
+          SECRET_STARTUP_ARGS: "${{ secrets.secret-startup-args }}"
         run: |
           sudo apt-get install -y colorized-logs
 
@@ -305,9 +309,9 @@ jobs:
           cat "$filename.pre" | ansi2txt > "$filename"
 
           # Remove secrets
-          secret_startup_args='${{ secrets.secret-startup-args }}'
-          if [ -n "$secret_startup_args" ]; then
-            grep --invert-match --fixed-strings -- "$secret_startup_args" "$filename" > "$filename.clean" || true
+          secret_lines="$(printf '%s\n' "$SECRET_STARTUP_ARGS" | grep '[^[:space:]]' || true)"
+          if [ -n "$secret_lines" ]; then
+            grep --invert-match --fixed-strings -- "$secret_lines" "$filename" > "$filename.clean" || true
             mv "$filename.clean" "$filename"
           fi
 
