@@ -298,7 +298,11 @@ jobs:
           cat "$filename.pre" | ansi2txt > "$filename"
 
           # Remove secrets
-          sed -i '/${{ secrets.secret-startup-args }}/d' "$filename"
+          secret_startup_args='${{ secrets.secret-startup-args }}'
+          if [ -n "$secret_startup_args" ]; then
+            grep --invert-match --fixed-strings -- "$secret_startup_args" "$filename" > "$filename.clean" || true
+            mv "$filename.clean" "$filename"
+          fi
 
       - name: Upload Test Log Artifact
         if: always() && inputs.logs-as-artifact == 'true'
