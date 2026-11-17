@@ -26,11 +26,17 @@ GLuaTest = {
     --- @diagnostic disable-next-line: param-type-mismatch
     FilterConVar        = CreateConVar( "gluatest_filter", "", FCVAR_PROTECTED, "Only run test groups whose path or group name contains one of these space-separated terms" ),
 
+    --- @type GLuaTest_Loader
+    Loader = include( "gluatest/loader.lua" ),
+
     DeprecatedNotice = function( old, new )
         local msg = [[GLuaTest: (DEPRECATION NOTICE) "]] .. old .. [[" is deprecated, use "]] .. new .. [[" instead.]]
         if SERVER then MsgC( RED, msg .. "\n" ) end
     end
 }
+
+-- extensions send themselves to clients with AddCSLuaFile
+GLuaTest.Loader.loadExtensions( "gluatest/extensions" )
 
 --[[ Set Up Client Testing ]] do
     if SERVER then
@@ -158,10 +164,6 @@ GLuaTest.runAllTests = function( filter )
 
     GLuaTest.VERSION = VersionTools.getVersion()
 
-    --- @type GLuaTest_Loader
-    local Loader = include( "gluatest/loader.lua" )
-    Loader.loadExtensions( "gluatest/extensions" )
-
     local testPaths = {
         "tests",
         GAMEMODE.FolderName .. "/gamemode/tests"
@@ -173,12 +175,12 @@ GLuaTest.runAllTests = function( filter )
 
     for i = 1, #testPaths do
         local path = testPaths[i]
-        loadAllProjectsFrom( Loader, path, allTestFiles )
+        loadAllProjectsFrom( GLuaTest.Loader, path, allTestFiles )
     end
 
     hook.Run( "GLuaTest_RunTestFiles", allTestFiles )
 
-    local testFiles = Loader.filterTestGroups( allTestFiles, filter )
+    local testFiles = GLuaTest.Loader.filterTestGroups( allTestFiles, filter )
     logFilterMatches( filter, #testFiles, #allTestFiles )
 
     --- @type GLuaTest_TestRunner
