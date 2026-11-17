@@ -578,6 +578,7 @@ There are a number of different expectations you can use.
 | **`err`**            | Expects the subject function to throw an error                | `expect( error ).to.err()`                                      |
 | **`errWith`**        | Expects the subject function to throw the given error         | `expect( badFunc, param ).to.errWith( "error message" )`        |
 | **`called`**         | Expects the subject Stub have been called                     | `expect( myStub ).was.called()`                                 |
+| **`calledWith`**     | Expects the subject Stub have been called with the given args | `expect( myStub ).was.calledWith( "a", Arg.Number )`            |
 
 <br>
 
@@ -599,6 +600,32 @@ Primarily this is syntax sugar for the `called` expectation. Technically these t
 expect( func ).to.called()
 expect( func ).was.called()
 ```
+
+#### Argument matchers
+`calledWith` passes when at least one call received exactly the given arguments, in order. Table arguments are compared by their contents.
+
+When you only care about part of a call, use an `Arg` matcher in place of a value:
+```lua
+expect( myStub ).was.calledWith( "save", Arg.Any, Arg.Number )
+expect( myStub ).was.calledWith( Arg.Entity, Arg.Type( "CTakeDamageInfo" ) )
+
+local positive = Arg.New( "a positive number", function( n ) return n > 0 end )
+expect( myStub ).was.calledWith( positive )
+```
+
+| Matcher                    | Matches                                                          |
+|----------------------------|------------------------------------------------------------------|
+| **`Arg.Any`**              | Anything, including `nil`                                        |
+| **`Arg.String`**           | Any string                                                       |
+| **`Arg.Number`**           | Any number                                                       |
+| **`Arg.Boolean`**          | `true` or `false`                                                |
+| **`Arg.Table`**            | Any table                                                        |
+| **`Arg.Function`**         | Any function                                                     |
+| **`Arg.Entity`**           | Any entity, including Players, Weapons, Vehicles, and NPCs       |
+| **`Arg.Type( name )`**     | Anything whose `type()` is exactly `name`, the same check as `beA` |
+| **`Arg.New( name, check )`** | Anything for which `check( value )` returns `true`             |
+
+Matchers only work as direct arguments to `calledWith`. They are not recognised inside a table argument.
 
 #### `when` and `skip`
 These fields can be used to control your test invocation.

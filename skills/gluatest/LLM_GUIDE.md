@@ -125,6 +125,7 @@ s:Restore()                                    -- put the original function back
 - Each stub takes **one** behavior: `.returns`, `.with`, or `.returnsSequence` — setting a second errors ("Stub already set").
 - The key does not need to exist beforehand — stubbing a method the table never had works, and `Restore` sets it back to `nil`.
 - Inspect calls with `expect( s ).was.called()` / `expect( s ).wasNot.called()`. For an exact count, assert the field: `expect( s.callCount ).to.equal( 1 )`.
+- Check arguments with `expect( s ).was.calledWith( "a", 2 )`, which passes when at least one call received exactly those arguments in that order. Table arguments are compared by contents. Use `Arg` matchers for loose top-level positions: `Arg.Any`, `Arg.String`, `Arg.Number`, `Arg.Boolean`, `Arg.Table`, `Arg.Function`, `Arg.Entity` (any entity, including players), `Arg.Type( "Vector" )` for an exact `type()` name, and `Arg.New( "a positive number", function( n ) return n > 0 end )` for a custom check. Matchers are not recognised inside table arguments. `expect( s ).wasNot.calledWith( ... )` passes when no call matches.
 - Stubs restore the original function **automatically after each case**, including stubs created in `beforeEach`. Call `s:Restore()` early only if the same test needs the real function back.
 
 ## Async cases

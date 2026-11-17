@@ -3,7 +3,7 @@ local TypeID = TypeID
 local IsValid = IsValid
 local isstring = isstring
 local string_format = string.format
-local Arg = include( "arg.lua" )
+local CalledWith = include( "utils/called_with.lua" )
 local GetDiff = include( "utils/table_diff.lua" )
 
 -- Positive checks
@@ -170,7 +170,7 @@ return function( subject, ... )
         local class = type( subject )
 
         if class ~= comparison then
-            i.expected( "to not be an '%s'", comparison )
+            i.expected( "to be an '%s'", comparison )
         end
     end
 
@@ -245,47 +245,16 @@ return function( subject, ... )
         return expectations.called( n )
     end
 
-    -- Called Expectations
-
-    --- Checks if the given argument is equal to the expected argument
-    --- Or, if the expected argument is an argument matcher, checks if the given argument matches the matcher
-    --- @param givenArg any The argument that was given to the stub
-    --- @param expectedArg any The expected argument, which can be a matcher or a value
-    local function checkArg( givenArg, expectedArg )
-        if givenArg == expectedArg then return true end
-
-        if Arg.IsArgMatcher( expectedArg ) then
-            local argMatcher = expectedArg --[[@as GLuaTest_StubArg]]
-            return argMatcher.check( givenArg )
-        end
-
-        return false
-    end
-
-    --- Expects the subject stub to have been called with exactly the given arguments
-    --- @param ... any
+    --- Expects the subject stub to have been called at least once with the given arguments
+    --- @param ... any Literal values or Arg matchers
     function expectations.calledWith( ... )
         assert( subject.IsStub, ".calledWith expects a stub" )
         --- @cast subject GLuaTest_Stub
 
         local expected = { ... }
+        if CalledWith.wasCalledWith( subject, expected ) then return end
 
-        for _, call in ipairs( subject.callHistory or {} ) do
-            if #call == #expected then
-                local match = true
-
-                for k = 1, #expected do
-                    if not checkArg( call[k], expected[k] ) then
-                        match = false
-                        break
-                    end
-                end
-
-                if match then return end
-            end
-        end
-
-        i.expected( "to have been called with arguments: %s", table.concat( expected, ", " ) )
+        i.expected( "to have been called with %s, but %s", CalledWith.formatArgs( expected ), CalledWith.formatCalls( subject ) )
     end
 
     return expectations
