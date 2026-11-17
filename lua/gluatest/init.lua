@@ -35,10 +35,8 @@ GLuaTest = {
     end
 }
 
---[[ Extensions ]] do
-    -- extensions call AddCSLuaFile on themselves, so clients that join before the test run still receive them
-    GLuaTest.Loader.loadExtensions( "gluatest/extensions" )
-end
+-- extensions send themselves to clients with AddCSLuaFile
+GLuaTest.Loader.loadExtensions( "gluatest/extensions" )
 
 --[[ Set Up Client Testing ]] do
     if SERVER then

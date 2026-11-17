@@ -18,6 +18,13 @@ function ResultLogger.prefixLog( ... )
     MsgC( colors.darkgrey, "[" )
     MsgC( prefixColor, "GLuaTest" )
     MsgC( colors.darkgrey, "] " )
+
+    if CLIENT then
+        MsgC( colors.darkgrey, "[" )
+        MsgC( prefixColor, "cl" )
+        MsgC( colors.darkgrey, "] " )
+    end
+
     MsgC( ... )
 end
 
