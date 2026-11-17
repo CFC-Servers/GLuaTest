@@ -431,8 +431,26 @@ All optional; the common case needs no flags:
 | `--map <name>` | Map for the test server | `gm_construct` |
 | `--collection <id>` | Workshop collection ID for the server to mount | none |
 | `--timeout <minutes>` | Minutes before the server is killed | `2` |
+| `--filter <terms>` | Only run test groups whose path or group name contains one of these space-separated terms | none |
 | `--build` | Build the runner image locally instead of pulling | off |
 | `--quiet` | Suppress the live server output (verdict + log still produced) | off |
+
+
+### Running a subset of your tests
+A filter is one or more space-separated terms. A test group runs when its path under `tests/` (such as `myaddon/ranks/getRank.lua`) or its `groupName` contains any of the terms. Matching ignores case.
+
+```sh
+gluatest --filter ranks              # every test group under a ranks/ directory
+gluatest --filter "getRank.lua buy"  # two specific files
+```
+
+The same filter is available on a running server. Pass terms to the concommand for a single run, or set the `gluatest_filter` convar to filter every run, including the automatic one at startup:
+```
+gluatest_run_tests ranks
+gluatest_filter "getRank.lua buy"
+```
+
+A filter that matches no test groups fails the local run. The `--filter` flag needs a runner image built from a GLuaTest release that includes filtering. On an older image the runner prints a notice and runs every test.
 
 
 ### Advanced: running compose directly (CI parity)

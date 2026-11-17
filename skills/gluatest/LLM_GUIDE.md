@@ -304,6 +304,7 @@ cd /path/to/your/project
 - Always pass `--quiet`: the live server stream is thousands of lines. You still get progress notes and the verdict. Use `--project /path/to/project` to run from elsewhere.
 - **Exit code is the verdict:** `0` = every test passed. `124` = the server hit the time limit before finishing — retry with `--timeout 5`. `69` = Docker is missing or not running, so stop and give the user the runner's message. Anything else = a test failed or the server crashed.
 - Every run writes the complete server log to `gluatest-run.log` in the directory you invoked from. Do not read it whole (it contains the full server boot); search it: `FAIL` marks failed cases and `Test failures:` heads the failure detail section with stack traces.
+- While iterating, `--filter "<terms>"` runs only the test groups whose path or `groupName` contains one of the space-separated terms (case-insensitive), for example `--filter ranks/getRank.lua`. A filter that matches nothing fails the run. Finish with an unfiltered run.
 - On Apple Silicon hosts add `--branch x86-64` — the default branch's 32-bit server crashes under emulation.
 - The first run downloads a multi-gigabyte server image and is slow; later runs reuse it. If your project needs other addons, list them in `gluatest_requirements.txt` (`Owner/Repo` per line) in the project root — the runner picks it up automatically.
 
