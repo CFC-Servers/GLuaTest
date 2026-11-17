@@ -10,11 +10,13 @@ jobs:
   run_tests:
     strategy:
       matrix:
-        branch:
-          - "x86-64"
-          - "dev"
-          - "prerelease"
-          - "public"
+        include:
+          - branch: "x86-64"
+          - branch: "dev"
+          - branch: "dev"
+            use-64bit: "true"
+          - branch: "prerelease"
+          - branch: "public"
       fail-fast: false
 
     uses: ./.github/workflows/run_tests.yml
@@ -23,3 +25,4 @@ jobs:
       server-cfg: lua/tests/gluatest/server.cfg
       dockerbuild: "true"
       branch: ${{ matrix.branch }}
+      use-64bit: ${{ matrix.use-64bit || 'false' }}
