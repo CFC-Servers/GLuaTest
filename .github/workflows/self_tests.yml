@@ -14,7 +14,7 @@ jobs:
           - branch: "x86-64"
           - branch: "dev"
           - branch: "dev"
-            use_64bit: "true"
+            use-64bit: "true"
           - branch: "prerelease"
           - branch: "public"
       fail-fast: false
@@ -25,4 +25,4 @@ jobs:
       server-cfg: lua/tests/gluatest/server.cfg
       dockerbuild: "true"
       branch: ${{ matrix.branch }}
-      use_64bit: ${{ matrix.use_64bit || 'false' }}
+      use-64bit: ${{ matrix.use-64bit || 'false' }}
