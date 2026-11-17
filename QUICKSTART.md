@@ -67,6 +67,8 @@ jobs:
         # Workshop collection ID
         collection: 1234
 
+    # Only needed when a requirement is in a private repository
+    secrets:
         # Passwordless Private key with access to your private requirements
         ssh-private-key: "${{ secrets.GLUATEST_PRIVATE_KEY }}"
 

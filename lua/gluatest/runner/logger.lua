@@ -18,6 +18,13 @@ function ResultLogger.prefixLog( ... )
     MsgC( colors.darkgrey, "[" )
     MsgC( prefixColor, "GLuaTest" )
     MsgC( colors.darkgrey, "] " )
+
+    if CLIENT then
+        MsgC( colors.darkgrey, "[" )
+        MsgC( prefixColor, "cl" )
+        MsgC( colors.darkgrey, "] " )
+    end
+
     MsgC( ... )
 end
 
@@ -107,6 +114,10 @@ function ResultLogger.logCodeContext( errInfo )
             ResultLogger.drawLine( lineContent, lineNumStr )
             MsgC( "\n" )
         end
+    end
+
+    if lineCount == 0 then
+        MsgC( colors.grey,  "     | ", colors.red, "No source code found!\n" )
     end
 
     if lineNumber == -1 then

@@ -1,6 +1,6 @@
 FROM ghcr.io/cfc-servers/steamcmd:latest
 
-ARG GMOD_BRANCH=live
+ARG GMOD_BRANCH=public
 ARG GLUATEST_REF=main
 ARG GLUATEST_REPO=https://github.com/CFC-Servers/GLuaTest.git
 
@@ -12,20 +12,15 @@ ARG home=/home/steam
 ARG gmodroot=$home/gmodserver
 ARG server=$home/gmodserver/garrysmod
 
+# HACK! Fix this once you know how!
+# We have no idea why, but the first steamcmd call updates Steam BUT then randomly fails the install:
+# > ERROR! Failed to install app '4020' (Missing configuration)
+#
+# So as a workaround, we call it a second time, where it then decides to just magically work... pure magic.
 USER steam
-RUN if [ "$GMOD_BRANCH" = "x86-64" ]; then \
-    echo "Downloading x86-64 branch"; \
-    ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta x86-64 validate +quit; \
-elif [ "$GMOD_BRANCH" = "dev" ]; then \
-    echo "Downloading dev branch"; \
-    ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta dev validate +quit; \
-elif [ "$GMOD_BRANCH" = "prerelease" ]; then \
-    echo "Downloading prerelease branch"; \
-    ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta prerelease validate +quit; \
-else \
-    echo "Downloading live branch"; \
-    ./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 validate +quit; \
-fi
+RUN echo "Downloading $GMOD_BRANCH branch"; \
+./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta $GMOD_BRANCH validate +quit; \
+./steamcmd.sh +force_install_dir $gmodroot +login anonymous +app_update 4020 -beta $GMOD_BRANCH validate +quit;
 
 # Initial server config
 RUN touch $gmodroot/custom_server.cfg && \
@@ -49,6 +44,24 @@ RUN ssh-keyscan github.com >> $home/github_known_hosts
 # Enable core dumps
 RUN ulimit -c unlimited
 
+# Cleanup
+RUN rm -rf \
+        $server/sv.db \
+        $server/console.log \
+        $server/stats.txt \
+        $server/scenes \
+        $server/logs \
+        $server/downloadlists \
+        $server/fallbacks_000.vpk \
+        $server/fallbacks_dir.vpk \
+        $gmodroot/sourceengine/scripts \
+        $gmodroot/sourceengine/content_cstrike_dir.vpk \
+        $gmodroot/sourceengine/hl2_sound_vo_english_dir.vpk \
+        $gmodroot/sourceengine/hl2_sound_misc_dir.vpk \
+        $gmodroot/sourceengine/hl2_textures_dir.vpk \
+        $gmodroot/sourceengine/content_hl2_005.vpk \
+        $gmodroot/sourceengine/content_hl2_dir.vpk
+
 # Entrypoint
 COPY entrypoint.sh $gmodroot/entrypoint.sh
 RUN chown --recursive steam:steam \
@@ -70,5 +83,6 @@ RUN git clone --depth 1 $GLUATEST_REPO $server/addons/gluatest && \
 RUN mkdir --parents --verbose $server/data
 RUN mkdir --parents --verbose $server/addons/gluatest/data_static
 RUN echo "$GLUATEST_REF" > $server/addons/gluatest/data_static/gluatest_version.txt
+RUN echo "$GMOD_BRANCH" > $server/garrysmod_branch.txt
 
 ENTRYPOINT ["/home/steam/gmodserver/entrypoint.sh"]
