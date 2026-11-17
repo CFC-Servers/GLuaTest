@@ -53,6 +53,7 @@ bash "<runner>" --quiet
 - For any other code, search `gluatest-run.log` in the directory the command ran from before changing anything. `FAIL` marks failed cases and `Test failures:` heads the failure details. If the log has no GLuaTest output, or the runner says the server produced no output, the failure is in Docker or the network (a failed image pull, a full disk), so report it to the user and leave the tests alone.
 - When the output has a line starting with `==> A newer GLuaTest runner and agent skill is available`, finish the task, then tell the user about the update and the command printed on that line. If you fetched the runner into `~/.gluatest`, also tell them that `npx skills update` refreshes this skill.
 - Never start two runs at the same time on one machine. They share a container name and the second run breaks the first.
+- Add `--filter "<terms>"` to run only the test groups whose path or group name contains one of the space-separated terms, for example `--filter getRank.lua` while iterating on one file. Run the whole suite without a filter before reporting the work as done. If the runner says the image does not support `--filter`, every test ran.
 - Add `--gamemode <name>` when the project is a gamemode, or `--branch x86-64` on Apple Silicon.
 - Projects can add `gluatest_requirements.txt` (dependencies) and `gluatest_custom.cfg` (server config) at the root; the runner picks them up automatically.
 
