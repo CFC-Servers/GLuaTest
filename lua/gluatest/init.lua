@@ -58,11 +58,13 @@ GLuaTest = {
         AddCSLuaFile( "gluatest/runner/test_group_runner.lua" )
 
         -- /expectations/*
+        AddCSLuaFile( "gluatest/expectations/arg.lua" )
         AddCSLuaFile( "gluatest/expectations/expect.lua" )
         AddCSLuaFile( "gluatest/expectations/negative.lua" )
         AddCSLuaFile( "gluatest/expectations/positive.lua" )
 
         -- /expectations/utils/*
+        AddCSLuaFile( "gluatest/expectations/utils/called_with.lua" )
         AddCSLuaFile( "gluatest/expectations/utils/table_diff.lua" )
 
         -- When the server finishes its tests, notify clients to start theirs
