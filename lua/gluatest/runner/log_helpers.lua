@@ -61,13 +61,14 @@ LogHelpers.fileLinesCache = {
 --- Reads a given file path and returns the contents split by newline
 --- Cached for future calls
 --- @param filePath string
---- @return string[]
+--- @return string[]?
 function LogHelpers.getFileLines( filePath )
     local cached = LogHelpers.fileLinesCache:get( filePath )
     if cached then return cached end
 
     local cleanPath = LogHelpers.cleanPathForRead( filePath )
     local testFile = file.Open( cleanPath, "r", "LUA" ) --[[@as File]]
+    if not testFile then return nil end
     local fileContents = testFile:Read( testFile:Size() )
     testFile:Close()
 
@@ -126,6 +127,7 @@ end
 function LogHelpers.GetLineWithContext( path, line, context )
     if not context then context = 5 end
     local fileLines = LogHelpers.getFileLines( path )
+    if not fileLines then return {} end
 
     local lineWithContext = {}
     for i = line - context, line do

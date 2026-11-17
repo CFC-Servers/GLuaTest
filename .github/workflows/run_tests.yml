@@ -43,12 +43,12 @@ on:
       ssh-private-key:
         type: string
         required: false
-        description: "The Private SSH key to use when cloning the dependencies"
+        description: "Deprecated, pass ssh-private-key as a secret instead"
 
       github-token:
         type: string
         required: false
-        description: "A GitHub Personal Access Token"
+        description: "Deprecated, pass github-token as a secret instead"
 
       timeout:
         type: string
@@ -59,8 +59,8 @@ on:
       branch:
         type: string
         required: false
-        description: "Which GMod branch to run your tests on. Must be: `live`, `x86-64`, `prerelease`, or `dev`"
-        default: "live"
+        description: "Which GMod branch to run your tests on. Must be: `public`, `x86-64`, `prerelease`, or `dev`"
+        default: "public"
 
       gluatest-repo:
         type: string
@@ -109,15 +109,24 @@ on:
         description: "If enabled, it will upload the server logs as an artifact"
         default: "false"
 
+    secrets:
+      ssh-private-key:
+        required: false
+        description: "The private SSH key to use when cloning private requirements"
+
+      github-token:
+        required: false
+        description: "A GitHub Personal Access Token to use when cloning private requirements"
+
 jobs:
   test:
     name: "Run tests"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: "Check out the repo"
         if: ${{ inputs.no-checkout != 'true' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: project
 
@@ -192,7 +201,7 @@ jobs:
 
       - name: Download artifact (Github)
         if: inputs.download-artifact != '' && !(startsWith(inputs.download-artifact, 'https://') || startsWith(inputs.download-artifact, 'http://'))
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/
           name: "${{ inputs.download-artifact }}"
@@ -211,24 +220,14 @@ jobs:
 
       - name: Pull GLuaTest Runner
         if: inputs.dockerbuild != 'true'
+        env:
+          GMOD_BRANCH: "${{ inputs.branch }}"
         run: |
           cd $GITHUB_WORKSPACE/gluatest/docker
-          if [ ${{ inputs.branch }} = "x86-64" ]; then
-            echo "Updating compose file to use x86-64 image"
-            # Replace 'cfc-servers/gluatest' with 'cfc-servers/gluatest/64bit'
-            sed -i 's/cfc-servers\/gluatest/cfc-servers\/gluatest\/64bit/g' docker-compose.yml
-          fi
 
-          if [ ${{ inputs.branch }} = "dev" ]; then
-            echo "Updating compose file to use dev image"
-            # Replace 'cfc-servers/gluatest' with 'cfc-servers/gluatest/dev'
-            sed -i 's/cfc-servers\/gluatest/cfc-servers\/gluatest\/dev/g' docker-compose.yml
-          fi
-
-          if [ ${{ inputs.branch }} = "prerelease" ]; then
-            echo "Updating compose file to use prerelease image"
-            # Replace 'cfc-servers/gluatest' with 'cfc-servers/gluatest/prerelease'
-            sed -i 's/cfc-servers\/gluatest/cfc-servers\/gluatest\/prerelease/g' docker-compose.yml
+          # RaphaelIT7: Backwards compatibility since I broke it
+          if [ "$GMOD_BRANCH" = "live" ]; then
+            export GMOD_BRANCH="public"
           fi
 
           docker compose pull
@@ -246,7 +245,7 @@ jobs:
             --build-arg="GMOD_BRANCH=${{ inputs.branch }}" \
             --build-arg="GLUATEST_REPO=${{ inputs.gluatest-repo }}.git" \
             --build-arg="GLUATEST_REF=${{ inputs.gluatest-ref }}" \
-            --tag ghcr.io/cfc-servers/gluatest:latest .
+            --tag ghcr.io/cfc-servers/gluatest/${{ inputs.branch }}:latest .
 
       - name: Run GLuaTest
         env:
@@ -257,12 +256,17 @@ jobs:
           GAMEMODE: "${{ inputs.gamemode }}"
           MAP: "${{ inputs.map }}"
           COLLECTION_ID: "${{ inputs.collection }}"
-          SSH_PRIVATE_KEY: "${{ inputs.ssh-private-key }}"
-          GITHUB_TOKEN: "${{ inputs.github-token }}"
+          SSH_PRIVATE_KEY: "${{ secrets.ssh-private-key || inputs.ssh-private-key }}"
+          GITHUB_TOKEN: "${{ secrets.github-token || inputs.github-token }}"
           TIMEOUT: "${{ inputs.timeout }}"
           GMOD_BRANCH: "${{ inputs.branch }}"
         run: |
           cd $GITHUB_WORKSPACE/gluatest/docker
+
+          # RaphaelIT7: Backwards compatibility since I broke it
+          if [ "$GMOD_BRANCH" = "live" ]; then
+            export GMOD_BRANCH="public"
+          fi
 
           # RaphaelIT7: Setting up the core pattern here as inside the docker image it's a read-only filesystem
           echo "core" | sudo tee /proc/sys/kernel/core_pattern
@@ -289,7 +293,7 @@ jobs:
 
       - name: Upload Test Log Artifact
         if: always() && inputs.logs-as-artifact == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gluatest-log-${{ inputs.branch }}
           path: ${{ github.workspace }}/gluatest-log-${{ inputs.branch }}.log

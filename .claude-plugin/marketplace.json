@@ -1,0 +1,14 @@
+{
+    "name": "gluatest",
+    "owner": {
+        "name": "CFC-Servers"
+    },
+    "plugins": [
+        {
+            "name": "gluatest",
+            "source": "./",
+            "description": "GLuaTest test-writing skill and local Docker test runner for Garry's Mod Lua"
+        }
+    ],
+    "description": "GLuaTest plugin: test-writing skill and local Docker runner for Garry's Mod Lua"
+}

@@ -20,6 +20,8 @@ local function fakeFileOpenResponse( read, size )
     }
 end
 
+-- We need this for getFileLines because LuaLS loves to complain even though expect( lines ).toNot.beNil() checks for it!
+---@diagnostic disable: need-check-nil
 return {
     groupName = "LogHelpers.getFileLines Tests",
 
@@ -38,6 +40,7 @@ return {
                 )
 
                 local lines = getFileLines( filePath )
+                expect( lines ).toNot.beNil()
                 expect( #lines ).to.equal( 3 )
                 expect( lines[1] ).to.equal( "Line1" )
                 expect( lines[2] ).to.equal( "Line2" )
@@ -55,6 +58,7 @@ return {
 
                 -- First call should open the file
                 local initialLines = getFileLines( filePath )
+                expect( initialLines ).toNot.beNil()
                 expect( #initialLines ).to.equal( 2 )
                 expect( initialLines[1] ).to.equal( "CachedLine1" )
                 expect( initialLines[2] ).to.equal( "CachedLine2" )
@@ -67,6 +71,7 @@ return {
 
                 -- Second call should use cache and not invoke file.Open
                 local cachedLines = getFileLines( filePath )
+                expect( cachedLines ).toNot.beNil()
                 expect( #cachedLines ).to.equal( 2 )
                 expect( cachedLines[1] ).to.equal( "CachedLine1" )
                 expect( cachedLines[2] ).to.equal( "CachedLine2" )
@@ -83,6 +88,7 @@ return {
                 )
 
                 local lines = getFileLines( filePath )
+                expect( lines ).toNot.beNil()
                 expect( #lines ).to.equal( 1 )
                 expect( lines[1] ).to.equal( "SingleLineContent" )
             end
@@ -97,6 +103,7 @@ return {
                 )
 
                 local lines = getFileLines( filePath )
+                expect( lines ).toNot.beNil()
                 expect( #lines ).to.equal( 1 )
                 expect( lines[1] ).to.equal( "" )
             end
@@ -107,7 +114,9 @@ return {
                 local filePath = "addons/testaddon/lua/tests/non_existent.txt"
 
                 stub( file, "Open" ).returns( nil )
-                expect( getFileLines, filePath ).to.err()
+
+                local lines = getFileLines( filePath )
+                expect( lines ).to.beNil()
             end
         }
     }

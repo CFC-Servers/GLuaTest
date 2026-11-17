@@ -10,6 +10,9 @@ local expect = include( "gluatest/expectations/expect.lua" )
 --- @type GLuaTest_StubMaker
 local stubMaker = include( "gluatest/stubs/stub_maker.lua" )
 
+--- @type GLuaTest_ArgMatchers
+local Arg = include( "gluatest/expectations/arg.lua" )
+
 --- Gets a unique case ID
 --- @return string
 function Helpers.GetCaseID()
@@ -122,6 +125,7 @@ function Helpers.makeTestTools()
     local tools = {
         stub = stub,
         expect = expect,
+        Arg = Arg,
     }
 
     return tools, stubCleanup
@@ -292,6 +296,7 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
         done = done,
         fail = fail,
         stub = stub,
+        Arg = Arg,
     }
 
     local meta = {
