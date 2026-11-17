@@ -136,7 +136,7 @@ base_srcds_args=(
 )
 srcds_args="$EXTRA_STARTUP_ARGS ${base_srcds_args[@]}"
 
-if [ "$gmodbranch" = "x86-64" ]; then
+if [ -x "$gmodroot/srcds_run_x64" ]; then
     echo "Starting 64-bit server"
     unbuffer timeout "$timeout" "$gmodroot"/srcds_run_x64 "$srcds_args"
 else
@@ -167,6 +167,6 @@ if [ -s "$server/data/gluatest_failures.json" ]; then
     echo "::warning:: Test failures detected - Failing workflow"
     exit 1
 else
-    echo "::notice:: No test failures detected"
+    echo "No test failures detected"
     exit 0
 fi

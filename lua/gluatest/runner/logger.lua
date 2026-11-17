@@ -109,6 +109,10 @@ function ResultLogger.logCodeContext( errInfo )
         end
     end
 
+    if lineCount == 0 then
+        MsgC( colors.grey,  "     | ", colors.red, "No source code found!\n" )
+    end
+
     if lineNumber == -1 then
         MsgC( colors.grey,  "     | ", colors.red, reason, "\n" )
     end
