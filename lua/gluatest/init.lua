@@ -13,6 +13,7 @@ local VersionTools = include( "utils/version.lua" )
 local conVarFlags = bit.bor( FCVAR_ARCHIVE, FCVAR_PROTECTED )
 
 local isHotload = GLuaTest ~= nil
+local activeFilter = ""
 --- @class GLuaTest
 GLuaTest = {
     --- @diagnostic disable-next-line: param-type-mismatch
@@ -21,6 +22,9 @@ GLuaTest = {
     RunClientsideConVar = CreateConVar( "gluatest_client_enable",   "0", conVarFlags, "Should GLuaTest run automatically on the client side?" ),
     --- @diagnostic disable-next-line: param-type-mismatch
     SelfTestConVar      = CreateConVar( "gluatest_selftest_enable", "0", conVarFlags, "Should GLuaTest run its own tests?" ),
+    -- not archived, so a forgotten filter cannot survive a restart
+    --- @diagnostic disable-next-line: param-type-mismatch
+    FilterConVar        = CreateConVar( "gluatest_filter", "", FCVAR_PROTECTED, "Only run test groups whose path or group name contains one of these space-separated terms" ),
 
     DeprecatedNotice = function( old, new )
         local msg = [[GLuaTest: (DEPRECATION NOTICE) "]] .. old .. [[" is deprecated, use "]] .. new .. [[" instead.]]
@@ -69,6 +73,7 @@ GLuaTest = {
             timer.Simple( 0.1, function()
                 if GLuaTest.RunClientsideConVar:GetBool() then
                     net.Start( "GLuaTest_RunClientTests" )
+                    net.WriteString( activeFilter )
                     net.Broadcast()
                 end
             end )
@@ -82,7 +87,7 @@ GLuaTest = {
                 error( "[GLuaTest] Client tests are attempting to run before GLuaTest has initialized" )
             end
 
-            GLuaTest.runAllTests()
+            GLuaTest.runAllTests( net.ReadString() )
         end )
     end
 end
@@ -113,8 +118,24 @@ local function loadAllProjectsFrom( loader, path, testFiles )
     end
 end
 
---- Loads and runs all tests in the tests/ directory
-GLuaTest.runAllTests = function()
+--- @param filter string
+--- @param matchedCount number
+--- @param totalCount number
+local function logFilterMatches( filter, matchedCount, totalCount )
+    if filter == "" then return end
+
+    local color = matchedCount == 0 and RED or color_white
+    local message = string.format( "[GLuaTest] Filter '%s' matched %d of %d test groups\n", filter, matchedCount, totalCount )
+
+    MsgC( color, message )
+end
+
+--- Loads and runs the tests in the tests/ directory
+--- @param filter? string Space-separated terms that limit which test groups run. Defaults to the gluatest_filter convar
+GLuaTest.runAllTests = function( filter )
+    filter = filter or GLuaTest.FilterConVar:GetString()
+    if SERVER then activeFilter = filter end
+
     local shouldRunServerside = GLuaTest.RunServersideConVar:GetBool()
     local shouldRunClientside = GLuaTest.RunClientsideConVar:GetBool()
 
@@ -122,6 +143,7 @@ GLuaTest.runAllTests = function()
         -- Alert the client immediately if we are skipping server tests and are still running client tests
         if shouldRunClientside then
             net.Start( "GLuaTest_RunClientTests" )
+            net.WriteString( activeFilter )
             net.Broadcast()
         end
 
@@ -145,14 +167,17 @@ GLuaTest.runAllTests = function()
     hook.Run( "GLuaTest_AddTestPaths", testPaths )
 
     --- @type GLuaTest_TestGroup[]
-    local testFiles = {}
+    local allTestFiles = {}
 
     for i = 1, #testPaths do
         local path = testPaths[i]
-        loadAllProjectsFrom( Loader, path, testFiles )
+        loadAllProjectsFrom( Loader, path, allTestFiles )
     end
 
-    hook.Run( "GLuaTest_RunTestFiles", testFiles )
+    hook.Run( "GLuaTest_RunTestFiles", allTestFiles )
+
+    local testFiles = Loader.filterTestGroups( allTestFiles, filter )
+    logFilterMatches( filter, #testFiles, #allTestFiles )
 
     --- @type GLuaTest_TestRunner
     local runner = include( "gluatest/runner/runner.lua" )
@@ -167,5 +192,12 @@ if not isHotload then
     end )
 end
 
+--- @param argumentString string
+local function runTestsCommand( _, _, _, argumentString )
+    if argumentString == "" then return GLuaTest.runAllTests() end
+
+    GLuaTest.runAllTests( argumentString )
+end
+
 --- @diagnostic disable-next-line: param-type-mismatch
-concommand.Add( "gluatest_run_tests", GLuaTest.runAllTests, nil, "Run all tests in the tests/ directory", FCVAR_PROTECTED )
+concommand.Add( "gluatest_run_tests", runTestsCommand, nil, "Run the tests in the tests/ directory. Optional arguments limit the run to test groups whose path or group name contains one of them", FCVAR_PROTECTED )

@@ -34,6 +34,41 @@ function Loader.simpleError( reason, filePath )
     }
 end
 
+--- @param group GLuaTest_RunnableTestGroup
+--- @param terms string[] Lowercase terms
+local function groupMatchesAnyTerm( group, terms )
+    local path = ( group.project or "" ) .. "/" .. ( group.fileName or "" )
+    local searchable = string.lower( path .. "\n" .. ( group.groupName or "" ) )
+
+    for _, term in ipairs( terms ) do
+        if string.find( searchable, term, 1, true ) then return true end
+    end
+
+    return false
+end
+
+--- Keeps the test groups whose path or group name contains any of the given terms
+--- @param testGroups GLuaTest_RunnableTestGroup[]
+--- @param filter string Space-separated, case-insensitive terms. An empty filter keeps every group
+--- @return GLuaTest_RunnableTestGroup[]
+function Loader.filterTestGroups( testGroups, filter )
+    local terms = {}
+    for term in string.gmatch( string.lower( filter ), "[^%s\"]+" ) do
+        table.insert( terms, term )
+    end
+
+    if #terms == 0 then return testGroups end
+
+    local matching = {}
+    for _, group in ipairs( testGroups ) do
+        if groupMatchesAnyTerm( group, terms ) then
+            table.insert( matching, group )
+        end
+    end
+
+    return matching
+end
+
 --- Given a directory and a file name, try to load the file as a TestGroup and build a RunnableTestGroup from it
 --- @param dir string The directory the file is in
 --- @param fileName string The name of the file

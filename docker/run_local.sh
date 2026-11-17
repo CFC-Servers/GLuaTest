@@ -27,6 +27,8 @@ Options:
   --map <name>         Map for the test server (default: gm_construct)
   --collection <id>    Workshop collection ID for the server to mount
   --timeout <minutes>  Minutes before the server is killed (default: 2)
+  --filter <terms>     Only run test groups whose path or group name contains
+                       one of these space-separated terms (case-insensitive)
   --build              Build the runner image locally instead of pulling the
                        published one (only for hacking on the image itself)
   --quiet              Suppress the live server output; the verdict and exit
@@ -98,6 +100,7 @@ GAMEMODE="sandbox"
 MAP="gm_construct"
 COLLECTION_ID=""
 TIMEOUT="2"
+FILTER=""
 BUILD=0
 QUIET=0
 
@@ -109,6 +112,7 @@ while [ $# -gt 0 ]; do
         --map)        MAP="${2:?--map requires a value}"; shift 2 ;;
         --collection) COLLECTION_ID="${2:?--collection requires a value}"; shift 2 ;;
         --timeout)    TIMEOUT="${2:?--timeout requires a value}"; shift 2 ;;
+        --filter)     FILTER="${2:?--filter requires a value}"; shift 2 ;;
         --build)      BUILD=1; shift ;;
         --quiet)      QUIET=1; shift ;;
         --help|-h)    usage; exit 0 ;;
@@ -123,6 +127,10 @@ fi
 
 case "$TIMEOUT" in
     ''|*[!0-9]*) err "--timeout must be a whole number of minutes (got: $TIMEOUT)" ;;
+esac
+
+case "$FILTER" in
+    *[\"\;]*|*$'\n'*) err "--filter cannot contain quotes, semicolons, or newlines (got: $FILTER)" ;;
 esac
 
 # --- Preflight ----------------------------------------------------------------
@@ -256,6 +264,12 @@ else
     CUSTOM_SERVER_CONFIG="$PLACEHOLDER_DIR/server.cfg"
     touch "$CUSTOM_SERVER_CONFIG"
 fi
+if [ -n "$FILTER" ]; then
+    filtered_config="$PLACEHOLDER_DIR/filtered-server.cfg"
+    cp "$CUSTOM_SERVER_CONFIG" "$filtered_config"
+    printf '\ngluatest_filter "%s"\n' "$FILTER" >> "$filtered_config"
+    CUSTOM_SERVER_CONFIG="$filtered_config"
+fi
 # Unlike CI, deliberately do NOT append "gluatest_github_output 1" to the
 # server cfg - local output should stay human-readable.
 
@@ -302,6 +316,15 @@ if [ ! -s "$log_file" ] && [ -s "$compose_stream" ]; then
     # compose failed before the container produced output; in quiet mode its
     # stream (with the docker error) is the only record of what went wrong
     cp "$compose_stream" "$log_file"
+fi
+
+if [ "$status" -eq 0 ] && [ -n "$FILTER" ]; then
+    if grep -q "\[GLuaTest\] Filter .* matched 0 of" "$log_file"; then
+        echo "run_local.sh: error: --filter '$FILTER' matched no test groups, so no tests ran." >&2
+        status=1
+    elif ! grep -q "\[GLuaTest\] Filter .* matched" "$log_file"; then
+        note "The GLuaTest version in this runner image does not support --filter, so every test ran."
+    fi
 fi
 
 if [ "$status" -eq 0 ]; then
