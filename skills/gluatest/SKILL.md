@@ -76,7 +76,7 @@ jobs:
 
 - Carry over any flags the local runs needed as inputs in a `with:` block under `uses:`. The names match the flags: `gamemode`, `map`, `collection`, `branch`, and `timeout`. All values are strings, so quote the numbers.
 - `gluatest_requirements.txt` and `gluatest_custom.cfg` are picked up in CI by the same names, so they need no input.
-- Private dependencies in `gluatest_requirements.txt` need credentials that you cannot set up. Tell the user to follow the Requirements section of the GLuaTest README, and never write a key or token into the workflow file.
+- Private dependencies in `gluatest_requirements.txt` need credentials. Add a `secrets:` block beside `with:` in the workflow, such as `secrets:` with `ssh-private-key: "${{ secrets.GLUATEST_PRIVATE_KEY }}"`, and tell the user to create that repository secret with a passwordless SSH key that can read the private repositories. A GitHub token works the same way through `github-token`. Never write a key or token into the workflow file itself, and never pass these under `with:`, where GitHub rejects the `secrets` context.
 - The workflow only runs on GitHub, so tell the user it will first run on their next pull request.
 
 ## Running throwaway experiments

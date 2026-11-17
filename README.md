@@ -335,14 +335,28 @@ jobs:
 | `map`                | The direct name of the map you want the server to startup with                                                         | `gm_bigcity_improved_lite`                                                                              |
 | `collection`         | The workshop ID of the collection for the test server to use                                                           | `1629732176`                                                                                            |
 | `extra-startup-args` | Additional startup arguments to add to the srcds startup                                                               | `-tickrate 16 -usegh`                                                                                   |
-| `ssh-private-key`    | The Private SSH key to use when cloning the dependencies                                                               | `-----BEGIN OPENSSH PRIVATE KEY-----\n...`                                                              |
-| `github-token`       | A GitHub Personal Access Token, used when cloning dependencies                                                         |                                                                                                         |
 | `timeout`            | How many minutes to let the job run before killing the server                                                          | `10`                                                                                                    |
 | `branch`             | Which GMod branch to run your tests on                                                                                 | `public`|`prerelease`|`dev`|`x86-64`                                                                      |
 | `gluatest-ref`       | Which tag/branch of GLuaTest to run                                                                                    | `main`|`feature/new-feature-branch`                                                                     |
 | `custom-overrides`   | An absolute path with custom files to copy to the server directly. Structure should match the contents of `garrysmod/` | `$GITHUB_WORKSPACE/my_overrides`                                                                        |
 | `download-artifact`  | A URL path to a .tar.gz file that will be unpacked in the root directory                                               | `https://github.com/RaphaelIT7/gmod-holylib/releases/download/Release0.7/gmsv_holylib_linux_packed.zip` |
 | `additional-setup`   | If specificed, executes the given string as a script after all setup is complete, allowing additional setup            | `echo "Hello, this is a test!"`                                                                         |
+
+Credentials for private requirements go in a `secrets:` block next to `with:`, because GitHub does not allow the `secrets` context inside `with:`:
+
+```yml
+jobs:
+  run-tests:
+    uses: CFC-Servers/GLuaTest/.github/workflows/run_tests.yml@main
+    secrets:
+      ssh-private-key: "${{ secrets.GLUATEST_PRIVATE_KEY }}"
+      github-token: "${{ secrets.GLUATEST_TOKEN }}"
+```
+
+| **Secret**        | **Description**                                                  |
+|-------------------|------------------------------------------------------------------|
+| `ssh-private-key` | The private SSH key to use when cloning private requirements     |
+| `github-token`    | A GitHub Personal Access Token to use when cloning private requirements |
 
 </summary>
 </details>
