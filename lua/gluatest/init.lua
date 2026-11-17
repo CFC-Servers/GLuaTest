@@ -23,7 +23,7 @@ GLuaTest = {
     --- @diagnostic disable-next-line: param-type-mismatch
     SelfTestConVar      = CreateConVar( "gluatest_selftest_enable", "0", conVarFlags, "Should GLuaTest run its own tests?" ),
     --- @diagnostic disable-next-line: param-type-mismatch
-    HttpHelloConVar     = CreateConVar( "gluatest_http_hello", "1", conVarFlags, "Should GLuaTest ping the GLuaTest hello endpoint?" ),
+    HttpHelloConVar     = CreateConVar( "gluatest_http_hello",      "1", conVarFlags, "Should GLuaTest send an anonymous usage ping (version and branch only) when the server starts?" ),
     -- not archived, so a forgotten filter cannot survive a restart
     --- @diagnostic disable-next-line: param-type-mismatch
     FilterConVar        = CreateConVar( "gluatest_filter", "", FCVAR_PROTECTED, "Only run test groups whose path or group name contains one of these space-separated terms" ),
@@ -102,28 +102,18 @@ GLuaTest.Loader.loadExtensions( "gluatest/extensions" )
     end
 end
 
---- Encodes a string for use in a URL param
---- @param str string
-local function urlEncode( str )
-    if not str then return "" end
+local function sendUsagePing()
+    if not GLuaTest.HttpHelloConVar:GetBool() then return end
 
-    str = string.gsub( str, "([^%w%-%._~])", function( c )
-        return string.format( "%%%02X", string.byte( c ) )
-    end )
-
-    return str
-end
-
---- Runs a simple ping against the GLuatest Hello endpoint
---- (Helps us get a rough idea of how many people use GLuaTest, as well as preserving HTTP during container minification)
---- @param version string
-local function httpHello( version )
-    local shouldRun = GLuaTest.HttpHello:GetBool()
-    if not shouldRun then return end
+    print( "[GLuaTest] Sending an anonymous usage ping (version and branch only). Disable it with gluatest_http_hello 0" )
 
     HTTP( {
         method = "GET",
-        url = "https://hello.gluatest.com?version=" .. urlEncode( version ),
+        url = "https://hello.gluatest.com",
+        parameters = {
+            version = VersionTools.getVersion(),
+            branch = BRANCH or "unknown",
+        },
         success = function() end,
         failed = function() end,
     } )
@@ -212,8 +202,6 @@ GLuaTest.runAllTests = function( filter )
     local testFiles = GLuaTest.Loader.filterTestGroups( allTestFiles, filter )
     logFilterMatches( filter, #testFiles, #allTestFiles )
 
-    httpHello( GLuaTest.VERSION )
-
     --- @type GLuaTest_TestRunner
     local runner = include( "gluatest/runner/runner.lua" )
     runner:Run( testFiles )
@@ -223,6 +211,8 @@ end
 if not isHotload then
     hook.Add( "Tick", "GLuaTest_Runner", function()
         hook.Remove( "Tick", "GLuaTest_Runner" )
+
+        if SERVER then sendUsagePing() end
         GLuaTest.runAllTests()
     end )
 end

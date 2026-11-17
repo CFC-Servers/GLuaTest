@@ -1231,6 +1231,21 @@ Your agent will know how to make & run GLuaTest suites and run throwaway tests t
 
 <br>
 
+# Usage ping
+<details>
+<summary><strong>GLuaTest sends one anonymous ping when a test server starts</strong></summary>
+
+When a test server starts, GLuaTest sends one anonymous request to `hello.gluatest.com` with the GLuaTest version and GMod branch, and nothing else. It helps us see how many people use GLuaTest and which branches they test on. It never runs on clients.
+
+To turn it off, add this line to your [server config](#server-configs):
+```
+gluatest_http_hello 0
+```
+
+</details>
+
+<br>
+
 # Developers 👨‍💻
 <details>
  <summary>Information about working with GLuaTest</summary>
