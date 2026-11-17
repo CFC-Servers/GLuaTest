@@ -353,10 +353,14 @@ jobs:
       github-token: "${{ secrets.GLUATEST_TOKEN }}"
 ```
 
-| **Secret**        | **Description**                                                  |
-|-------------------|------------------------------------------------------------------|
-| `ssh-private-key` | The private SSH key to use when cloning private requirements     |
-| `github-token`    | A GitHub Personal Access Token to use when cloning private requirements |
+| **Secret**                | **Description**                                                                     |
+|---------------------------|-------------------------------------------------------------------------------------|
+| `ssh-private-key`         | The private SSH key to use when cloning private requirements                        |
+| `github-token`            | A GitHub Personal Access Token to use when cloning private requirements             |
+| `secret-startup-args`     | Like `extra-startup-args`, for arguments that contain secrets                       |
+| `secret-additional-setup` | Like `additional-setup`, for scripts that contain secrets. Runs after `additional-setup` |
+
+If you use `logs-as-artifact`, log lines containing your `secret-startup-args` are removed from the uploaded log. Anything else your setup script or server prints is uploaded as-is, so do not print secrets.
 
 </summary>
 </details>
