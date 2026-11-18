@@ -1233,13 +1233,30 @@ Your agent will know how to make & run GLuaTest suites and run throwaway tests t
 
 # Usage ping
 <details>
-<summary><strong>GLuaTest sends one anonymous ping when a test server starts</strong></summary>
+<summary><strong>GLuaTest sends one anonymous ping the first time tests run on a server</strong></summary>
 
-When a test server starts, GLuaTest sends one anonymous request to `hello.gluatest.com` with the GLuaTest version and GMod branch, and nothing else. It helps us see how many people use GLuaTest and which branches they test on. It never runs on clients.
+The first time tests run after a server starts, GLuaTest sends one anonymous request to `hello.gluatest.com` with:
+- The GLuaTest version
+- The GMod branch
+- How many test groups and test cases are about to run
+- Your project's name, only if you chose to set one (see below)
+
+The endpoint records those values along with:
+- The country, region (such as a state or province), and continent the request came from
+- The network it came from (its public AS number, which identifies an internet provider or a cloud host), which tells us roughly how many runs happen in CI
+
+It records nothing else. It doesn't record IP addresses, and it never receives anything about your project, such as the names of your tests, unless you choose to name it. You can read the code that receives the ping in [`web/hello`](web/hello).
+
+It helps us see how many people use GLuaTest and how they use it. It never runs on clients.
 
 To turn it off, add this line to your [server config](#server-configs):
 ```
 gluatest_http_hello 0
+```
+
+If you'd like us to know your project uses GLuaTest, you can name it instead:
+```
+gluatest_http_hello_project my_addon
 ```
 
 </details>

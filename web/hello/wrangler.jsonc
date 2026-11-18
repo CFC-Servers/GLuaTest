@@ -1,0 +1,27 @@
+{
+  "name": "gluatest-hello",
+  "main": "src/worker.js",
+  "workers_dev": false,
+  "preview_urls": false,
+  "compatibility_date": "2026-11-17",
+  "routes": [
+    {
+      "pattern": "hello.gluatest.com",
+      "zone_name": "gluatest.com",
+      "custom_domain": true
+    }
+  ],
+  "analytics_engine_datasets": [
+    {
+      "binding": "PINGS",
+      "dataset": "gluatest_pings"
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": false
+    }
+  }
+}
