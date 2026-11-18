@@ -1,7 +1,7 @@
 {
     "name": "gluatest",
     "description": "Write and run GLuaTest tests for Garry's Mod Lua projects",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "author": {
         "name": "CFC-Servers"
     }

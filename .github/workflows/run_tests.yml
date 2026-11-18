@@ -62,6 +62,12 @@ on:
         description: "Which GMod branch to run your tests on. Must be: `public`, `x86-64`, `prerelease`, or `dev`"
         default: "public"
 
+      use-64bit:
+        type: string
+        required: false
+        description: "If `true`, the server is started with srcds_run64 (64-bit) instead of srcds_run. The selected branch must ship the 64-bit server"
+        default: "false"
+
       gluatest-repo:
         type: string
         required: false
@@ -110,6 +116,14 @@ on:
         default: "false"
 
     secrets:
+      secret-startup-args:
+        required: false
+        description: "Like `extra-startup-args`, for arguments that contain secrets. Log lines containing them are removed from the log artifact"
+
+      secret-additional-setup:
+        required: false
+        description: "Like `additional-setup`, for scripts that contain secrets. Runs after `additional-setup`"
+
       ssh-private-key:
         required: false
         description: "The private SSH key to use when cloning private requirements"
@@ -213,10 +227,10 @@ jobs:
           wget -O artifact.tar.gz ${{ inputs.download-artifact }} # No matter what, we expect it as a .tar.gz
 
       - name: Run Additional Setup
-        if: inputs.additional-setup != ''
         run: |
           cd ${{ github.workspace }}
           ${{ inputs.additional-setup }}
+          ${{ secrets.secret-additional-setup }}
 
       - name: Pull GLuaTest Runner
         if: inputs.dockerbuild != 'true'
@@ -252,7 +266,7 @@ jobs:
           REQUIREMENTS: "${{ github.workspace }}/project/${{ inputs.requirements }}"
           CUSTOM_SERVER_CONFIG: "${{ github.workspace }}/project/${{ inputs.server-cfg }}"
           PROJECT_DIR: "${{ github.workspace }}/garrysmod_override"
-          EXTRA_STARTUP_ARGS: "${{ inputs.extra-startup-args }}"
+          EXTRA_STARTUP_ARGS: "${{ inputs.extra-startup-args }} ${{ secrets.secret-startup-args }}"
           GAMEMODE: "${{ inputs.gamemode }}"
           MAP: "${{ inputs.map }}"
           COLLECTION_ID: "${{ inputs.collection }}"
@@ -260,6 +274,7 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.github-token || inputs.github-token }}"
           TIMEOUT: "${{ inputs.timeout }}"
           GMOD_BRANCH: "${{ inputs.branch }}"
+          USE_64BIT: "${{ inputs.use-64bit }}"
         run: |
           cd $GITHUB_WORKSPACE/gluatest/docker
 
@@ -280,21 +295,30 @@ jobs:
 
       - name: Capture Docker Logs
         if: always() && inputs.logs-as-artifact == 'true'
+        env:
+          SECRET_STARTUP_ARGS: "${{ secrets.secret-startup-args }}"
         run: |
           sudo apt-get install -y colorized-logs
 
           cd $GITHUB_WORKSPACE/gluatest/docker
 
-          filename="$GITHUB_WORKSPACE/gluatest-log-${{ inputs.branch }}.log"
+          filename="$GITHUB_WORKSPACE/gluatest-log-${{ inputs.branch }}${{ inputs.use-64bit == 'true' && '-64x' || '' }}.log"
           docker compose logs --no-color --no-log-prefix runner >& "$filename.pre"
 
           # Remove all the ANSI color codes
           cat "$filename.pre" | ansi2txt > "$filename"
 
+          # Remove secrets
+          secret_lines="$(printf '%s\n' "$SECRET_STARTUP_ARGS" | grep '[^[:space:]]' || true)"
+          if [ -n "$secret_lines" ]; then
+            grep --invert-match --fixed-strings -- "$secret_lines" "$filename" > "$filename.clean" || true
+            mv "$filename.clean" "$filename"
+          fi
+
       - name: Upload Test Log Artifact
         if: always() && inputs.logs-as-artifact == 'true'
         uses: actions/upload-artifact@v7
         with:
-          name: gluatest-log-${{ inputs.branch }}
-          path: ${{ github.workspace }}/gluatest-log-${{ inputs.branch }}.log
+          name: gluatest-log-${{ inputs.branch }}${{ inputs.use-64bit == 'true' && '-64x' || '' }}
+          path: ${{ github.workspace }}/gluatest-log-${{ inputs.branch }}${{ inputs.use-64bit == 'true' && '-64x' || '' }}.log
           retention-days: 3

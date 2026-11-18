@@ -35,3 +35,4 @@ services:
       - MAP=${MAP:-}
       - EXTRA_STARTUP_ARGS=${EXTRA_STARTUP_ARGS:-}
       - GMOD_BRANCH=${GMOD_BRANCH:-public}
+      - USE_64BIT=${USE_64BIT:-false}
