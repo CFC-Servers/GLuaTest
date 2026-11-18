@@ -41,7 +41,8 @@ you invoked from. Exit code 0 = all tests passed; 124 = server hit the
 failure or server error.
 
 Each run checks GitHub for a newer version of this runner and its agent
-skill, and prints a notice if one exists. Set GLUATEST_NO_UPDATE_CHECK=1 to skip the check.
+skill, and prints a notice for a new minor or major version (patch updates
+stay quiet). Set GLUATEST_NO_UPDATE_CHECK=1 to skip the check.
 EOF
 }
 
@@ -81,8 +82,12 @@ notify_if_outdated() {
     latest="$(curl -fsS --max-time "$UPDATE_CHECK_TIMEOUT_SECONDS" "$UPDATE_CHECK_URL" 2> /dev/null | manifest_version || true)"
     [ -n "$installed" ] && [ -n "$latest" ] || return 0
 
-    newest="$(printf '%s\n%s\n' "$installed" "$latest" | sort -V | tail -n 1)"
-    [ "$latest" != "$installed" ] && [ "$newest" = "$latest" ] || return 0
+    # "1.4.3" -> "1.4"
+    local installed_minor="${installed%.*}"
+    local latest_minor="${latest%.*}"
+
+    newest="$(printf '%s\n%s\n' "$installed_minor" "$latest_minor" | sort -V | tail -n 1)"
+    [ "$latest_minor" != "$installed_minor" ] && [ "$newest" = "$latest_minor" ] || return 0
 
     local update_command="claude plugin update gluatest@gluatest (then run /reload-plugins or restart Claude Code)"
     if [ -d "$repo_root/.git" ]; then
