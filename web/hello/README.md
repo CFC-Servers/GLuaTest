@@ -2,7 +2,7 @@
 
 The Cloudflare Worker that receives GLuaTest's [usage ping](../../README.md#usage-ping).
 
-It stores one row per ping in the `gluatest_pings` Analytics Engine dataset and replies `Hello!`. Requests without a `version` parameter are not stored.
+It stores one row for each request to `/ping` in the `gluatest_pings` Analytics Engine dataset and replies `Hello!`. Requests to other paths, or without a `version` parameter, are not stored.
 
 | Column    | Value                                                        |
 |-----------|--------------------------------------------------------------|

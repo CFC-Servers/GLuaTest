@@ -1240,7 +1240,7 @@ Your agent will know how to make & run GLuaTest suites and run throwaway tests t
 <details>
 <summary><strong>GLuaTest sends a small anonymous ping when tests run</strong></summary>
 
-The first time tests run on a server, GLuaTest sends one request to `hello.gluatest.com` so we can see roughly how much it gets used. It includes the GLuaTest version, the GMod branch, and how many test groups and cases there are. We also note the country, region, and network (AS number) it came from, but not the IP address.
+The first time tests run on a server, GLuaTest sends one request to `hello.gluatest.com/ping` so we can see roughly how much it gets used. It includes the GLuaTest version, the GMod branch, and how many test groups and cases there are. We also note the country, region, and network (AS number) it came from, but not the IP address.
 
 Public repositories using the GitHub workflow are counted under their repository name. Private repositories and local runs aren't named. You can change the name with the `project-name` workflow input or `gluatest_http_hello_project` in your server config (set it to `""` to send no name).
 

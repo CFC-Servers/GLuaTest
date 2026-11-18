@@ -29,7 +29,7 @@ return {
                 expect( state.httpStub ).was.called()
 
                 local request = state.httpStub.callHistory[1][1]
-                expect( request.url ).to.equal( "https://hello.gluatest.com" )
+                expect( request.url ).to.equal( "https://hello.gluatest.com/ping" )
                 expect( request.parameters ).to.deepEqual( {
                     version = GLuaTest.VERSION,
                     branch = BRANCH or "unknown",

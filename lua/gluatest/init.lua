@@ -130,7 +130,7 @@ GLuaTest.sendUsagePing = function( testGroups )
 
     HTTP( {
         method = "GET",
-        url = "https://hello.gluatest.com",
+        url = "https://hello.gluatest.com/ping",
         parameters = parameters,
         success = function() end,
         failed = function() end,

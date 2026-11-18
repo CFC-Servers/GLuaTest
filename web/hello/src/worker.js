@@ -26,9 +26,9 @@ function readCount(searchParams, name) {
 
 export default {
   async fetch(request, env) {
-    const { searchParams } = new URL(request.url);
+    const { pathname, searchParams } = new URL(request.url);
 
-    if (searchParams.has("version")) {
+    if (pathname === "/ping" && searchParams.has("version")) {
       const country = request.cf?.country ?? "unknown";
       const region = request.cf?.region ?? "unknown";
       const continent = request.cf?.continent ?? "unknown";
