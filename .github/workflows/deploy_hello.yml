@@ -1,0 +1,27 @@
+name: Deploy hello Worker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "web/hello/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment: cloudflare
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # v4.1.3
+      - uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          workingDirectory: web/hello
+          wranglerVersion: "4.164.0"

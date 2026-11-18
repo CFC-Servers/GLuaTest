@@ -19,7 +19,9 @@ It stores one row for each request to `/ping` in the `gluatest_pings` Analytics 
 
 ## Deploying
 
-From this directory, logged in to the Cloudflare account that owns `gluatest.com`:
+Changes under `web/hello` deploy automatically when they reach `main`, through the [Deploy hello Worker](../../.github/workflows/deploy_hello.yml) workflow.
+
+To deploy by hand, run this from this directory, logged in to the Cloudflare account that owns `gluatest.com`:
 
 ```
 npx wrangler deploy
