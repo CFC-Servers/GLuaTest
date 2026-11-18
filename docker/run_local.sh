@@ -208,8 +208,6 @@ PLACEHOLDER_DIR="$(mktemp -d "$TMP_BASE/placeholder.XXXXXX")"
 
 cleanup() {
     status=$?
-    # container_name is fixed (gluatest_runner): a stale container from an
-    # interrupted run would break the next one
     "${COMPOSE[@]}" down > /dev/null 2>&1 || true
     rm -rf "$STAGING_DIR" "$ARTIFACT_DIR" "$PLACEHOLDER_DIR"
     exit "$status"
@@ -270,8 +268,6 @@ if [ -n "$FILTER" ]; then
     printf '\ngluatest_filter "%s"\n' "$FILTER" >> "$filtered_config"
     CUSTOM_SERVER_CONFIG="$filtered_config"
 fi
-# Unlike CI, deliberately do NOT append "gluatest_github_output 1" to the
-# server cfg - local output should stay human-readable.
 
 # The entrypoint reads artifacts from a nested _gluatest_artifacts/ subdir
 mkdir -p "$ARTIFACT_DIR/_gluatest_artifacts"
@@ -297,8 +293,6 @@ export HELLO_RUNNER
 # --- Build or pull -----------------------------------------------------------------
 pull_policy="always"
 if [ "$BUILD" -eq 1 ]; then
-    # compose's `build: .` passes no build args (it would silently bake the
-    # default branch into every tag), so build the way CI's dockerbuild path does
     note "Building the runner image for branch '$GMOD_BRANCH'..."
     docker build --build-arg "GMOD_BRANCH=$GMOD_BRANCH" \
         --tag "ghcr.io/cfc-servers/gluatest/$GMOD_BRANCH:latest" "$SCRIPT_DIR"
@@ -318,8 +312,6 @@ fi
 status=$?
 set -e
 
-# Every run leaves the full server log on disk (srcds output is far too spammy
-# for terminal scrollback, and agents running this need a file to inspect)
 "${COMPOSE[@]}" logs --no-color --no-log-prefix runner > "$log_file" 2>&1 || true
 if [ ! -s "$log_file" ] && [ -s "$compose_stream" ]; then
     # compose failed before the container produced output; in quiet mode its

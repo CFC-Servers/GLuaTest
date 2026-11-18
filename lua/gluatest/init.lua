@@ -28,7 +28,6 @@ GLuaTest = {
     HttpHelloProjectConVar = CreateConVar( "gluatest_http_hello_project", "", conVarFlags, "Optional project name to include in the usage ping. Leave it empty to send no name" ),
     --- @diagnostic disable-next-line: param-type-mismatch
     HttpHelloRunnerConVar = CreateConVar( "gluatest_http_hello_runner", "", conVarFlags, "What started this test run, included in the usage ping. Set by the GitHub workflow and the local runner" ),
-    -- not archived, so a forgotten filter cannot survive a restart
     --- @diagnostic disable-next-line: param-type-mismatch
     FilterConVar        = CreateConVar( "gluatest_filter", "", FCVAR_PROTECTED, "Only run test groups whose path or group name contains one of these space-separated terms" ),
 

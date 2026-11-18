@@ -20,7 +20,6 @@ services:
         target: /home/steam/garrysmod_override
         read_only: true
 
-      # Default "." (this docker/ dir) is load-bearing: CI leaves GMOD_ARTIFACT_DIR unset and relies on the old empty-source behavior of mounting the project dir, where it pre-creates _gluatest_artifacts/
       - type: bind
         source: ${GMOD_ARTIFACT_DIR:-.}
         target: /home/steam/_gluatest_artifacts
