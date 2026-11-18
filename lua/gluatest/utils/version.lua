@@ -32,7 +32,7 @@ function VersionTools.getAnonymousVersion()
     local clonedInfo = GitTools.getClonedInfo()
     if not clonedInfo then return "unknown" end
 
-    -- "github.com/CFC-Servers/GLuaTest@main#6679969"
+    -- "github.com/CFC-Servers/GLuaTest@main#6679969" -> "6679969"
     local commit = string.match( clonedInfo, "#(%x+)$" )
     if not commit then return "clone" end
 

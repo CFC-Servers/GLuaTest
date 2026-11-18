@@ -32,14 +32,21 @@ end
 --- @param remoteUrl string
 --- @return string
 local function getRepoName( remoteUrl )
-    -- "https://github.com/CFC-Servers/GLuaTest.git" or "git@github.com:CFC-Servers/GLuaTest.git"
+    -- "https://token@github.com/CFC-Servers/GLuaTest.git" or "git@github.com:CFC-Servers/GLuaTest.git"
     local repo = string.Trim( remoteUrl )
+
+    -- "token@github.com/CFC-Servers/GLuaTest.git" or "git@github.com:CFC-Servers/GLuaTest.git"
     repo = string.gsub( repo, "^%a+://", "" )
+
+    -- "github.com/CFC-Servers/GLuaTest.git" or "github.com:CFC-Servers/GLuaTest.git"
     repo = string.gsub( repo, "^[^/]*@", "" )
+
+    -- "github.com/CFC-Servers/GLuaTest.git"
     repo = string.gsub( repo, ":", "/" )
-    repo = string.gsub( repo, "%.git$", "" )
 
     -- "github.com/CFC-Servers/GLuaTest"
+    repo = string.gsub( repo, "%.git$", "" )
+
     return repo
 end
 
@@ -48,14 +55,13 @@ end
 --- @param refPath string The path to the reference file within .git
 --- @return string? The commit hash, or nil if it could not be read
 function GitTools.getCommit( addonName, refPath )
-    -- 6181553d068c4fc4da00d6ef99e7ebb2b59e3126
     local looseRef = readGitFile( addonName, refPath )
     if looseRef then return string.Trim( looseRef ) end
 
     local packedRefs = readGitFile( addonName, "packed-refs" )
     if not packedRefs then return nil end
 
-    -- 6181553d068c4fc4da00d6ef99e7ebb2b59e3126 refs/heads/feature/runner-improvement
+    -- "6181553d068c4fc4da00d6ef99e7ebb2b59e3126 refs/heads/main" -> "6181553d068c4fc4da00d6ef99e7ebb2b59e3126", "refs/heads/main"
     for commit, packedRefPath in string.gmatch( packedRefs, "(%x+) ([^\r\n]+)" ) do
         if packedRefPath == refPath then return commit end
     end
@@ -70,7 +76,7 @@ function GitTools.getRemoteUrl( addonName )
     local config = readGitFile( addonName, "config" )
     if not config then return nil end
 
-    -- url = https://github.com/CFC-Servers/GLuaTest
+    -- "url = https://github.com/CFC-Servers/GLuaTest" -> "https://github.com/CFC-Servers/GLuaTest"
     return string.match( config, "url = ([^\r\n]+)" )
 end
 
@@ -79,7 +85,6 @@ end
 function GitTools.getClonedInfo()
     local addonName = GitTools.whereAmI()
 
-    -- "ref: refs/heads/feature/runner-improvement", or a commit hash when no branch is checked out
     local head = readGitFile( addonName, "HEAD" )
     if not head then return nil end
     head = string.Trim( head )
@@ -89,10 +94,11 @@ function GitTools.getClonedInfo()
 
     local repo = getRepoName( remoteUrl )
 
-    -- "refs/heads/feature/runner-improvement"
+    -- "ref: refs/heads/feature/runner-improvement" -> "refs/heads/feature/runner-improvement"
+    -- "6181553d068c4fc4da00d6ef99e7ebb2b59e3126" -> nil, because no branch is checked out
     local refPath = string.match( head, "^ref: (.+)$" )
     if not refPath then
-        -- "github.com/CFC-Servers/GLuaTest#6679969"
+        -- "github.com/CFC-Servers/GLuaTest#6181553"
         return string.format( "%s#%s", repo, shortenCommit( head ) )
     end
 
@@ -102,7 +108,7 @@ function GitTools.getClonedInfo()
     local commit = GitTools.getCommit( addonName, refPath )
     local commitLabel = commit and shortenCommit( commit ) or "<unknown commit>"
 
-    -- "github.com/CFC-Servers/GLuaTest@main#6679969"
+    -- "github.com/CFC-Servers/GLuaTest@feature/runner-improvement#6181553"
     return string.format( "%s@%s#%s", repo, branch, commitLabel )
 end
 

@@ -33,6 +33,7 @@ if [ -f "$gmodroot/custom_requirements.txt" ]; then
     cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
 fi
 
+# 'CFC-Servers/GLuaTest"; quit' -> 'CFC-Servers/GLuaTestquit'
 hello_project_name="${HELLO_PROJECT_NAME//[^A-Za-z0-9._\/-]/}"
 if [ -n "$hello_project_name" ]; then
     echo "Usage ping project name: $hello_project_name"
