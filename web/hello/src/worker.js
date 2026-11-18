@@ -1,3 +1,4 @@
+const GREETING = "Hello!";
 const MAX_FIELD_LENGTH = 32;
 const MAX_PROJECT_NAME_LENGTH = 140;
 
@@ -28,28 +29,29 @@ export default {
   async fetch(request, env) {
     const { pathname, searchParams } = new URL(request.url);
 
-    if (pathname === "/ping" && searchParams.has("version")) {
-      const country = request.cf?.country ?? "unknown";
-      const region = request.cf?.region ?? "unknown";
-      const continent = request.cf?.continent ?? "unknown";
-      const asn = request.cf?.asn ?? 0;
-      const cloudProvider = CLOUD_PROVIDERS_BY_ASN.get(asn) ?? "other";
+    if (pathname !== "/ping") return new Response(GREETING);
+    if (!searchParams.has("version")) return new Response(GREETING);
 
-      env.PINGS.writeDataPoint({
-        blobs: [
-          readText(searchParams, "version"),
-          readText(searchParams, "branch"),
-          country,
-          region,
-          continent,
-          cloudProvider,
-          readText(searchParams, "project", MAX_PROJECT_NAME_LENGTH),
-        ],
-        doubles: [readCount(searchParams, "groups"), readCount(searchParams, "cases"), asn],
-        indexes: [country],
-      });
-    }
+    const country = request.cf?.country ?? "unknown";
+    const region = request.cf?.region ?? "unknown";
+    const continent = request.cf?.continent ?? "unknown";
+    const asn = request.cf?.asn ?? 0;
+    const cloudProvider = CLOUD_PROVIDERS_BY_ASN.get(asn) ?? "other";
 
-    return new Response("Hello!");
+    env.PINGS.writeDataPoint({
+      blobs: [
+        readText(searchParams, "version"),
+        readText(searchParams, "branch"),
+        country,
+        region,
+        continent,
+        cloudProvider,
+        readText(searchParams, "project", MAX_PROJECT_NAME_LENGTH),
+      ],
+      doubles: [readCount(searchParams, "groups"), readCount(searchParams, "cases"), asn],
+      indexes: [country],
+    });
+
+    return new Response(GREETING);
   },
 };
