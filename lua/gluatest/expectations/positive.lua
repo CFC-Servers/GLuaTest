@@ -3,6 +3,7 @@ local TypeID = TypeID
 local IsValid = IsValid
 local isstring = isstring
 local string_format = string.format
+local CalledWith = include( "utils/called_with.lua" )
 local GetDiff = include( "utils/table_diff.lua" )
 local DoPCallWithSubject = include( "utils/caller_recovery.lua" )
 
@@ -170,7 +171,7 @@ return function( subject, ... )
         local class = type( subject )
 
         if class ~= comparison then
-            i.expected( "to not be an '%s'", comparison )
+            i.expected( "to be an '%s'", comparison )
         end
     end
 
@@ -221,9 +222,10 @@ return function( subject, ... )
     end
 
     --- Expects the subject stub to have been called, optionally with an expected number of calls
-    --- @param n? number
+    --- @param n? number Expected number of calls, if nil then expects at least one call
     function expectations.called( n )
         assert( subject.IsStub, ".called expects a stub" )
+        --- @cast subject GLuaTest_Stub
 
         local callCount = subject.callCount
 
@@ -238,15 +240,23 @@ return function( subject, ... )
         end
     end
 
+    --- @deprecated
     function expectations.haveBeenCalled( n )
         GLuaTest.DeprecatedNotice( "to.haveBeenCalled( number )", "was.called( number )" )
         return expectations.called( n )
     end
 
-    -- Soon..
-    --
-    -- function expectations.haveBeenCalledWith( ... )
-    -- end
+    --- Expects the subject stub to have been called at least once with the given arguments
+    --- @param ... any Literal values or Arg matchers
+    function expectations.calledWith( ... )
+        assert( subject.IsStub, ".calledWith expects a stub" )
+        --- @cast subject GLuaTest_Stub
+
+        local expected = { ... }
+        if CalledWith.wasCalledWith( subject, expected ) then return end
+
+        i.expected( "to have been called with %s, but %s", CalledWith.formatArgs( expected ), CalledWith.formatCalls( subject ) )
+    end
 
     return expectations
 end

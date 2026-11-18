@@ -36,6 +36,9 @@ runs:
         mv dist_linux/* $GITHUB_WORKSPACE
         rm -rfv ds.tar.gz dist_linux/
 
+        # Lets also give some information on docker
+        docker version
+
     - name: Build starter image
       shell: bash
       run: |
@@ -56,8 +59,12 @@ runs:
         $GITHUB_WORKSPACE/docker-slim build \
           --target gluatest_fat:latest \
           --http-probe-off \
+          --env GLUATEST_SLIM_PROBE=true \
+          --env HELLO_PROJECT_NAME=gluatest-image-build \
           --continue-after 30 \
           --show-clogs --show-blogs \
+          --include-path "/home/steam/gmodserver/garrysmod/addons/gluatest/data_static" \
+          --preserve-path "/home/steam/gmodserver/garrysmod/cfg/test.cfg" \
           --include-bin "/usr/bin/date" \
           --include-bin "/usr/bin/echo" \
           --include-bin "/usr/bin/python3" \

@@ -33,6 +33,24 @@ if [ -f "$gmodroot/custom_requirements.txt" ]; then
     cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
 fi
 
+# 'CFC-Servers/GLuaTest"; quit' -> 'CFC-Servers/GLuaTestquit'
+hello_project_name="${HELLO_PROJECT_NAME//[^A-Za-z0-9._\/-]/}"
+if [ -n "$hello_project_name" ]; then
+    echo "Usage ping project name: $hello_project_name"
+    printf '\ngluatest_http_hello_project "%s"\n' "$hello_project_name" >> "$server/cfg/test.cfg"
+fi
+
+# 'agent/claude-code"; quit' -> 'agent/claude-codequit'
+hello_runner="${HELLO_RUNNER//[^A-Za-z0-9._\/-]/}"
+if [ -n "$hello_runner" ]; then
+    printf '\ngluatest_http_hello_runner "%s"\n' "$hello_runner" >> "$server/cfg/test.cfg"
+fi
+
+if [ "$HELLO_PING" = "false" ]; then
+    echo "Usage ping turned off"
+    printf '\ngluatest_http_hello 0\n' >> "$server/cfg/test.cfg"
+fi
+
 if [ -f "$gmodroot/custom_server.cfg" ]; then
     echo "Appending custom server configs"
     cat "$gmodroot/custom_server.cfg" >> "$server/cfg/test.cfg"
@@ -136,8 +154,18 @@ base_srcds_args=(
 )
 srcds_args="$EXTRA_STARTUP_ARGS ${base_srcds_args[@]}"
 
-if [ -x "$gmodroot/srcds_run_x64" ]; then
+cd "$gmodroot" # srcds_run64 uses relative paths unlike srcds_run. Annoying...
+
+if [ "$GLUATEST_SLIM_PROBE" = "true" ] && [ -x "$gmodroot/srcds_run64" ]; then
+    # docker-slim only keeps files that were touched soo for dev 64x we also touch it :3
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run64 "${srcds_args//27015/27016}" &
+fi
+
+if [ "$USE_64BIT" = "true" ]; then
     echo "Starting 64-bit server"
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run64 "$srcds_args"
+elif [ -x "$gmodroot/srcds_run_x64" ]; then
+    echo "Starting x86-64-bit server"
     unbuffer timeout "$timeout" "$gmodroot"/srcds_run_x64 "$srcds_args"
 else
     echo "Starting 32-bit server"
