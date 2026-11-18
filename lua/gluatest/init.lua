@@ -114,7 +114,7 @@ GLuaTest.sendUsagePing = function( testGroups )
     end
 
     local parameters = {
-        version = VersionTools.getVersion(),
+        version = VersionTools.getAnonymousVersion(),
         branch = BRANCH or "unknown",
         groups = tostring( #testGroups ),
         cases = tostring( caseCount ),

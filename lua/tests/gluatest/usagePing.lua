@@ -1,3 +1,5 @@
+local VersionTools = include( "gluatest/utils/version.lua" )
+
 return {
     groupName = "Usage ping",
 
@@ -31,7 +33,7 @@ return {
                 local request = state.httpStub.callHistory[1][1]
                 expect( request.url ).to.equal( "https://hello.gluatest.com/ping" )
                 expect( request.parameters ).to.deepEqual( {
-                    version = GLuaTest.VERSION,
+                    version = VersionTools.getAnonymousVersion(),
                     branch = BRANCH or "unknown",
                     groups = "2",
                     cases = "3",

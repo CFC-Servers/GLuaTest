@@ -60,8 +60,10 @@ runs:
           --target gluatest_fat:latest \
           --http-probe-off \
           --env GLUATEST_SLIM_PROBE=true \
+          --env HELLO_PROJECT_NAME=gluatest-image-build \
           --continue-after 30 \
           --show-clogs --show-blogs \
+          --include-path "/home/steam/gmodserver/garrysmod/addons/gluatest/data_static" \
           --include-bin "/usr/bin/date" \
           --include-bin "/usr/bin/echo" \
           --include-bin "/usr/bin/python3" \
