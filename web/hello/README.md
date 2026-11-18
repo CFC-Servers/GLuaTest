@@ -17,6 +17,10 @@ It stores one row for each request to `/ping` in the `gluatest_pings` Analytics 
 | `double2` | Number of test cases                                         |
 | `double3` | AS number of the network the request came from               |
 
+## Routing
+
+The Worker only runs for the route `hello.gluatest.com/ping*`. A route needs a proxied DNS record for `hello` in the `gluatest.com` zone, and that record is managed in the Cloudflare dashboard.
+
 ## Deploying
 
 Changes under `web/hello` deploy automatically when they reach `main`, through the [Deploy hello Worker](../../.github/workflows/deploy_hello.yml) workflow.

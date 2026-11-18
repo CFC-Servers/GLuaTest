@@ -7,9 +7,8 @@
   "compatibility_date": "2026-11-17",
   "routes": [
     {
-      "pattern": "hello.gluatest.com",
-      "zone_name": "gluatest.com",
-      "custom_domain": true
+      "pattern": "hello.gluatest.com/ping*",
+      "zone_name": "gluatest.com"
     }
   ],
   "analytics_engine_datasets": [
