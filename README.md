@@ -341,6 +341,7 @@ jobs:
 | `custom-overrides`   | An absolute path with custom files to copy to the server directly. Structure should match the contents of `garrysmod/` | `$GITHUB_WORKSPACE/my_overrides`                                                                        |
 | `download-artifact`  | A URL path to a .tar.gz file that will be unpacked in the root directory                                               | `https://github.com/RaphaelIT7/gmod-holylib/releases/download/Release0.7/gmsv_holylib_linux_packed.zip` |
 | `additional-setup`   | If specificed, executes the given string as a script after all setup is complete, allowing additional setup            | `echo "Hello, this is a test!"`                                                                         |
+| `project-name`       | Project name for the [usage ping](#usage-ping). Public repositories default to their repository name                   | `my_addon`                                                                                              |
 
 Credentials for private requirements go in a `secrets:` block next to `with:`, because GitHub does not allow the `secrets` context inside `with:`:
 
@@ -1237,31 +1238,18 @@ Your agent will know how to make & run GLuaTest suites and run throwaway tests t
 
 # Usage ping
 <details>
-<summary><strong>GLuaTest sends one anonymous ping the first time tests run on a server</strong></summary>
+<summary><strong>GLuaTest sends a small anonymous ping when tests run</strong></summary>
 
-The first time tests run after a server starts, GLuaTest sends one anonymous request to `hello.gluatest.com` with:
-- The GLuaTest version
-- The GMod branch
-- How many test groups and test cases are about to run
-- Your project's name, only if you chose to set one (see below)
+The first time tests run on a server, GLuaTest sends one request to `hello.gluatest.com` so we can see roughly how much it gets used. It includes the GLuaTest version, the GMod branch, and how many test groups and cases there are. We also note the country, region, and network (AS number) it came from, but not the IP address.
 
-The endpoint records those values along with:
-- The country, region (such as a state or province), and continent the request came from
-- The network it came from (its public AS number, which identifies an internet provider or a cloud host), which tells us roughly how many runs happen in CI
+Public repositories using the GitHub workflow are counted under their repository name. Private repositories and local runs aren't named. You can change the name with the `project-name` workflow input or `gluatest_http_hello_project` in your server config (set it to `""` to send no name).
 
-It records nothing else. It doesn't record IP addresses, and it never receives anything about your project, such as the names of your tests, unless you choose to name it. You can read the code that receives the ping in [`web/hello`](web/hello).
-
-It helps us see how many people use GLuaTest and how they use it. It never runs on clients.
-
-To turn it off, add this line to your [server config](#server-configs):
+To turn the ping off, add this line to your [server config](#server-configs):
 ```
 gluatest_http_hello 0
 ```
 
-If you'd like us to know your project uses GLuaTest, you can name it instead:
-```
-gluatest_http_hello_project my_addon
-```
+The code that receives it is in [`web/hello`](web/hello).
 
 </details>
 

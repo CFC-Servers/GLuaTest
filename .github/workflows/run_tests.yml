@@ -40,6 +40,12 @@ on:
         description: "Extra arguments to pass to the test server on startup"
         default: ""
 
+      project-name:
+        type: string
+        required: false
+        description: "The project name to include in GLuaTest's anonymous usage ping. When empty, public repositories are named after the repository and private repositories are not named"
+        default: ""
+
       ssh-private-key:
         type: string
         required: false
@@ -275,6 +281,7 @@ jobs:
           TIMEOUT: "${{ inputs.timeout }}"
           GMOD_BRANCH: "${{ inputs.branch }}"
           USE_64BIT: "${{ inputs.use-64bit }}"
+          HELLO_PROJECT_NAME: "${{ inputs.project-name || (github.event.repository.visibility == 'public' && github.repository) || '' }}"
         run: |
           cd $GITHUB_WORKSPACE/gluatest/docker
 

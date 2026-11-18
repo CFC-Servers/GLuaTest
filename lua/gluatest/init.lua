@@ -23,7 +23,7 @@ GLuaTest = {
     --- @diagnostic disable-next-line: param-type-mismatch
     SelfTestConVar      = CreateConVar( "gluatest_selftest_enable", "0", conVarFlags, "Should GLuaTest run its own tests?" ),
     --- @diagnostic disable-next-line: param-type-mismatch
-    HttpHelloConVar     = CreateConVar( "gluatest_http_hello",      "1", conVarFlags, "Should GLuaTest send an anonymous usage ping (version, branch, test counts, rough location, and network provider) the first time tests run?" ),
+    HttpHelloConVar     = CreateConVar( "gluatest_http_hello",      "1", conVarFlags, "Should GLuaTest send an anonymous usage ping the first time tests run?" ),
     --- @diagnostic disable-next-line: param-type-mismatch
     HttpHelloProjectConVar = CreateConVar( "gluatest_http_hello_project", "", conVarFlags, "Optional project name to include in the usage ping. Leave it empty to send no name" ),
     -- not archived, so a forgotten filter cannot survive a restart
@@ -113,8 +113,6 @@ GLuaTest.sendUsagePing = function( testGroups )
         caseCount = caseCount + #testGroups[i].cases
     end
 
-    print( "[GLuaTest] Sending an anonymous usage ping (version, branch, test counts, rough location, and network provider). Disable it with gluatest_http_hello 0" )
-
     local parameters = {
         version = VersionTools.getVersion(),
         branch = BRANCH or "unknown",
@@ -123,7 +121,12 @@ GLuaTest.sendUsagePing = function( testGroups )
     }
 
     local projectName = GLuaTest.HttpHelloProjectConVar:GetString()
-    if projectName ~= "" then parameters.project = projectName end
+    if projectName == "" then
+        print( "[GLuaTest] Sending an anonymous usage ping. Disable it with gluatest_http_hello 0" )
+    else
+        parameters.project = projectName
+        print( "[GLuaTest] Sending a usage ping for \"" .. projectName .. "\". Disable it with gluatest_http_hello 0" )
+    end
 
     HTTP( {
         method = "GET",

@@ -1,4 +1,5 @@
 const MAX_FIELD_LENGTH = 32;
+const MAX_PROJECT_NAME_LENGTH = 140;
 
 const CLOUD_PROVIDERS_BY_ASN = new Map([
   [8075, "microsoft"],
@@ -13,9 +14,9 @@ const CLOUD_PROVIDERS_BY_ASN = new Map([
   [20473, "vultr"],
 ]);
 
-function readText(searchParams, name) {
+function readText(searchParams, name, maxLength = MAX_FIELD_LENGTH) {
   const value = searchParams.get(name) ?? "unknown";
-  return value.slice(0, MAX_FIELD_LENGTH);
+  return value.slice(0, maxLength);
 }
 
 function readCount(searchParams, name) {
@@ -42,7 +43,7 @@ export default {
           region,
           continent,
           cloudProvider,
-          readText(searchParams, "project"),
+          readText(searchParams, "project", MAX_PROJECT_NAME_LENGTH),
         ],
         doubles: [readCount(searchParams, "groups"), readCount(searchParams, "cases"), asn],
         indexes: [country],
