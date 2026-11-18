@@ -175,8 +175,6 @@ if [ "$arch" = "arm64" ] || [ "$arch" = "aarch64" ]; then
     export DOCKER_DEFAULT_PLATFORM=linux/amd64
     note "arm64 host detected: the server will run under emulation and will be slower."
     if [ "$GMOD_BRANCH" != "x86-64" ]; then
-        # 32-bit srcds needs robust futexes, which Rosetta/QEMU user emulation
-        # don't provide - it dies at startup with a futex robust_list fatal
         note "the '$GMOD_BRANCH' branch server is 32-bit, which usually crashes under Apple Silicon emulation - if it dies on startup, retry with: --branch x86-64"
     fi
 fi
@@ -201,10 +199,7 @@ PROJECT="${PROJECT_DIR_ARG:-$PWD}"
 PROJECT="$(cd "$PROJECT" && pwd)"
 
 # --- Temp dirs + cleanup --------------------------------------------------------
-# Everything the compose file bind-mounts must live under $HOME: macOS Docker
-# VMs only share limited host paths (colima shares $HOME; Docker Desktop shares
-# /Users), and the system TMPDIR (/var/folders/...) is not among them - a bind
-# source there silently becomes an empty directory inside the VM.
+# macOS Docker VMs can bind-mount paths under $HOME, but not the system TMPDIR
 TMP_BASE="$HOME/.cache/gluatest"
 mkdir -p "$TMP_BASE"
 STAGING_DIR="$(mktemp -d "$TMP_BASE/stage.XXXXXX")"

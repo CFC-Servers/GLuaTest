@@ -251,7 +251,6 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/gluatest/docker
 
-          # RaphaelIT7: Backwards compatibility since I broke it
           if [ "$GMOD_BRANCH" = "live" ]; then
             export GMOD_BRANCH="public"
           fi
@@ -293,7 +292,6 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/gluatest/docker
 
-          # RaphaelIT7: Backwards compatibility since I broke it
           if [ "$GMOD_BRANCH" = "live" ]; then
             export GMOD_BRANCH="public"
           fi
