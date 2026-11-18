@@ -22,6 +22,10 @@ GLuaTest = {
     RunClientsideConVar = CreateConVar( "gluatest_client_enable",   "0", conVarFlags, "Should GLuaTest run automatically on the client side?" ),
     --- @diagnostic disable-next-line: param-type-mismatch
     SelfTestConVar      = CreateConVar( "gluatest_selftest_enable", "0", conVarFlags, "Should GLuaTest run its own tests?" ),
+    --- @diagnostic disable-next-line: param-type-mismatch
+    HttpHelloConVar     = CreateConVar( "gluatest_http_hello",      "1", conVarFlags, "Should GLuaTest send an anonymous usage ping the first time tests run?" ),
+    --- @diagnostic disable-next-line: param-type-mismatch
+    HttpHelloProjectConVar = CreateConVar( "gluatest_http_hello_project", "", conVarFlags, "Optional project name to include in the usage ping. Leave it empty to send no name" ),
     -- not archived, so a forgotten filter cannot survive a restart
     --- @diagnostic disable-next-line: param-type-mismatch
     FilterConVar        = CreateConVar( "gluatest_filter", "", FCVAR_PROTECTED, "Only run test groups whose path or group name contains one of these space-separated terms" ),
@@ -98,6 +102,49 @@ GLuaTest.Loader.loadExtensions( "gluatest/extensions" )
             GLuaTest.runAllTests( net.ReadString() )
         end )
     end
+end
+
+--- @param testGroups GLuaTest_TestGroup[]
+GLuaTest.sendUsagePing = function( testGroups )
+    if not GLuaTest.HttpHelloConVar:GetBool() then return end
+
+    local caseCount = 0
+    for i = 1, #testGroups do
+        caseCount = caseCount + #testGroups[i].cases
+    end
+
+    local parameters = {
+        version = VersionTools.getVersion(),
+        branch = BRANCH or "unknown",
+        groups = tostring( #testGroups ),
+        cases = tostring( caseCount ),
+    }
+
+    local projectName = GLuaTest.HttpHelloProjectConVar:GetString()
+    if projectName == "" then
+        print( "[GLuaTest] Sending an anonymous usage ping. Disable it with gluatest_http_hello 0" )
+    else
+        parameters.project = projectName
+        print( "[GLuaTest] Sending a usage ping for \"" .. projectName .. "\". Disable it with gluatest_http_hello 0" )
+    end
+
+    HTTP( {
+        method = "GET",
+        url = "https://hello.gluatest.com/ping",
+        parameters = parameters,
+        success = function() end,
+        failed = function() end,
+    } )
+end
+
+local usagePingSent = isHotload
+
+--- @param testGroups GLuaTest_TestGroup[]
+local function sendUsagePingOnce( testGroups )
+    if usagePingSent then return end
+    usagePingSent = true
+
+    GLuaTest.sendUsagePing( testGroups )
 end
 
 --- @param loader GLuaTest_Loader
@@ -182,6 +229,8 @@ GLuaTest.runAllTests = function( filter )
 
     local testFiles = GLuaTest.Loader.filterTestGroups( allTestFiles, filter )
     logFilterMatches( filter, #testFiles, #allTestFiles )
+
+    if SERVER then sendUsagePingOnce( testFiles ) end
 
     --- @type GLuaTest_TestRunner
     local runner = include( "gluatest/runner/runner.lua" )

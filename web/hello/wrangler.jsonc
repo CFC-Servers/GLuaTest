@@ -1,0 +1,27 @@
+{
+  "name": "gluatest-hello",
+  "account_id": "dbf79eb4394912bf04f2408ce80546a4",
+  "main": "src/worker.js",
+  "workers_dev": false,
+  "preview_urls": false,
+  "compatibility_date": "2026-11-17",
+  "routes": [
+    {
+      "pattern": "hello.gluatest.com/ping*",
+      "zone_name": "gluatest.com"
+    }
+  ],
+  "analytics_engine_datasets": [
+    {
+      "binding": "PINGS",
+      "dataset": "gluatest_pings"
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": false
+    }
+  }
+}

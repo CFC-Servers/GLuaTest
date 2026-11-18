@@ -25,6 +25,8 @@ return {
                 expect( ConVarExists( "gluatest_client_enable" ) ).to.beTrue()
                 expect( ConVarExists( "gluatest_selftest_enable" ) ).to.beTrue()
                 expect( ConVarExists( "gluatest_filter" ) ).to.beTrue()
+                expect( ConVarExists( "gluatest_http_hello" ) ).to.beTrue()
+                expect( ConVarExists( "gluatest_http_hello_project" ) ).to.beTrue()
             end
         },
 
@@ -42,6 +44,12 @@ return {
 
                 local gluatest_filter = GetConVar( "gluatest_filter" )
                 expect( gluatest_filter:GetDefault() ).to.equal( "" )
+
+                local gluatest_http_hello = GetConVar( "gluatest_http_hello" )
+                expect( gluatest_http_hello:GetDefault() ).to.equal( "1" )
+
+                local gluatest_http_hello_project = GetConVar( "gluatest_http_hello_project" )
+                expect( gluatest_http_hello_project:GetDefault() ).to.equal( "" )
             end
         },
     }

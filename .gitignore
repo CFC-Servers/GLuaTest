@@ -3,3 +3,7 @@ docker/reqs.txt
 docker/srv.cfg
 docker/slim.report.json
 docs
+
+# Cloudflare Workers
+.wrangler
+node_modules
