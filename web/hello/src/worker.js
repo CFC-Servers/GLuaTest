@@ -3,8 +3,8 @@ const MAX_FIELD_LENGTH = 32;
 const MAX_PROJECT_NAME_LENGTH = 140;
 
 const INSERT_PING = `
-  INSERT INTO pings (version, branch, country, region, continent, cloud_provider, project, test_groups, test_cases, asn)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  INSERT INTO pings (version, branch, country, region, continent, cloud_provider, project, test_groups, test_cases, asn, runner, agent)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `;
 
 const CLOUD_PROVIDERS_BY_ASN = new Map([
@@ -43,6 +43,9 @@ export default {
     const asn = request.cf?.asn ?? 0;
     const cloudProvider = CLOUD_PROVIDERS_BY_ASN.get(asn) ?? "other";
 
+    // "agent/claude-code" -> "agent", "claude-code"
+    const [runner, agent = ""] = readText(searchParams, "runner").split("/");
+
     const insertPing = env.DB.prepare(INSERT_PING).bind(
       readText(searchParams, "version"),
       readText(searchParams, "branch"),
@@ -54,6 +57,8 @@ export default {
       readCount(searchParams, "groups"),
       readCount(searchParams, "cases"),
       asn,
+      runner,
+      agent,
     );
 
     try {

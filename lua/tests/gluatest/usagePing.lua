@@ -6,6 +6,7 @@ return {
     beforeEach = function( state )
         state.previousHttpHello = GLuaTest.HttpHelloConVar:GetBool()
         state.previousProjectName = GLuaTest.HttpHelloProjectConVar:GetString()
+        state.previousRunner = GLuaTest.HttpHelloRunnerConVar:GetString()
         state.httpStub = stub( _G, "HTTP" )
 
         state.groups = {
@@ -17,6 +18,7 @@ return {
     afterEach = function( state )
         GLuaTest.HttpHelloConVar:SetBool( state.previousHttpHello )
         GLuaTest.HttpHelloProjectConVar:SetString( state.previousProjectName )
+        GLuaTest.HttpHelloRunnerConVar:SetString( state.previousRunner )
     end,
 
     cases = {
@@ -25,6 +27,7 @@ return {
             func = function( state )
                 GLuaTest.HttpHelloConVar:SetBool( true )
                 GLuaTest.HttpHelloProjectConVar:SetString( "" )
+                GLuaTest.HttpHelloRunnerConVar:SetString( "" )
 
                 GLuaTest.sendUsagePing( state.groups )
 
@@ -51,6 +54,19 @@ return {
 
                 local request = state.httpStub.callHistory[1][1]
                 expect( request.parameters.project ).to.equal( "my_addon" )
+            end
+        },
+
+        {
+            name = "Includes the runner when one is set",
+            func = function( state )
+                GLuaTest.HttpHelloConVar:SetBool( true )
+                GLuaTest.HttpHelloRunnerConVar:SetString( "agent/claude-code" )
+
+                GLuaTest.sendUsagePing( state.groups )
+
+                local request = state.httpStub.callHistory[1][1]
+                expect( request.parameters.runner ).to.equal( "agent/claude-code" )
             end
         },
 
