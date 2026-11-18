@@ -2,20 +2,27 @@
 
 The Cloudflare Worker that receives GLuaTest's [usage ping](../../README.md#usage-ping).
 
-It stores one row for each request to `/ping` in the `gluatest_pings` Analytics Engine dataset and replies `Hello!`. Requests to other paths, or without a `version` parameter, are not stored.
+It stores one row for each request to `/ping` in the `pings` table of the `gluatest-hello` D1 database and replies `Hello!`. Requests to other paths, or without a `version` parameter, are not stored.
 
-| Column    | Value                                                        |
-|-----------|--------------------------------------------------------------|
-| `blob1`   | GLuaTest version                                             |
-| `blob2`   | GMod branch                                                  |
-| `blob3`   | Country code                                                 |
-| `blob4`   | Region                                                       |
-| `blob5`   | Continent code                                               |
-| `blob6`   | Cloud provider (`microsoft`, `amazon`, ..., or `other`)      |
-| `blob7`   | Project name, or `unknown` when the project did not set one  |
-| `double1` | Number of test groups                                        |
-| `double2` | Number of test cases                                         |
-| `double3` | AS number of the network the request came from               |
+| Column           | Value                                                        |
+|------------------|--------------------------------------------------------------|
+| `received_at`    | UTC time the ping arrived                                    |
+| `version`        | GLuaTest version                                             |
+| `branch`         | GMod branch                                                  |
+| `country`        | Country code                                                 |
+| `region`         | Region                                                       |
+| `continent`      | Continent code                                               |
+| `cloud_provider` | Cloud provider (`microsoft`, `amazon`, ..., or `other`)      |
+| `project`        | Project name, or `unknown` when the project did not set one  |
+| `test_groups`    | Number of test groups                                        |
+| `test_cases`     | Number of test cases                                         |
+| `asn`            | AS number of the network the request came from               |
+
+The table is defined in [`migrations`](migrations). After adding a migration, apply it by hand before the Worker change that needs it reaches `main`:
+
+```
+npx wrangler d1 migrations apply gluatest-hello --remote
+```
 
 ## Routing
 

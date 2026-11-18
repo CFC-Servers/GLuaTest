@@ -2,6 +2,11 @@ const GREETING = "Hello!";
 const MAX_FIELD_LENGTH = 32;
 const MAX_PROJECT_NAME_LENGTH = 140;
 
+const INSERT_PING = `
+  INSERT INTO pings (version, branch, country, region, continent, cloud_provider, project, test_groups, test_cases, asn)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`;
+
 const CLOUD_PROVIDERS_BY_ASN = new Map([
   [8075, "microsoft"],
   [16509, "amazon"],
@@ -38,19 +43,24 @@ export default {
     const asn = request.cf?.asn ?? 0;
     const cloudProvider = CLOUD_PROVIDERS_BY_ASN.get(asn) ?? "other";
 
-    env.PINGS.writeDataPoint({
-      blobs: [
-        readText(searchParams, "version"),
-        readText(searchParams, "branch"),
-        country,
-        region,
-        continent,
-        cloudProvider,
-        readText(searchParams, "project", MAX_PROJECT_NAME_LENGTH),
-      ],
-      doubles: [readCount(searchParams, "groups"), readCount(searchParams, "cases"), asn],
-      indexes: [country],
-    });
+    const insertPing = env.DB.prepare(INSERT_PING).bind(
+      readText(searchParams, "version"),
+      readText(searchParams, "branch"),
+      country,
+      region,
+      continent,
+      cloudProvider,
+      readText(searchParams, "project", MAX_PROJECT_NAME_LENGTH),
+      readCount(searchParams, "groups"),
+      readCount(searchParams, "cases"),
+      asn,
+    );
+
+    try {
+      await insertPing.run();
+    } catch (error) {
+      console.error("Failed to store ping", error);
+    }
 
     return new Response(GREETING);
   },
