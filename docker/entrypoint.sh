@@ -40,6 +40,17 @@ if [ -n "$hello_project_name" ]; then
     printf '\ngluatest_http_hello_project "%s"\n' "$hello_project_name" >> "$server/cfg/test.cfg"
 fi
 
+# 'agent/claude-code"; quit' -> 'agent/claude-codequit'
+hello_runner="${HELLO_RUNNER//[^A-Za-z0-9._\/-]/}"
+if [ -n "$hello_runner" ]; then
+    printf '\ngluatest_http_hello_runner "%s"\n' "$hello_runner" >> "$server/cfg/test.cfg"
+fi
+
+if [ "$HELLO_PING" = "false" ]; then
+    echo "Usage ping turned off"
+    printf '\ngluatest_http_hello 0\n' >> "$server/cfg/test.cfg"
+fi
+
 if [ -f "$gmodroot/custom_server.cfg" ]; then
     echo "Appending custom server configs"
     cat "$gmodroot/custom_server.cfg" >> "$server/cfg/test.cfg"

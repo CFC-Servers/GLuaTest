@@ -46,6 +46,12 @@ on:
         description: "The project name to include in GLuaTest's anonymous usage ping. When empty, public repositories are named after the repository and private repositories are not named"
         default: ""
 
+      usage-ping:
+        type: boolean
+        required: false
+        description: "Set to false to turn off GLuaTest's anonymous usage ping"
+        default: true
+
       ssh-private-key:
         type: string
         required: false
@@ -282,6 +288,8 @@ jobs:
           GMOD_BRANCH: "${{ inputs.branch }}"
           USE_64BIT: "${{ inputs.use-64bit }}"
           HELLO_PROJECT_NAME: "${{ inputs.project-name || (github.event.repository.visibility == 'public' && github.repository) || '' }}"
+          HELLO_PING: "${{ inputs.usage-ping }}"
+          HELLO_RUNNER: "github"
         run: |
           cd $GITHUB_WORKSPACE/gluatest/docker
 
