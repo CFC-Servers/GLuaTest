@@ -285,6 +285,15 @@ export SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-}"
 export GITHUB_TOKEN="${GITHUB_TOKEN:-}"
 export EXTRA_STARTUP_ARGS="${EXTRA_STARTUP_ARGS:-}"
 
+HELLO_RUNNER="local"
+if [ -n "${AI_AGENT:-}" ]; then
+    # "claude-code_2-1-326_agent" -> "agent/claude-code"
+    HELLO_RUNNER="agent/${AI_AGENT%%_*}"
+elif [ -n "${CLAUDECODE:-}" ]; then
+    HELLO_RUNNER="agent/claude-code"
+fi
+export HELLO_RUNNER
+
 # --- Build or pull -----------------------------------------------------------------
 pull_policy="always"
 if [ "$BUILD" -eq 1 ]; then

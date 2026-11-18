@@ -37,3 +37,5 @@ services:
       - GMOD_BRANCH=${GMOD_BRANCH:-public}
       - USE_64BIT=${USE_64BIT:-false}
       - HELLO_PROJECT_NAME=${HELLO_PROJECT_NAME:-}
+      - HELLO_PING=${HELLO_PING:-true}
+      - HELLO_RUNNER=${HELLO_RUNNER:-}

@@ -64,6 +64,7 @@ runs:
           --continue-after 30 \
           --show-clogs --show-blogs \
           --include-path "/home/steam/gmodserver/garrysmod/addons/gluatest/data_static" \
+          --preserve-path "/home/steam/gmodserver/garrysmod/cfg/test.cfg" \
           --include-bin "/usr/bin/date" \
           --include-bin "/usr/bin/echo" \
           --include-bin "/usr/bin/python3" \
