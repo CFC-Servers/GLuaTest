@@ -1191,6 +1191,19 @@ return WithEntityTests( "my_special_entity", {
     }
 } )
 ```
+
+ Extensions load when the server starts, before the map's entities exist. If your extension reads anything from the map, wait for `InitPostEntity`:
+```lua
+-- lua/gluatest/extensions/map_rooms.lua
+
+MapRooms = {}
+
+hook.Add( "InitPostEntity", "MapRooms_Find", function()
+    for _, target in ipairs( ents.FindByClass( "info_target" ) ) do
+        MapRooms[target:GetName()] = target
+    end
+end )
+```
 </details>
 
 <br>
