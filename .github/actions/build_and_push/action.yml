@@ -19,78 +19,29 @@ inputs:
   game_version:
     description: "The version ID for this build of gmod"
     required: true
-  path:
-    description: "The path to the gluatest project"
-    required: true
 
 runs:
   using: "composite"
   steps:
     - name: Get docker-slim
       shell: bash
-      run: |
-        SLIM_VERSION=1.40.11
-
-        curl --location --output ds.tar.gz https://github.com/slimtoolkit/slim/releases/download/$SLIM_VERSION/dist_linux.tar.gz
-        tar -xvzf ds.tar.gz
-        mv dist_linux/* $GITHUB_WORKSPACE
-        rm -rfv ds.tar.gz dist_linux/
-
-        # Lets also give some information on docker
-        docker version
+      run: bash "$GITHUB_ACTION_PATH/get_docker_slim.sh"
 
     - name: Build starter image
       shell: bash
-      run: |
-        cd ${{ inputs.path }}/docker
-
-        GLUATEST_REF=${{ inputs.tag_name }}
-        docker build --build-arg="GMOD_BRANCH=${{ inputs.gmod_branch }}" --build-arg="GLUATEST_REF=$GLUATEST_REF" --tag gluatest_fat:latest .
+      env:
+        GMOD_BRANCH: ${{ inputs.gmod_branch }}
+        TAG_NAME: ${{ inputs.tag_name }}
+      run: bash "$GITHUB_ACTION_PATH/build_fat_image.sh"
 
     - name: Make slim image
       shell: bash
-      run: |
-        cd ${{ inputs.path }}/docker
-
-        BASE=ghcr.io/cfc-servers/gluatest/${{ inputs.gmod_branch }}
-
-        rawVersionTag=${{ inputs.tag_name }}
-        id=${{ inputs.game_version }}
-        $GITHUB_WORKSPACE/docker-slim build \
-          --target gluatest_fat:latest \
-          --http-probe-off \
-          --env GLUATEST_SLIM_PROBE=true \
-          --env HELLO_PROJECT_NAME=gluatest-image-build \
-          --continue-after 30 \
-          --show-clogs --show-blogs \
-          --include-path "/home/steam/gmodserver/garrysmod/addons/gluatest/data_static" \
-          --preserve-path "/home/steam/gmodserver/garrysmod/cfg/test.cfg" \
-          --exclude-pattern "/home/steam/gmodserver/garrysmod/cfg/test.cfg" \
-          --include-bin "/usr/bin/date" \
-          --include-bin "/usr/bin/echo" \
-          --include-bin "/usr/bin/python3" \
-          --include-bin "/usr/bin/git" \
-          --include-bin "/usr/bin/tar" \
-          --include-bin "/usr/bin/cp" \
-          --include-bin "/usr/bin/gzip" \
-          --include-bin "/home/steam/gmodserver/bin/libbass.so" \
-          --include-bin "/home/steam/gmodserver/bin/linux64/libbass.so" \
-          --include-bin "/home/steam/gmodserver/bin/gmod_audio.so" \
-          --tag $BASE:$rawVersionTag \
-          --tag $BASE:gamebuild-$id
-
-        # Tag image with "0.27" if we push tag "0.27.5"
-        # but not if we push tag "0.27-pre5"
-        parentMinorVersion=${rawVersionTag%.*}
-        if [[ $parentMinorVersion != "0" ]]; then
-          echo "::warning:: Tagging with parent minor version: $parentMinorVersion"
-          docker tag $BASE:$rawVersionTag $BASE:$parentMinorVersion
-        fi
-
-        if [ "${{ inputs.release }}" = "true" ]; then
-          echo "::warning:: Tagging this release as the latest!"
-          docker tag $BASE:$rawVersionTag $BASE:latest
-        fi
+      env:
+        GMOD_BRANCH: ${{ inputs.gmod_branch }}
+        TAG_NAME: ${{ inputs.tag_name }}
+        GAME_VERSION: ${{ inputs.game_version }}
+        RELEASE: ${{ inputs.release }}
+      run: bash "$GITHUB_ACTION_PATH/make_slim_image.sh"
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
@@ -101,7 +52,6 @@ runs:
 
     - name: Tag and push slim image
       shell: bash
-      run: |
-        BASE=ghcr.io/cfc-servers/gluatest/${{ inputs.gmod_branch }}
-
-        docker push "$BASE" --all-tags
+      env:
+        GMOD_BRANCH: ${{ inputs.gmod_branch }}
+      run: bash "$GITHUB_ACTION_PATH/push_image.sh"

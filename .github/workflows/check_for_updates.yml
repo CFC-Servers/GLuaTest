@@ -210,7 +210,6 @@ jobs:
           tag_name: ${{ needs.check_updates.outputs.latest_tag }}
           release: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          path: $GITHUB_WORKSPACE/full_repo
 
   update_last_versions:
     runs-on: ubuntu-24.04
