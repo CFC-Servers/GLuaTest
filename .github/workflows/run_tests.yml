@@ -158,16 +158,16 @@ jobs:
 
       - name: Set up output files
         run: |
-          cd $GITHUB_WORKSPACE
+          cd "$GITHUB_WORKSPACE"
           mkdir -p project # In case there was no checkout
           mkdir -p garrysmod_override # Same here
-          touch $GITHUB_WORKSPACE/project/${{ inputs.requirements }}
-          echo "gluatest_github_output 1" >> $GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}
+          touch "$GITHUB_WORKSPACE/project/${{ inputs.requirements }}"
+          echo "gluatest_github_output 1" >> "$GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}"
 
       - name: Get latest GLuaTest version
         id: latest-tag-getter
         run: |
-          cd $GITHUB_WORKSPACE
+          cd "$GITHUB_WORKSPACE"
 
           git clone --single-branch --depth 1 ${{ inputs.gluatest-repo }}.git gluatest
 
@@ -176,18 +176,18 @@ jobs:
           git checkout FETCH_HEAD
           git fetch --quiet --tags
 
-          latest=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "0.00")
+          latest=$(git describe --tags "$(git rev-list --tags --max-count=1)" 2>/dev/null || echo "0.00")
           echo "Latest Tag: $latest"
-          echo "LATEST_TAG=$latest" >> $GITHUB_OUTPUT
+          echo "LATEST_TAG=$latest" >> "$GITHUB_OUTPUT"
 
           cd ../
-          cd $GITHUB_WORKSPACE
+          cd "$GITHUB_WORKSPACE"
           mkdir -p ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/ # Silently also setup the artifacts dir
 
       - name: Prepare the override directory
         if: ${{ inputs.no-checkout != 'true' }}
         run: |
-          cd $GITHUB_WORKSPACE/project
+          cd "$GITHUB_WORKSPACE/project"
 
           get_gamemode_name () {
             gamemode_file=$(grep --recursive --word-regexp --files-with-matches '"base"')
@@ -218,12 +218,12 @@ jobs:
           fi
 
           mkdir --verbose --parents "$dest"
-          cp --recursive --verbose $source/* "$dest/"
+          cp --recursive --verbose "$source"/* "$dest/"
 
       - name: Sync custom overrides
         if: ${{ inputs.custom-overrides }}
         run: |
-          rsync --verbose --archive ${{ inputs.custom-overrides }} $GITHUB_WORKSPACE/garrysmod_override/
+          rsync --verbose --archive ${{ inputs.custom-overrides }} "$GITHUB_WORKSPACE/garrysmod_override/"
 
       - name: Download artifact (Github)
         if: inputs.download-artifact != '' && !(startsWith(inputs.download-artifact, 'https://') || startsWith(inputs.download-artifact, 'http://'))
@@ -249,7 +249,7 @@ jobs:
         env:
           GMOD_BRANCH: "${{ inputs.branch }}"
         run: |
-          cd $GITHUB_WORKSPACE/gluatest/docker
+          cd "$GITHUB_WORKSPACE/gluatest/docker"
 
           if [ "$GMOD_BRANCH" = "live" ]; then
             export GMOD_BRANCH="public"
@@ -265,7 +265,7 @@ jobs:
           PROJECT_DIR: "${{ github.workspace }}/garrysmod_override"
           GMOD_ARTIFACT_DIR: "${{ github.workspace }}/gluatest/docker/_gluatest_artifacts"
         run: |
-          cd $GITHUB_WORKSPACE/gluatest/docker
+          cd "$GITHUB_WORKSPACE/gluatest/docker"
           docker build \
             --build-arg="GMOD_BRANCH=${{ inputs.branch }}" \
             --build-arg="GLUATEST_REPO=${{ inputs.gluatest-repo }}.git" \
@@ -290,7 +290,7 @@ jobs:
           HELLO_PING: "${{ inputs.usage-ping }}"
           HELLO_RUNNER: "github"
         run: |
-          cd $GITHUB_WORKSPACE/gluatest/docker
+          cd "$GITHUB_WORKSPACE/gluatest/docker"
 
           if [ "$GMOD_BRANCH" = "live" ]; then
             export GMOD_BRANCH="public"
@@ -313,7 +313,7 @@ jobs:
         run: |
           sudo apt-get install -y colorized-logs
 
-          cd $GITHUB_WORKSPACE/gluatest/docker
+          cd "$GITHUB_WORKSPACE/gluatest/docker"
 
           filename="$GITHUB_WORKSPACE/gluatest-log-${{ inputs.branch }}${{ inputs.use-64bit == 'true' && '-64x' || '' }}.log"
           docker compose logs --no-color --no-log-prefix runner >& "$filename.pre"

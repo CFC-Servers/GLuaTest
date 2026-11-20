@@ -5,10 +5,9 @@ gmodroot=$home/gmodserver
 server=$home/gmodserver/garrysmod
 pat=$GITHUB_TOKEN@
 timeout="${TIMEOUT:-2}"m
-gmodbranch="${GMOD_BRANCH}"
 
 # Make sure docker-slim doesn't remove bins we'll eventually need
-echo $(date)
+date
 python3 -c "print()" &> /dev/null
 git clone --depth 1 git@github.com:CFC-Servers/GLuaTest.git _tmp_ssh &> /dev/null
 git clone --depth 1 https://github.com/CFC-Servers/GLuaTest.git _tmp_https &> /dev/null
@@ -22,7 +21,7 @@ rsync --verbose --archive $home/garrysmod_override/ $server/
 if [ -n "$(ls -A $home/_gluatest_artifacts/_gluatest_artifacts/)" ]; then # Only execute if there are any artifacts or else tar will complain
     cp $home/_gluatest_artifacts/_gluatest_artifacts/* $gmodroot/
 
-    for file in $gmodroot/*.tar.gz; do \
+    for file in "$gmodroot"/*.tar.gz; do \
         tar --extract --verbose --ungzip --file="$file" --directory="$gmodroot" && \
         rm --force --verbose "$file"; \
     done
@@ -34,16 +33,16 @@ if [ -f "$gmodroot/custom_requirements.txt" ]; then
 fi
 
 # 'CFC-Servers/GLuaTest"; quit' -> 'CFC-Servers/GLuaTestquit'
-hello_project_name="${HELLO_PROJECT_NAME//[^A-Za-z0-9._\/-]/}"
-if [ -n "$hello_project_name" ]; then
-    echo "Usage ping project name: $hello_project_name"
-    printf '\ngluatest_http_hello_project "%s"\n' "$hello_project_name" >> "$server/cfg/test.cfg"
+ping_project="${HELLO_PROJECT_NAME//[^A-Za-z0-9._\/-]/}"
+if [ -n "$ping_project" ]; then
+    echo "Usage ping project name: $ping_project"
+    printf '\ngluatest_http_hello_project "%s"\n' "$ping_project" >> "$server/cfg/test.cfg"
 fi
 
 # 'agent/claude-code"; quit' -> 'agent/claude-codequit'
-hello_runner="${HELLO_RUNNER//[^A-Za-z0-9._\/-]/}"
-if [ -n "$hello_runner" ]; then
-    printf '\ngluatest_http_hello_runner "%s"\n' "$hello_runner" >> "$server/cfg/test.cfg"
+ping_runner="${HELLO_RUNNER//[^A-Za-z0-9._\/-]/}"
+if [ -n "$ping_runner" ]; then
+    printf '\ngluatest_http_hello_runner "%s"\n' "$ping_runner" >> "$server/cfg/test.cfg"
 fi
 
 if [ "$HELLO_PING" = "false" ]; then
@@ -64,7 +63,7 @@ if [[ ! -z "$SSH_PRIVATE_KEY" ]]; then
     mkdir -pv /home/steam/.ssh
     cat /home/steam/github_known_hosts >> /home/steam/.ssh/known_hosts
 
-    eval `ssh-agent -s`
+    eval "$(ssh-agent -s)"
     ssh-add - <<< "$SSH_PRIVATE_KEY"
 fi
 
@@ -96,13 +95,13 @@ print("git clone -v --depth 1 " + url + branch + " --single-branch " + name)
 EOF
 }
 
-cd "$server"/addons
-while read p; do
+cd "$server"/addons || exit 1
+while read -r p; do
     echo "Handling requirement: $p"
     if [[ -z "$SSH_PRIVATE_KEY" ]]; then
-        eval $(getCloneLine "$p" )
+        eval "$(getCloneLine "$p")"
     else
-        eval $(getSSHCloneLine "$p" )
+        eval "$(getSSHCloneLine "$p")"
     fi
 done <"$gmodroot"/requirements.txt
 
@@ -152,9 +151,9 @@ base_srcds_args=(
     +map "$map"
     +servercfgfile test.cfg
 )
-srcds_args="$EXTRA_STARTUP_ARGS ${base_srcds_args[@]}"
+srcds_args="$EXTRA_STARTUP_ARGS ${base_srcds_args[*]}"
 
-cd "$gmodroot" # srcds_run64 uses relative paths unlike srcds_run. Annoying...
+cd "$gmodroot" || exit 1 # srcds_run64 uses relative paths unlike srcds_run. Annoying...
 
 if [ "$GLUATEST_SLIM_PROBE" = "true" ] && [ -x "$gmodroot/srcds_run64" ]; then
     # docker-slim only keeps files that were touched soo for dev 64x we also touch it :3

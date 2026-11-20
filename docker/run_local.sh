@@ -206,6 +206,7 @@ STAGING_DIR="$(mktemp -d "$TMP_BASE/stage.XXXXXX")"
 ARTIFACT_DIR="$(mktemp -d "$TMP_BASE/artifacts.XXXXXX")"
 PLACEHOLDER_DIR="$(mktemp -d "$TMP_BASE/placeholder.XXXXXX")"
 
+# shellcheck disable=SC2329 # called by the EXIT trap
 cleanup() {
     status=$?
     "${COMPOSE[@]}" down > /dev/null 2>&1 || true
