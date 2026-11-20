@@ -337,6 +337,63 @@ function Helpers.RunHook( func, state )
     return errInfo
 end
 
+--- @param func fun( state: table ): nil The hook that ran out of time
+--- @return GLuaTest_FailCallbackInfo
+local function makeTimeoutFailure( func )
+    local failure = { reason = "Timeout" }
+    if not isfunction( func ) then return failure end
+
+    local definedAt = debug.getinfo( func, "S" )
+    failure.sourceFile = definedAt.short_src
+    failure.lineNumber = definedAt.linedefined
+
+    return failure
+end
+
+--- Runs a lifecycle hook that is allowed to yield, and reports once it finishes or times out
+--- @param func? fun( state: table ): nil
+--- @param state table
+--- @param timeout number Seconds the hook has to finish once it yields
+--- @param onFinished fun( failure?: GLuaTest_FailCallbackInfo ): nil
+function Helpers.RunWaitingHook( func, state, timeout, onFinished )
+    if not func then return onFinished() end
+
+    local reported = false
+    local function report( failure )
+        if reported then return end
+        reported = true
+
+        onFinished( failure )
+    end
+
+    local finished = false
+    local yielded = false
+    local failure
+
+    local hookCoroutine = coroutine.create( function()
+        failure = Helpers.RunHook( func, state )
+        finished = true
+
+        if not yielded then return end
+
+        -- the rest of the test run must not continue inside this coroutine
+        timer.Simple( 0, function()
+            report( failure )
+        end )
+    end )
+
+    coroutine.resume( hookCoroutine )
+    if finished then return report( failure ) end
+
+    yielded = true
+
+    timer.Simple( timeout, function()
+        if finished then return end
+
+        report( makeTimeoutFailure( func ) )
+    end )
+end
+
 --- Runs a function with a given environment, and cleans up after
 --- @param defaultEnv table
 --- @param before? fun( state: GLuaTest_TestState ): nil The function to run before the test

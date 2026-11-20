@@ -31,6 +31,7 @@
 --- @field beforeEach? fun(state: GLuaTest_TestState): nil A function to run before each test in the group
 --- @field afterAll? fun(state: GLuaTest_TestState): nil A function to run after all tests in the group
 --- @field afterEach? fun(state: GLuaTest_TestState): nil A function to run after each test in the group
+--- @field hookTimeout? number Seconds beforeAll or afterAll has to finish once it starts waiting (Defaults to 5)
 
 --- @class GLuaTest_RunnableTestGroup : GLuaTest_TestGroup
 --- @field fileName string The name of the file the test is in

@@ -118,6 +118,7 @@ function Loader.processFile( dir, fileName, groups )
         beforeEach = testGroup.beforeEach,
         afterAll = testGroup.afterAll,
         afterEach = testGroup.afterEach,
+        hookTimeout = testGroup.hookTimeout,
 
         fileName = fileName,
         project = Loader.getProjectName( filePath ),

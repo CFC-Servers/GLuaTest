@@ -555,6 +555,7 @@ The Test Group (that is, the table you return from your Test File) can have the 
 | **`beforeEach`** | `function` | A function to run before each Test Case in your Test Group. Takes a `state` table   |     ❌    |
 | **`afterAll`**   | `function` | A function to run after all Test Cases in your Test Group                           |     ❌    |
 | **`afterEach`**  | `function` | A function to run after each Test Case in your Test Group. Takes a `state` table    |     ❌    |
+| **`hookTimeout`** | `number` | Seconds `beforeAll` or `afterAll` has to finish once it starts [waiting](#before--after-functions) (default 5) |     ❌    |
 
 
 <br>
@@ -1039,6 +1040,42 @@ You'll notice the `state` variable in that example. The `state` parameter is jus
 
 
 You also have access to `beforeAll` and `afterAll`, which are self-explanatory. These two functions receive the group-level `state` table; each Test Case's `state` can read everything set on it, but writes made inside a case stay isolated to that case.
+
+#### **Waiting in `beforeAll`/`afterAll`**
+<details>
+ <summary><strong><code>beforeAll</code> and <code>afterAll</code> can wait for something before the group carries on</strong></summary>
+
+<br>
+
+Both functions run inside a coroutine. Yield, and resume once the thing you're waiting for has happened:
+
+```lua
+-- lua/tests/my_nextbot/my_nextbot.lua
+
+return {
+    groupName = "My Nextbot tests",
+    hookTimeout = 30,
+
+    -- None of the cases start until the server is empty
+    beforeAll = function()
+        WaitForEmptyServer()
+    end,
+
+    cases = {
+        -- ...
+    }
+}
+```
+
+_(`WaitForEmptyServer` is the helper from [The `coroutine` option](#the-coroutine-option))_
+
+Once a function starts waiting, it has `hookTimeout` seconds to finish (5 by default), even if it is resumed and waits again. If it runs out of time it fails with `Timeout` and shows up as a failing test named `beforeAll` or `afterAll`.
+
+A function that timed out isn't stopped. If something resumes it later, the rest of it still runs, so make sure whatever you were waiting on can't fire late.
+
+`beforeEach` and `afterEach` can't wait yet.
+
+</details>
 
 <br>
 
