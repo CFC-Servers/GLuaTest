@@ -77,6 +77,7 @@ GLuaTest.Loader.loadExtensions( "gluatest/extensions" )
         -- /expectations/utils/*
         AddCSLuaFile( "gluatest/expectations/utils/called_with.lua" )
         AddCSLuaFile( "gluatest/expectations/utils/table_diff.lua" )
+        AddCSLuaFile( "gluatest/expectations/utils/caller_recovery.lua" )
 
         -- When the server finishes its tests, notify clients to start theirs
         -- While it is possible to run client and server tests in parallel, that may lead to
