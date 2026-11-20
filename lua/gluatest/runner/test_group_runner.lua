@@ -116,7 +116,7 @@ function GLuaTest.TestGroupRunner( TestRunner, group )
 
         local function onAfterAllFinished( afterAllFailure )
             if afterAllFailure then
-                self:SetFailed( { name = "afterAll", func = noop }, afterAllFailure )
+                self:SetFailed( { name = "afterAll", func = group.afterAll }, afterAllFailure )
             end
 
             cb()
@@ -162,7 +162,7 @@ function GLuaTest.TestGroupRunner( TestRunner, group )
 
         local function onBeforeAllFinished( beforeAllFailure )
             if beforeAllFailure then
-                self:SetFailed( { name = "beforeAll", func = noop }, beforeAllFailure )
+                self:SetFailed( { name = "beforeAll", func = group.beforeAll }, beforeAllFailure )
                 return finish()
             end
 

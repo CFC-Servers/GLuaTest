@@ -337,10 +337,23 @@ function Helpers.RunHook( func, state )
     return errInfo
 end
 
+--- @param func fun( state: table ): nil The hook that ran out of time
+--- @return GLuaTest_FailCallbackInfo
+local function makeTimeoutFailure( func )
+    local failure = { reason = "Timeout" }
+    if not isfunction( func ) then return failure end
+
+    local definedAt = debug.getinfo( func, "S" )
+    failure.sourceFile = definedAt.short_src
+    failure.lineNumber = definedAt.linedefined
+
+    return failure
+end
+
 --- Runs a lifecycle hook that is allowed to yield, and reports once it finishes or times out
 --- @param func? fun( state: table ): nil
 --- @param state table
---- @param timeout number Seconds a yielded hook may wait before it fails
+--- @param timeout number Seconds the hook has to finish once it yields
 --- @param onFinished fun( failure?: GLuaTest_FailCallbackInfo ): nil
 function Helpers.RunWaitingHook( func, state, timeout, onFinished )
     if not func then return onFinished() end
@@ -375,7 +388,9 @@ function Helpers.RunWaitingHook( func, state, timeout, onFinished )
     yielded = true
 
     timer.Simple( timeout, function()
-        report( { reason = "Timeout" } )
+        if finished then return end
+
+        report( makeTimeoutFailure( func ) )
     end )
 end
 

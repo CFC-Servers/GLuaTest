@@ -41,7 +41,7 @@ This is the complete list of group fields:
 | `beforeEach` | `function( state )` | no | Runs before each case; receives that case's state. Cannot yield |
 | `afterEach` | `function( state )` | no | Runs after each case, even if it failed. Cannot yield |
 | `afterAll` | `function( state )` | no | Runs once after the group; receives the group state. Runs in a coroutine and may yield to wait |
-| `hookTimeout` | number | no | Seconds a yielded `beforeAll` or `afterAll` may wait before it fails as a test named after the hook (default 5) |
+| `hookTimeout` | number | no | Seconds `beforeAll` or `afterAll` has to finish once it starts waiting (default 5). The limit counts from the first yield and is not reset by later resumes. A hook that runs out of time fails as a test named after it, and it is not stopped, so its remaining code still runs if something resumes it later |
 
 ## Test case fields
 

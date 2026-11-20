@@ -555,6 +555,7 @@ The Test Group (that is, the table you return from your Test File) can have the 
 | **`beforeEach`** | `function` | A function to run before each Test Case in your Test Group. Takes a `state` table   |     ❌    |
 | **`afterAll`**   | `function` | A function to run after all Test Cases in your Test Group                           |     ❌    |
 | **`afterEach`**  | `function` | A function to run after each Test Case in your Test Group. Takes a `state` table    |     ❌    |
+| **`hookTimeout`** | `number` | Seconds `beforeAll` or `afterAll` has to finish once it starts [waiting](#before--after-functions) (default 5) |     ❌    |
 
 
 <br>
@@ -1053,6 +1054,7 @@ Both functions run inside a coroutine. Yield, and resume once the thing you're w
 
 return {
     groupName = "My Nextbot tests",
+    hookTimeout = 30,
 
     -- None of the cases start until the server is empty
     beforeAll = function()
@@ -1067,15 +1069,9 @@ return {
 
 _(`WaitForEmptyServer` is the helper from [The `coroutine` option](#the-coroutine-option))_
 
-If the function is never resumed, it fails after 5 seconds and shows up as a failing test named `beforeAll` or `afterAll`. Set `hookTimeout` on the group if you need longer:
+Once a function starts waiting, it has `hookTimeout` seconds to finish (5 by default), even if it is resumed and waits again. If it runs out of time it fails with `Timeout` and shows up as a failing test named `beforeAll` or `afterAll`.
 
-```lua
-return {
-    groupName = "My Nextbot tests",
-    hookTimeout = 30,
-    -- ...
-}
-```
+A function that timed out isn't stopped. If something resumes it later, the rest of it still runs, so make sure whatever you were waiting on can't fire late.
 
 `beforeEach` and `afterEach` can't wait yet.
 
