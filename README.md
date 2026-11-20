@@ -1191,6 +1191,9 @@ return WithEntityTests( "my_special_entity", {
     }
 } )
 ```
+
+> [!IMPORTANT]
+> Extensions load when the server starts, before `InitPostEntity`. If your extension needs anything that isn't available that early, such as map entities or the gamemode, wait for `InitPostEntity`.
 </details>
 
 <br>
