@@ -4,6 +4,8 @@ include( "gluatest/runner/test_case_runner.lua" )
 local Helpers = include( "gluatest/runner/helpers.lua" )
 local noop = function() end
 
+local DEFAULT_HOOK_TIMEOUT = 5
+
 --- Create a new TestGroupRunner
 --- @param TestRunner GLuaTest_TestRunner
 --- @param group GLuaTest_RunnableTestGroup
@@ -110,8 +112,9 @@ function GLuaTest.TestGroupRunner( TestRunner, group )
             return cb()
         end
 
-        local function finish()
-            local afterAllFailure = Helpers.RunHook( group.afterAll, self.groupState )
+        local hookTimeout = group.hookTimeout or DEFAULT_HOOK_TIMEOUT
+
+        local function onAfterAllFinished( afterAllFailure )
             if afterAllFailure then
                 self:SetFailed( { name = "afterAll", func = noop }, afterAllFailure )
             end
@@ -119,43 +122,54 @@ function GLuaTest.TestGroupRunner( TestRunner, group )
             cb()
         end
 
-        local beforeAllFailure = Helpers.RunHook( group.beforeAll, self.groupState )
-        if beforeAllFailure then
-            self:SetFailed( { name = "beforeAll", func = noop }, beforeAllFailure )
-            return finish()
+        local function finish()
+            Helpers.RunWaitingHook( group.afterAll, self.groupState, hookTimeout, onAfterAllFinished )
         end
 
-        local runners = self.caseRunners
+        local function runCases()
+            local runners = self.caseRunners
 
-        local cases = group.cases
-        local caseCount = #cases
-        for i = caseCount, 1, -1 do
-            local case = cases[i]
-            local runner = self:MakeCaseRunner( case )
-            table.insert( runners, runner )
-        end
-
-        local function runNext()
-            local nextRunner = table.remove( runners )
-            if not nextRunner then return finish() end
-
-            local continued = false
-            local function runNextOnce()
-                if continued then return end
-                continued = true
-
-                runNext()
+            local cases = group.cases
+            local caseCount = #cases
+            for i = caseCount, 1, -1 do
+                local case = cases[i]
+                local runner = self:MakeCaseRunner( case )
+                table.insert( runners, runner )
             end
 
-            local success, errInfo = xpcall( nextRunner.Run, Helpers.FailCallback, nextRunner, runNextOnce )
-            if success then return end
-            if continued then return ErrorNoHalt( errInfo.reason .. "\n" ) end
+            local function runNext()
+                local nextRunner = table.remove( runners )
+                if not nextRunner then return finish() end
 
-            self:SetFailed( nextRunner.case, errInfo )
-            runNextOnce()
+                local continued = false
+                local function runNextOnce()
+                    if continued then return end
+                    continued = true
+
+                    runNext()
+                end
+
+                local success, errInfo = xpcall( nextRunner.Run, Helpers.FailCallback, nextRunner, runNextOnce )
+                if success then return end
+                if continued then return ErrorNoHalt( errInfo.reason .. "\n" ) end
+
+                self:SetFailed( nextRunner.case, errInfo )
+                runNextOnce()
+            end
+
+            runNext()
         end
 
-        runNext()
+        local function onBeforeAllFinished( beforeAllFailure )
+            if beforeAllFailure then
+                self:SetFailed( { name = "beforeAll", func = noop }, beforeAllFailure )
+                return finish()
+            end
+
+            runCases()
+        end
+
+        Helpers.RunWaitingHook( group.beforeAll, self.groupState, hookTimeout, onBeforeAllFinished )
     end
 
     return TGR

@@ -1040,6 +1040,47 @@ You'll notice the `state` variable in that example. The `state` parameter is jus
 
 You also have access to `beforeAll` and `afterAll`, which are self-explanatory. These two functions receive the group-level `state` table; each Test Case's `state` can read everything set on it, but writes made inside a case stay isolated to that case.
 
+#### **Waiting in `beforeAll`/`afterAll`**
+<details>
+ <summary><strong><code>beforeAll</code> and <code>afterAll</code> can wait for something before the group carries on</strong></summary>
+
+<br>
+
+Both functions run inside a coroutine. Yield, and resume once the thing you're waiting for has happened:
+
+```lua
+-- lua/tests/my_nextbot/my_nextbot.lua
+
+return {
+    groupName = "My Nextbot tests",
+
+    -- None of the cases start until the server is empty
+    beforeAll = function()
+        WaitForEmptyServer()
+    end,
+
+    cases = {
+        -- ...
+    }
+}
+```
+
+_(`WaitForEmptyServer` is the helper from [The `coroutine` option](#the-coroutine-option))_
+
+If the function is never resumed, it fails after 5 seconds and shows up as a failing test named `beforeAll` or `afterAll`. Set `hookTimeout` on the group if you need longer:
+
+```lua
+return {
+    groupName = "My Nextbot tests",
+    hookTimeout = 30,
+    -- ...
+}
+```
+
+`beforeEach` and `afterEach` can't wait yet.
+
+</details>
+
 <br>
 
 ---

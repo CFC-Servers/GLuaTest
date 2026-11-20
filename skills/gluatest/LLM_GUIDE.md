@@ -37,10 +37,11 @@ This is the complete list of group fields:
 |---|---|---|---|
 | `cases` | table | yes | Array of test case tables |
 | `groupName` | string | no | Display name (defaults to the file path) |
-| `beforeAll` | `function( state )` | no | Runs once before the group; receives the group state |
-| `beforeEach` | `function( state )` | no | Runs before each case; receives that case's state |
-| `afterEach` | `function( state )` | no | Runs after each case, even if it failed |
-| `afterAll` | `function( state )` | no | Runs once after the group; receives the group state |
+| `beforeAll` | `function( state )` | no | Runs once before the group; receives the group state. Runs in a coroutine and may yield to wait |
+| `beforeEach` | `function( state )` | no | Runs before each case; receives that case's state. Cannot yield |
+| `afterEach` | `function( state )` | no | Runs after each case, even if it failed. Cannot yield |
+| `afterAll` | `function( state )` | no | Runs once after the group; receives the group state. Runs in a coroutine and may yield to wait |
+| `hookTimeout` | number | no | Seconds a yielded `beforeAll` or `afterAll` may wait before it fails as a test named after the hook (default 5) |
 
 ## Test case fields
 
