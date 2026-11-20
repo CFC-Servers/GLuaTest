@@ -198,6 +198,19 @@ function Helpers.findStackInfo()
         end
     end
 
+    -- Functions we call by name (like `when` and `skip`) have no anonymous frame, so take the nearest frame outside of GLuaTest
+    for stack = 1, 12 do
+        local info = debug.getinfo( stack, "lnS" )
+        if not info then break end
+
+        local isLua = info.what ~= "C"
+        local notGluatest = not string.match( info.short_src, "/lua/gluatest/" )
+
+        if isLua and notGluatest then
+            return stack, info
+        end
+    end
+
     -- This should never happen!!
     ErrorNoHaltWithStack( "Could not find stack info! This should never happen - please report this!" )
     return 2, debug.getinfo( 2, "lnS" )
@@ -311,6 +324,19 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
     return env, cleanup
 end
 
+--- Runs a user-provided hook (beforeAll, afterEach, cleanup, etc.)
+--- @param func? fun( state: table ): nil
+--- @param state table
+--- @return GLuaTest_FailCallbackInfo? failure The failure info if the hook errored
+function Helpers.RunHook( func, state )
+    if not func then return end
+
+    local success, errInfo = xpcall( func, Helpers.FailCallback, state )
+    if success then return end
+
+    return errInfo
+end
+
 --- Runs a function with a given environment, and cleans up after
 --- @param defaultEnv table
 --- @param before? fun( state: GLuaTest_TestState ): nil The function to run before the test
@@ -329,16 +355,19 @@ function Helpers.SafeRunWithEnv( defaultEnv, before, func, state )
     end
 
     -- Before
+    local success, output = true, nil
     if before then
         setfenv( before, testEnv )
-        before( state )
+        success, output = xpcall( before, Helpers.FailCallback, state )
         setfenv( before, defaultEnv )
     end
 
     -- Run
-    setfenv( func, testEnv )
-    local success, output = xpcall( func, Helpers.FailCallback, state )
-    setfenv( func, defaultEnv )
+    if success then
+        setfenv( func, testEnv )
+        success, output = xpcall( func, Helpers.FailCallback, state )
+        setfenv( func, defaultEnv )
+    end
 
     -- Cleanup
     for _, cleanup in ipairs( cleanupFuncs ) do
