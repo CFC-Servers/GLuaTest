@@ -48,7 +48,7 @@ jobs:
           fi
 
           echo "Latest tag: $latest_tag"
-          echo "tag_name=$latest_tag" >> $GITHUB_OUTPUT
+          echo "tag_name=$latest_tag" >> "$GITHUB_OUTPUT"
 
       - name: Pull the steamcmd image
         run: |
@@ -91,11 +91,13 @@ jobs:
           fi
 
           # Set the output
-          echo "public=$public" >> $GITHUB_OUTPUT
-          echo "sixtyfour=$sixtyfour" >> $GITHUB_OUTPUT
-          echo "dev=$dev" >> $GITHUB_OUTPUT
-          echo "prerelease=$prerelease" >> $GITHUB_OUTPUT
-          echo "network_test=$network_test" >> $GITHUB_OUTPUT
+          {
+            echo "public=$public"
+            echo "sixtyfour=$sixtyfour"
+            echo "dev=$dev"
+            echo "prerelease=$prerelease"
+            echo "network_test=$network_test"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Checkout last build branch
         uses: actions/checkout@v7
@@ -106,11 +108,11 @@ jobs:
       - name: Read last build IDs
         id: last_versions
         run: |
-          public=$(cat $GITHUB_WORKSPACE/build_versions/last_public_build.txt 2>/dev/null || echo "0")
-          sixtyfour=$(cat $GITHUB_WORKSPACE/build_versions/last_64bit_build.txt 2>/dev/null || echo "0")
-          dev=$(cat $GITHUB_WORKSPACE/build_versions/last_dev_build.txt 2>/dev/null || echo "0")
-          prerelease=$(cat $GITHUB_WORKSPACE/build_versions/last_prerelease_build.txt 2>/dev/null || echo "0")
-          network_test=$(cat $GITHUB_WORKSPACE/build_versions/last_network_test_build.txt 2>/dev/null || echo "0")
+          public=$(cat "$GITHUB_WORKSPACE/build_versions/last_public_build.txt" 2>/dev/null || echo "0")
+          sixtyfour=$(cat "$GITHUB_WORKSPACE/build_versions/last_64bit_build.txt" 2>/dev/null || echo "0")
+          dev=$(cat "$GITHUB_WORKSPACE/build_versions/last_dev_build.txt" 2>/dev/null || echo "0")
+          prerelease=$(cat "$GITHUB_WORKSPACE/build_versions/last_prerelease_build.txt" 2>/dev/null || echo "0")
+          network_test=$(cat "$GITHUB_WORKSPACE/build_versions/last_network_test_build.txt" 2>/dev/null || echo "0")
 
           echo "Last Public ID built: '$public'"
           echo "Last 64bit ID built: '$sixtyfour'"
@@ -118,11 +120,13 @@ jobs:
           echo "Last prerelease ID built: '$prerelease'"
           echo "Last network_test ID built: '$network_test'"
 
-          echo "public=$public" >> $GITHUB_OUTPUT
-          echo "sixtyfour=$sixtyfour" >> $GITHUB_OUTPUT
-          echo "dev=$dev" >> $GITHUB_OUTPUT
-          echo "prerelease=$prerelease" >> $GITHUB_OUTPUT
-          echo "network_test=$network_test" >> $GITHUB_OUTPUT
+          {
+            echo "public=$public"
+            echo "sixtyfour=$sixtyfour"
+            echo "dev=$dev"
+            echo "prerelease=$prerelease"
+            echo "network_test=$network_test"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Identify pending updates
         id: needs_update
@@ -150,11 +154,13 @@ jobs:
           echo "Should build Prerelease: '$needs_prerelease'"
           echo "Should build Network_test: '$needs_network_test'"
 
-          echo "public=$needs_public" >> $GITHUB_OUTPUT
-          echo "sixtyfour=$needs_sixtyfour" >> $GITHUB_OUTPUT
-          echo "dev=$needs_dev" >> $GITHUB_OUTPUT
-          echo "prerelease=$needs_prerelease" >> $GITHUB_OUTPUT
-          echo "network_test=$needs_network_test" >> $GITHUB_OUTPUT
+          {
+            echo "public=$needs_public"
+            echo "sixtyfour=$needs_sixtyfour"
+            echo "dev=$needs_dev"
+            echo "prerelease=$needs_prerelease"
+            echo "network_test=$needs_network_test"
+          } >> "$GITHUB_OUTPUT"
 
           # Determine if any update is needed for the final commit step
           any_update="false"
@@ -162,7 +168,7 @@ jobs:
             any_update="true"
           fi
           echo "Any update needed: $any_update"
-          echo "any=$any_update" >> $GITHUB_OUTPUT
+          echo "any=$any_update" >> "$GITHUB_OUTPUT"
 
   trigger_builds:
     needs: check_updates
@@ -204,7 +210,6 @@ jobs:
           tag_name: ${{ needs.check_updates.outputs.latest_tag }}
           release: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          path: $GITHUB_WORKSPACE/full_repo
 
   update_last_versions:
     runs-on: ubuntu-24.04
@@ -220,7 +225,7 @@ jobs:
 
       - name: Update last version files
         run: |
-          cd $GITHUB_WORKSPACE/build_versions
+          cd "$GITHUB_WORKSPACE/build_versions"
 
           # Update files with the latest versions fetched in the check_updates job
           echo "${{ needs.check_updates.outputs.latest_public }}" > ./last_public_build.txt

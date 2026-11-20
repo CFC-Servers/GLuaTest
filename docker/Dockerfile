@@ -6,7 +6,10 @@ ARG GLUATEST_REPO=https://github.com/CFC-Servers/GLuaTest.git
 
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt update && apt install -y --no-install-recommends --no-install-suggests git python3-minimal expect rsync openssh-client gdb && apt autoremove
+RUN apt-get update && \
+    apt-get install --yes --no-install-recommends --no-install-suggests git expect rsync openssh-client gdb && \
+    apt-get autoremove --yes && \
+    rm -rf /var/lib/apt/lists/*
 
 ARG home=/home/steam
 ARG gmodroot=$home/gmodserver
@@ -35,17 +38,11 @@ COPY base_server.cfg $server/cfg/test.cfg
 # Base fixture addon
 COPY testfixture $server/addons/testfixture
 
-# Make requirements file
-RUN touch $gmodroot/requirements.txt
-
-# GitHub Server Keys
-RUN ssh-keyscan github.com >> $home/github_known_hosts
-
-# Enable core dumps
-RUN ulimit -c unlimited
-
-# Cleanup
-RUN rm -rf \
+# Requirements file, GitHub server keys, and cleanup
+RUN touch $gmodroot/requirements.txt && \
+    mkdir --parents --verbose $home/.ssh && \
+    ssh-keyscan github.com >> $home/.ssh/known_hosts && \
+    rm -rf \
         $server/sv.db \
         $server/console.log \
         $server/stats.txt \
@@ -70,19 +67,16 @@ RUN chown --recursive steam:steam \
     "$server/addons/" \
     "$gmodroot/requirements.txt" \
     "$gmodroot/entrypoint.sh" \
-    "$home/github_known_hosts"
+    "$home/.ssh"
 
 USER steam
 ENV GMOD_BRANCH=${GMOD_BRANCH}
 
 RUN git clone --depth 1 $GLUATEST_REPO $server/addons/gluatest && \
-    cd $server/addons/gluatest && \
-    git fetch --quiet origin $GLUATEST_REF && \
-    git checkout FETCH_HEAD
-
-RUN mkdir --parents --verbose $server/data
-RUN mkdir --parents --verbose $server/addons/gluatest/data_static
-RUN echo "$GLUATEST_REF" > $server/addons/gluatest/data_static/gluatest_version.txt
-RUN echo "$GMOD_BRANCH" > $server/garrysmod_branch.txt
+    git -C $server/addons/gluatest fetch --quiet origin $GLUATEST_REF && \
+    git -C $server/addons/gluatest checkout FETCH_HEAD && \
+    mkdir --parents --verbose $server/addons/gluatest/data_static && \
+    echo "$GLUATEST_REF" > $server/addons/gluatest/data_static/gluatest_version.txt && \
+    echo "$GMOD_BRANCH" > $server/garrysmod_branch.txt
 
 ENTRYPOINT ["/home/steam/gmodserver/entrypoint.sh"]

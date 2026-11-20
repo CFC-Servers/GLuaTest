@@ -5,14 +5,13 @@ gmodroot=$home/gmodserver
 server=$home/gmodserver/garrysmod
 pat=$GITHUB_TOKEN@
 timeout="${TIMEOUT:-2}"m
-gmodbranch="${GMOD_BRANCH}"
 
-# Make sure docker-slim doesn't remove bins we'll eventually need
-echo $(date)
-python3 -c "print()" &> /dev/null
-git clone --depth 1 git@github.com:CFC-Servers/GLuaTest.git _tmp_ssh &> /dev/null
-git clone --depth 1 https://github.com/CFC-Servers/GLuaTest.git _tmp_https &> /dev/null
-rm -rf _tmp_ssh _tmp_https
+if [ "$GLUATEST_SLIM_PROBE" = "true" ]; then
+    # docker-slim only keeps the git transport helpers if a clone uses them during the build
+    git clone --depth 1 git@github.com:CFC-Servers/GLuaTest.git _tmp_ssh &> /dev/null
+    git clone --depth 1 https://github.com/CFC-Servers/GLuaTest.git _tmp_https &> /dev/null
+    rm -rf _tmp_ssh _tmp_https
+fi
 
 # Copy the overrides overtop the server files
 echo "Copying serverfiles overrides..."
@@ -22,7 +21,7 @@ rsync --verbose --archive $home/garrysmod_override/ $server/
 if [ -n "$(ls -A $home/_gluatest_artifacts/_gluatest_artifacts/)" ]; then # Only execute if there are any artifacts or else tar will complain
     cp $home/_gluatest_artifacts/_gluatest_artifacts/* $gmodroot/
 
-    for file in $gmodroot/*.tar.gz; do \
+    for file in "$gmodroot"/*.tar.gz; do \
         tar --extract --verbose --ungzip --file="$file" --directory="$gmodroot" && \
         rm --force --verbose "$file"; \
     done
@@ -33,15 +32,17 @@ if [ -f "$gmodroot/custom_requirements.txt" ]; then
     cat "$gmodroot/custom_requirements.txt" >> "$gmodroot/requirements.txt"
 fi
 
+hello_project_name="${HELLO_PROJECT_NAME:-}"
 # 'CFC-Servers/GLuaTest"; quit' -> 'CFC-Servers/GLuaTestquit'
-hello_project_name="${HELLO_PROJECT_NAME//[^A-Za-z0-9._\/-]/}"
+hello_project_name="${hello_project_name//[^A-Za-z0-9._\/-]/}"
 if [ -n "$hello_project_name" ]; then
     echo "Usage ping project name: $hello_project_name"
     printf '\ngluatest_http_hello_project "%s"\n' "$hello_project_name" >> "$server/cfg/test.cfg"
 fi
 
+hello_runner="${HELLO_RUNNER:-}"
 # 'agent/claude-code"; quit' -> 'agent/claude-codequit'
-hello_runner="${HELLO_RUNNER//[^A-Za-z0-9._\/-]/}"
+hello_runner="${hello_runner//[^A-Za-z0-9._\/-]/}"
 if [ -n "$hello_runner" ]; then
     printf '\ngluatest_http_hello_runner "%s"\n' "$hello_runner" >> "$server/cfg/test.cfg"
 fi
@@ -61,48 +62,33 @@ touch "$server/data/gluatest_failures.json"
 
 if [[ ! -z "$SSH_PRIVATE_KEY" ]]; then
     echo "Private key found, adding"
-    mkdir -pv /home/steam/.ssh
-    cat /home/steam/github_known_hosts >> /home/steam/.ssh/known_hosts
-
-    eval `ssh-agent -s`
+    eval "$(ssh-agent -s)"
     ssh-add - <<< "$SSH_PRIVATE_KEY"
 fi
 
-function getCloneLine {
-    python3 - <<-EOF
-line = "$1"
-spl = line.split("@")
+while read -r requirement || [ -n "$requirement" ]; do
+    if [ -z "$requirement" ]; then continue; fi
+    echo "Handling requirement: $requirement"
 
-name = spl[0].split("/")[1].lower()
-url = "https://${pat}github.com/" + spl[0] + ".git"
+    # 'CFC-Servers/GLuaTest@main' -> 'CFC-Servers/GLuaTest'
+    repo="${requirement%%@*}"
 
-branch = " --branch " + spl[1] if len(spl) > 1 else ""
+    # 'CFC-Servers/GLuaTest' -> 'GLuaTest'
+    name="${repo#*/}"
+    # 'GLuaTest' -> 'gluatest'
+    name="${name,,}"
 
-print("git clone -vv --depth 1 " + url + branch + " --single-branch " + name)
-EOF
-}
+    clone_args=( --depth 1 --single-branch )
+    if [[ "$requirement" == *@* ]]; then
+        # 'CFC-Servers/GLuaTest@main' -> 'main'
+        branch="${requirement#*@}"
+        clone_args+=( --branch "$branch" )
+    fi
 
-function getSSHCloneLine {
-    python3 - <<-EOF
-line = "$1"
-spl = line.split("@")
-
-name = spl[0].split("/")[1].lower()
-url = "git@github.com:" + spl[0] + ".git"
-
-branch = " --branch " + spl[1] if len(spl) > 1 else ""
-
-print("git clone -v --depth 1 " + url + branch + " --single-branch " + name)
-EOF
-}
-
-cd "$server"/addons
-while read p; do
-    echo "Handling requirement: $p"
     if [[ -z "$SSH_PRIVATE_KEY" ]]; then
-        eval $(getCloneLine "$p" )
+        git clone -vv "${clone_args[@]}" "https://${pat}github.com/$repo.git" "$server/addons/$name"
     else
-        eval $(getSSHCloneLine "$p" )
+        git clone -v "${clone_args[@]}" "git@github.com:$repo.git" "$server/addons/$name"
     fi
 done <"$gmodroot"/requirements.txt
 
@@ -111,7 +97,10 @@ collection="${COLLECTION_ID:-0}"
 map="${MAP:-gm_construct}"
 echo "Starting the server with gamemode: $gamemode"
 
-base_srcds_args=(
+# '-maxplayers 64 +sv_cheats 1' -> ( -maxplayers 64 +sv_cheats 1 )
+read -r -a srcds_args -d '' <<< "$EXTRA_STARTUP_ARGS"
+
+srcds_args+=(
     # Test requirements
     -systemtest       # Allows us to exit the game from inside Lua
     -condebug         # Logs everything to console.log
@@ -152,24 +141,23 @@ base_srcds_args=(
     +map "$map"
     +servercfgfile test.cfg
 )
-srcds_args="$EXTRA_STARTUP_ARGS ${base_srcds_args[@]}"
 
-cd "$gmodroot" # srcds_run64 uses relative paths unlike srcds_run. Annoying...
+cd "$gmodroot" || exit 1 # srcds_run64 uses relative paths unlike srcds_run. Annoying...
 
 if [ "$GLUATEST_SLIM_PROBE" = "true" ] && [ -x "$gmodroot/srcds_run64" ]; then
     # docker-slim only keeps files that were touched soo for dev 64x we also touch it :3
-    unbuffer timeout "$timeout" "$gmodroot"/srcds_run64 "${srcds_args//27015/27016}" &
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run64 "${srcds_args[@]//27015/27016}" &
 fi
 
 if [ "$USE_64BIT" = "true" ]; then
     echo "Starting 64-bit server"
-    unbuffer timeout "$timeout" "$gmodroot"/srcds_run64 "$srcds_args"
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run64 "${srcds_args[@]}"
 elif [ -x "$gmodroot/srcds_run_x64" ]; then
     echo "Starting x86-64-bit server"
-    unbuffer timeout "$timeout" "$gmodroot"/srcds_run_x64 "$srcds_args"
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run_x64 "${srcds_args[@]}"
 else
     echo "Starting 32-bit server"
-    unbuffer timeout "$timeout" "$gmodroot"/srcds_run "$srcds_args"
+    unbuffer timeout "$timeout" "$gmodroot"/srcds_run "${srcds_args[@]}"
 fi
 
 status=$?

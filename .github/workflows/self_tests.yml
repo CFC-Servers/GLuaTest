@@ -33,6 +33,6 @@ jobs:
     with:
       gluatest-ref: ${{ github.head_ref != null && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.ref }}
       server-cfg: lua/tests/gluatest/server.cfg
-      dockerbuild: "true"
+      dockerbuild: ${{ 'true' }}
       branch: ${{ matrix.branch }}
       use-64bit: ${{ matrix.use-64bit || 'false' }}
