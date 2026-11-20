@@ -110,8 +110,20 @@ function GLuaTest.TestGroupRunner( TestRunner, group )
             return cb()
         end
 
-        local beforeAll = group.beforeAll
-        if beforeAll then beforeAll( self.groupState ) end
+        local function finish()
+            local afterAllFailure = Helpers.RunHook( group.afterAll, self.groupState )
+            if afterAllFailure then
+                self:SetFailed( { name = "afterAll", func = noop }, afterAllFailure )
+            end
+
+            cb()
+        end
+
+        local beforeAllFailure = Helpers.RunHook( group.beforeAll, self.groupState )
+        if beforeAllFailure then
+            self:SetFailed( { name = "beforeAll", func = noop }, beforeAllFailure )
+            return finish()
+        end
 
         local runners = self.caseRunners
 
@@ -125,15 +137,22 @@ function GLuaTest.TestGroupRunner( TestRunner, group )
 
         local function runNext()
             local nextRunner = table.remove( runners )
+            if not nextRunner then return finish() end
 
-            if not nextRunner then
-                local afterAll = group.afterAll
-                if afterAll then afterAll( self.groupState ) end
+            local continued = false
+            local function runNextOnce()
+                if continued then return end
+                continued = true
 
-                return cb()
+                runNext()
             end
 
-            ProtectedCall( nextRunner.Run, nextRunner, runNext )
+            local success, errInfo = xpcall( nextRunner.Run, Helpers.FailCallback, nextRunner, runNextOnce )
+            if success then return end
+            if continued then return ErrorNoHalt( errInfo.reason .. "\n" ) end
+
+            self:SetFailed( nextRunner.case, errInfo )
+            runNextOnce()
         end
 
         runNext()
