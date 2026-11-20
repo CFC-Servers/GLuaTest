@@ -1,6 +1,7 @@
 const GREETING = "Hello!";
 const MAX_FIELD_LENGTH = 32;
 const MAX_PROJECT_NAME_LENGTH = 140;
+const UNNAMED_PROJECT = "<private>";
 
 const INSERT_PING = `
   INSERT INTO pings (version, branch, country, region, continent, cloud_provider, project, test_groups, test_cases, asn, runner, agent)
@@ -20,9 +21,14 @@ const CLOUD_PROVIDERS_BY_ASN = new Map([
   [20473, "vultr"],
 ]);
 
-function readText(searchParams, name, maxLength = MAX_FIELD_LENGTH) {
+function readText(searchParams, name) {
   const value = searchParams.get(name) ?? "unknown";
-  return value.slice(0, maxLength);
+  return value.slice(0, MAX_FIELD_LENGTH);
+}
+
+function readProjectName(searchParams) {
+  const projectName = searchParams.get("project") ?? UNNAMED_PROJECT;
+  return projectName.slice(0, MAX_PROJECT_NAME_LENGTH);
 }
 
 function readCount(searchParams, name) {
@@ -53,7 +59,7 @@ export default {
       region,
       continent,
       cloudProvider,
-      readText(searchParams, "project", MAX_PROJECT_NAME_LENGTH),
+      readProjectName(searchParams),
       readCount(searchParams, "groups"),
       readCount(searchParams, "cases"),
       asn,

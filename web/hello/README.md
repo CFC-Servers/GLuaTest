@@ -13,11 +13,11 @@ It stores one row for each request to `/ping` in the `pings` table of the `gluat
 | `region`         | Region                                                       |
 | `continent`      | Continent code                                               |
 | `cloud_provider` | Cloud provider (`microsoft`, `amazon`, ..., or `other`)      |
-| `project`        | Project name, or `unknown` when the project did not set one  |
+| `project`        | Project name, or `<private>` when the run did not send one   |
 | `test_groups`    | Number of test groups                                        |
 | `test_cases`     | Number of test cases                                         |
 | `asn`            | AS number of the network the request came from               |
-| `runner`         | What started the run: `github`, `local`, `agent`, or `unknown` |
+| `runner`         | What started the run: `github`, `local`, `agent`, `build` for our image builds, or `unknown` |
 | `agent`          | Name of the AI agent for `agent` runs, such as `claude-code` |
 
 The table is defined in [`migrations`](migrations). After adding a migration, apply it by hand before the Worker change that needs it reaches `main`:

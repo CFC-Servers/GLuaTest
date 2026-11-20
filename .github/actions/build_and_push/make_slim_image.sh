@@ -10,6 +10,7 @@ base="ghcr.io/cfc-servers/gluatest/$GMOD_BRANCH"
     --http-probe-off \
     --env GLUATEST_SLIM_PROBE=true \
     --env HELLO_PROJECT_NAME=gluatest-image-build \
+    --env HELLO_RUNNER=build \
     --continue-after 30 \
     --show-clogs --show-blogs \
     --include-path "/home/steam/gmodserver/garrysmod/addons/gluatest/data_static" \
