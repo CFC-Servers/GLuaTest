@@ -13,15 +13,17 @@ base="ghcr.io/cfc-servers/gluatest/$GMOD_BRANCH"
     --continue-after 30 \
     --show-clogs --show-blogs \
     --include-path "/home/steam/gmodserver/garrysmod/addons/gluatest/data_static" \
+    --include-path "/home/steam/gmodserver/garrysmod/data" \
+    --include-path "/home/steam/.ssh" \
     --preserve-path "/home/steam/gmodserver/garrysmod/cfg/test.cfg" \
     --exclude-pattern "/home/steam/gmodserver/garrysmod/cfg/test.cfg" \
     --include-bin "/usr/bin/date" \
-    --include-bin "/usr/bin/echo" \
-    --include-bin "/usr/bin/python3" \
     --include-bin "/usr/bin/git" \
     --include-bin "/usr/bin/tar" \
     --include-bin "/usr/bin/cp" \
     --include-bin "/usr/bin/gzip" \
+    --include-bin "/usr/bin/ssh-agent" \
+    --include-bin "/usr/bin/ssh-add" \
     --include-bin "/home/steam/gmodserver/bin/libbass.so" \
     --include-bin "/home/steam/gmodserver/bin/linux64/libbass.so" \
     --include-bin "/home/steam/gmodserver/bin/gmod_audio.so" \

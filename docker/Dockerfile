@@ -7,7 +7,7 @@ ARG GLUATEST_REPO=https://github.com/CFC-Servers/GLuaTest.git
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
-    apt-get install --yes --no-install-recommends --no-install-suggests git python3-minimal expect rsync openssh-client gdb && \
+    apt-get install --yes --no-install-recommends --no-install-suggests git expect rsync openssh-client gdb && \
     apt-get autoremove --yes && \
     rm -rf /var/lib/apt/lists/*
 
@@ -40,7 +40,8 @@ COPY testfixture $server/addons/testfixture
 
 # Requirements file, GitHub server keys, and cleanup
 RUN touch $gmodroot/requirements.txt && \
-    ssh-keyscan github.com >> $home/github_known_hosts && \
+    mkdir --parents --verbose $home/.ssh && \
+    ssh-keyscan github.com >> $home/.ssh/known_hosts && \
     rm -rf \
         $server/sv.db \
         $server/console.log \
@@ -66,7 +67,7 @@ RUN chown --recursive steam:steam \
     "$server/addons/" \
     "$gmodroot/requirements.txt" \
     "$gmodroot/entrypoint.sh" \
-    "$home/github_known_hosts"
+    "$home/.ssh"
 
 USER steam
 ENV GMOD_BRANCH=${GMOD_BRANCH}
@@ -74,7 +75,7 @@ ENV GMOD_BRANCH=${GMOD_BRANCH}
 RUN git clone --depth 1 $GLUATEST_REPO $server/addons/gluatest && \
     git -C $server/addons/gluatest fetch --quiet origin $GLUATEST_REF && \
     git -C $server/addons/gluatest checkout FETCH_HEAD && \
-    mkdir --parents --verbose $server/data $server/addons/gluatest/data_static && \
+    mkdir --parents --verbose $server/addons/gluatest/data_static && \
     echo "$GLUATEST_REF" > $server/addons/gluatest/data_static/gluatest_version.txt && \
     echo "$GMOD_BRANCH" > $server/garrysmod_branch.txt
 

@@ -157,22 +157,28 @@ jobs:
           path: project
 
       - name: Set up output files
+        env:
+          REQUIREMENTS: ${{ inputs.requirements }}
+          SERVER_CFG: ${{ inputs.server-cfg }}
         run: |
           cd "$GITHUB_WORKSPACE"
           mkdir -p project # In case there was no checkout
           mkdir -p garrysmod_override # Same here
-          touch "$GITHUB_WORKSPACE/project/${{ inputs.requirements }}"
-          echo "gluatest_github_output 1" >> "$GITHUB_WORKSPACE/project/${{ inputs.server-cfg }}"
+          touch "$GITHUB_WORKSPACE/project/$REQUIREMENTS"
+          echo "gluatest_github_output 1" >> "$GITHUB_WORKSPACE/project/$SERVER_CFG"
 
       - name: Get latest GLuaTest version
         id: latest-tag-getter
+        env:
+          GLUATEST_REPO: ${{ inputs.gluatest-repo }}
+          GLUATEST_REF: ${{ inputs.gluatest-ref }}
         run: |
           cd "$GITHUB_WORKSPACE"
 
-          git clone --single-branch --depth 1 ${{ inputs.gluatest-repo }}.git gluatest
+          git clone --single-branch --depth 1 "$GLUATEST_REPO.git" gluatest
 
           cd gluatest
-          git fetch --quiet origin ${{ inputs.gluatest-ref }}
+          git fetch --quiet origin "$GLUATEST_REF"
           git checkout FETCH_HEAD
           git fetch --quiet --tags
 
@@ -182,10 +188,12 @@ jobs:
 
           cd ../
           cd "$GITHUB_WORKSPACE"
-          mkdir -p ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/ # Silently also setup the artifacts dir
+          mkdir -p "$GITHUB_WORKSPACE/gluatest/docker/_gluatest_artifacts/" # Silently also setup the artifacts dir
 
       - name: Prepare the override directory
         if: ${{ inputs.no-checkout != 'true' }}
+        env:
+          GLUATEST_REPO: ${{ inputs.gluatest-repo }}
         run: |
           cd "$GITHUB_WORKSPACE/project"
 
@@ -213,7 +221,7 @@ jobs:
             # The repo is likely an addon
             dest="$GITHUB_WORKSPACE/garrysmod_override/addons/project/"
           else
-            echo "::error title=Unknown project structure!::Please report this: ${{ inputs.gluatest-repo }}/issues"
+            echo "::error title=Unknown project structure!::Please report this: $GLUATEST_REPO/issues"
             exit 1
           fi
 
@@ -234,13 +242,15 @@ jobs:
 
       - name: Download artifact (Http)
         if: inputs.download-artifact != '' && (startsWith(inputs.download-artifact, 'https://') || startsWith(inputs.download-artifact, 'http://'))
+        env:
+          ARTIFACT_URL: ${{ inputs.download-artifact }}
         run: |
-          cd ${{ github.workspace }}/gluatest/docker/_gluatest_artifacts/
-          wget -O artifact.tar.gz ${{ inputs.download-artifact }} # No matter what, we expect it as a .tar.gz
+          cd "$GITHUB_WORKSPACE/gluatest/docker/_gluatest_artifacts/"
+          wget -O artifact.tar.gz "$ARTIFACT_URL" # No matter what, we expect it as a .tar.gz
 
       - name: Run Additional Setup
         run: |
-          cd ${{ github.workspace }}
+          cd "$GITHUB_WORKSPACE"
           ${{ inputs.additional-setup }}
           ${{ secrets.secret-additional-setup }}
 
@@ -264,13 +274,16 @@ jobs:
           CUSTOM_SERVER_CONFIG: "${{ github.workspace }}/project/${{ inputs.server-cfg }}"
           PROJECT_DIR: "${{ github.workspace }}/garrysmod_override"
           GMOD_ARTIFACT_DIR: "${{ github.workspace }}/gluatest/docker/_gluatest_artifacts"
+          GMOD_BRANCH: ${{ inputs.branch }}
+          GLUATEST_REPO: ${{ inputs.gluatest-repo }}
+          GLUATEST_REF: ${{ inputs.gluatest-ref }}
         run: |
           cd "$GITHUB_WORKSPACE/gluatest/docker"
           docker build \
-            --build-arg="GMOD_BRANCH=${{ inputs.branch }}" \
-            --build-arg="GLUATEST_REPO=${{ inputs.gluatest-repo }}.git" \
-            --build-arg="GLUATEST_REF=${{ inputs.gluatest-ref }}" \
-            --tag ghcr.io/cfc-servers/gluatest/${{ inputs.branch }}:latest .
+            --build-arg="GMOD_BRANCH=$GMOD_BRANCH" \
+            --build-arg="GLUATEST_REPO=$GLUATEST_REPO.git" \
+            --build-arg="GLUATEST_REF=$GLUATEST_REF" \
+            --tag "ghcr.io/cfc-servers/gluatest/$GMOD_BRANCH:latest" .
 
       - name: Run GLuaTest
         env:
@@ -310,12 +323,13 @@ jobs:
         if: always() && inputs.logs-as-artifact == 'true'
         env:
           SECRET_STARTUP_ARGS: "${{ secrets.secret-startup-args }}"
+          LOG_NAME: gluatest-log-${{ inputs.branch }}${{ inputs.use-64bit == 'true' && '-64x' || '' }}
         run: |
           sudo apt-get install -y colorized-logs
 
           cd "$GITHUB_WORKSPACE/gluatest/docker"
 
-          filename="$GITHUB_WORKSPACE/gluatest-log-${{ inputs.branch }}${{ inputs.use-64bit == 'true' && '-64x' || '' }}.log"
+          filename="$GITHUB_WORKSPACE/$LOG_NAME.log"
           docker compose logs --no-color --no-log-prefix runner >& "$filename.pre"
 
           # Remove all the ANSI color codes
