@@ -47,6 +47,10 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
     --- @class GLuaTest_TestCaseRunner
     local TCR = {}
 
+    --- The test case that this runner is Running
+    --- @type GLuaTest_RunnableTestCase
+    TCR.case = case
+
     --- Checks if the given test case can/should be run
     function TCR:CanRun()
         local shouldSkip = checkShouldSkip( case )
@@ -75,18 +79,19 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
         local beforeFunc = group.beforeEach
         local caseResult = Helpers.SafeRunWithEnv( defaultEnv, beforeFunc, case.func, case.state )
 
-        case.cleanup( case.state )
+        local cleanupFailure = Helpers.RunHook( case.cleanup, case.state )
+        local afterEachFailure = Helpers.RunHook( group.afterEach, case.state )
+        local hookFailure = cleanupFailure or afterEachFailure
 
-        local afterEach = group.afterEach
-        if afterEach then afterEach( case.state ) end
-
-        if caseResult.result == "empty" then
+        if caseResult.result == "failure" then
+            local errInfo = caseResult.errInfo
+            TestGroupRunner:SetFailed( case, errInfo )
+        elseif hookFailure then
+            TestGroupRunner:SetFailed( case, hookFailure )
+        elseif caseResult.result == "empty" then
             TestGroupRunner:SetEmpty( case )
         elseif caseResult.result == "success" then
             TestGroupRunner:SetSucceeded( case )
-        elseif caseResult.result == "failure" then
-            local errInfo = caseResult.errInfo
-            TestGroupRunner:SetFailed( case, errInfo )
         end
 
         cb()
@@ -102,17 +107,22 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
             ErrorNoHaltWithStack( "Running an empty Async Cleanup func" )
         end
 
-        local function testComplete()
+        --- @param succeeded? boolean Whether the test finished without a failure being recorded
+        local function testComplete( succeeded )
             isDone = true
 
             timer.Remove( "GLuaTest_AsyncTimeout_" .. case.id )
             setfenv( case.func, defaultEnv )
 
-            local cleanup = case.cleanup
-            if cleanup then case.cleanup( case.state ) end
+            local cleanupFailure = Helpers.RunHook( case.cleanup, case.state )
+            local afterEachFailure = Helpers.RunHook( group.afterEach, case.state )
+            local hookFailure = cleanupFailure or afterEachFailure
 
-            local afterEach = group.afterEach
-            if afterEach then group.afterEach( case.state ) end
+            if succeeded and hookFailure then
+                TestGroupRunner:SetFailed( case, hookFailure )
+            elseif succeeded then
+                TestGroupRunner:SetSucceeded( case )
+            end
 
             asyncCleanup()
             cb()
@@ -123,11 +133,7 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
         local function done()
             if isDone then return end
 
-            if not expectationFailure then
-                TestGroupRunner:SetSucceeded( case )
-            end
-
-            testComplete()
+            testComplete( not expectationFailure )
         end
 
         --- Call to manually fail the test
@@ -165,8 +171,15 @@ function GLuaTest.TestCaseRunner( TestGroupRunner, case )
         local beforeEach = group.beforeEach
         if beforeEach then
             setfenv( beforeEach, asyncEnv )
-            beforeEach( case.state )
+            local beforeEachFailure = Helpers.RunHook( beforeEach, case.state )
             setfenv( beforeEach, defaultEnv )
+
+            if beforeEachFailure then
+                TestGroupRunner:SetFailed( case, beforeEachFailure )
+                testComplete()
+
+                return
+            end
         end
 
         local function setTimedOut()
