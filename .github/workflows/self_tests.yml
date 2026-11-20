@@ -2,9 +2,19 @@ name: GLuaTest (Self Tests)
 
 on:
   pull_request:
+    paths:
+      - "lua/**"
+      - "docker/**"
+      - ".github/workflows/**"
+      - ".github/actions/**"
   push:
     branches:
       - 'main'
+    paths:
+      - "lua/**"
+      - "docker/**"
+      - ".github/workflows/**"
+      - ".github/actions/**"
 
 jobs:
   run_tests:
