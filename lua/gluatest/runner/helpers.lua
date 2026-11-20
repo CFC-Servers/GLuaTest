@@ -198,7 +198,7 @@ function Helpers.findStackInfo()
         end
     end
 
-    -- Functions we call by name (like `when` and `skip`) have no anonymous frame, so take the nearest frame outside of GLuaTest
+    -- Functions we inject into the test env (like `when` and `skip`) have no anonymous frame, so take the nearest frame outside of GLuaTest
     for stack = 1, 12 do
         local info = debug.getinfo( stack, "lnS" )
         if not info then break end
@@ -324,7 +324,7 @@ function Helpers.MakeAsyncEnv( done, fail, onFailedExpectation )
     return env, cleanup
 end
 
---- Runs a user-provided hook (beforeAll, afterEach, cleanup, etc.)
+--- Runs a lifecycle hook (beforeAll, afterEach, cleanup, etc.)
 --- @param func? fun( state: table ): nil
 --- @param state table
 --- @return GLuaTest_FailCallbackInfo? failure The failure info if the hook errored
